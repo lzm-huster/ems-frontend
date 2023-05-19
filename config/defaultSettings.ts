@@ -6,13 +6,13 @@ const Settings: LayoutSettings & {
 } = {
   navTheme: 'light',
   // 拂晓蓝
-  primaryColor: '#1890ff',
+  primaryColor: '#2665C6',
   layout: 'mix',
   contentWidth: 'Fluid',
-  fixedHeader: false,
+  fixedHeader: true,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'Ant Design Pro',
+  title: '管理学院设备管理系统',
   pwa: false,
   logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
   iconfontUrl: '',
