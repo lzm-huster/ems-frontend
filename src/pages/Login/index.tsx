@@ -169,16 +169,20 @@ const Login: React.FC = () => {
                   size: 'large',
                 }}
                 placeholder={'请输入验证码！'}
+                placeholder={'请输入验证码！'}
                 captchaTextRender={(timing, count) => {
                   if (timing) {
                     return `${count} ${'秒后重新获取'}`;
+                    return `${count} ${'秒后重新获取'}`;
                   }
+                  return '获取验证码';
                   return '获取验证码';
                 }}
                 name="captcha"
                 rules={[
                   {
                     required: true,
+                    message: '验证码是必填项！',
                     message: '验证码是必填项！',
                   },
                 ]}
