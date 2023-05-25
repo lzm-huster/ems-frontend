@@ -2,25 +2,36 @@
 /* eslint-disable */
 
 declare namespace API {
+  type BaseResponse<T> = {
+    code?: number;
+    data?: T;
+    message?: string;
+  };
+  type LoginParams = {
+    userNumber?: string;
+    password?: string;
+    loginType?: number;
+  };
+  type RegisterParams = {
+    captcha: string;
+    confirm: string;
+    email: string;
+    idnumber: string;
+    password: string;
+    phoneNumber: string;
+    registerType: number;
+    userName: string;
+  };
   type CurrentUser = {
-    name?: string;
-    avatar?: string;
-    userid?: string;
-    email?: string;
-    signature?: string;
-    title?: string;
-    group?: string;
-    tags?: { key?: string; label?: string }[];
-    notifyCount?: number;
-    unreadCount?: number;
-    country?: string;
-    access?: string;
-    geographic?: {
-      province?: { label?: string; key?: string };
-      city?: { label?: string; key?: string };
-    };
-    address?: string;
-    phone?: string;
+    userName: string;
+    gender: string;
+    phoneNumber: string;
+    avatar: object;
+    department: string;
+    email: string;
+    roleList: string[];
+    userPermissionList: string[];
+    idnumber: string;
   };
 
   type LoginResult = {
@@ -59,13 +70,6 @@ declare namespace API {
   type FakeCaptcha = {
     code?: number;
     status?: string;
-  };
-
-  type LoginParams = {
-    username?: string;
-    password?: string;
-    autoLogin?: boolean;
-    type?: string;
   };
 
   type ErrorResponse = {

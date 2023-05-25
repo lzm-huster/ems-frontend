@@ -12,9 +12,9 @@ const Settings: LayoutSettings & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'Ant Design Pro',
+  title: '设备管理系统',
   pwa: false,
-  logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
+  logo: 'http://101.43.18.103:9001/mes-bucket/logo/%E8%AE%BE%E5%A4%87%E7%AE%A1%E7%90%86.png',
   iconfontUrl: '',
 };
 
