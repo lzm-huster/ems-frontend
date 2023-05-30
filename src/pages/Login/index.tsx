@@ -61,9 +61,8 @@ const Login: React.FC = () => {
       });
       if (res.code === 20000) {
         if (res.data) {
-          localStorage.setItem('token', res?.data as string);
+          localStorage.setItem('token', res.data);
         }
-
         const defaultLoginSuccessMessage = '登录成功！';
         message.success(defaultLoginSuccessMessage);
         await fetchUserInfo();

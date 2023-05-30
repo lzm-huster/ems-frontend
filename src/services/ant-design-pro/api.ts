@@ -6,7 +6,7 @@ import { request } from 'umi';
 /* todo 修改为get*/
 export async function currentUser(options?: { [key: string]: any }) {
   return request<API.BaseResponse<API.CurrentUser>>('/api/user/currentUser', {
-    method: 'POST',
+    method: 'GET',
     ...(options || {}),
   });
 }
@@ -21,7 +21,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 
 /** 登录接口 POST /api/user/login */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.BaseResponse<String>>('/api/user/login', {
+  return request<API.BaseResponse<string>>('/api/user/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

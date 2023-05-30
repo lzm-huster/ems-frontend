@@ -1,25 +1,23 @@
-import { FC, ReactNode, useCallback, useRef } from 'react';
-import React, { useState, useEffect } from 'react';
+import { register } from '@/services/ant-design-pro/api';
+import { LoginForm } from '@ant-design/pro-components';
 import {
-  Form,
   Button,
   Col,
+  Divider,
+  Form,
   Input,
+  message,
   Popover,
   Progress,
   Row,
   Select,
-  message,
   Tabs,
-  Divider,
 } from 'antd';
-import { LoginForm } from '@ant-design/pro-components';
-import type { Store } from 'antd/es/form/interface';
-import { Link, useRequest, history } from 'umi';
-import styles from './index.less';
 import { Footer } from 'antd/lib/layout/layout';
+import React, { FC, useEffect, useState } from 'react';
+import { Link } from 'umi';
 import defaultSettings from '../../../config/defaultSettings';
-import { register } from '@/services/ant-design-pro/api';
+import styles from './index.less';
 const FormItem = Form.Item;
 const { Option } = Select;
 const InputGroup = Input.Group;
@@ -56,6 +54,7 @@ const Register: FC = () => {
   const [popover, setPopover]: [boolean, any] = useState(false);
   const [type, setType] = useState('email');
   const [emailData, setEmailData] = useState('');
+  const emailSuffix = '@hust.edu.cn';
   const confirmDirty = false;
   let interval: number | undefined;
   const [form] = Form.useForm();
@@ -82,11 +81,12 @@ const Register: FC = () => {
   };
   const onFinish = async (values: API.RegisterParams) => {
     values.registerType = registerTypeReflect[type];
+    values.email = values.email + emailSuffix;
     const res = await register(values);
-    if (res.data === true) {
+    if (res.code === 20000 && res.data === true) {
       message.success('注册成功');
     } else {
-      message.error('注册失败');
+      message.error(res.message);
     }
     // console.log(values);
   };
@@ -184,7 +184,7 @@ const Register: FC = () => {
               <Tabs.TabPane key="mobile" tab={'手机号注册'} />
             </Tabs>
             {type === 'email' && (
-              <FormItem name="IDNumber">
+              <FormItem name="idnumber">
                 <Input
                   size="large"
                   placeholder={'请输入学号/工号'}
@@ -279,7 +279,7 @@ const Register: FC = () => {
                     suffix={
                       <>
                         <Divider type="vertical" style={{ height: 20 }} />
-                        <span>@hust.edu.cn</span>
+                        <span>{emailSuffix}</span>
                       </>
                     }
                     placeholder="请输入邮箱"
