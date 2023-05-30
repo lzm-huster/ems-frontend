@@ -49,4 +49,14 @@ declare namespace API {
     type?: string;
     message?: string;
   };
+
+  // type Device = {
+  //   deviceID?: number;
+  //   deviceModel: string;
+  //   deviceName: string;
+  //   deviceState: string;
+  //   deviceType: string;
+  //   purchaseDate: string;
+  //   userName: string;
+  // }
 }
