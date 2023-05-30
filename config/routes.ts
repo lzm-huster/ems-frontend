@@ -10,6 +10,20 @@ export default [
   },
   { path: '/home', name: '主页', icon: 'smile', component: './Home' },
   {
+    path: '/deviceManagement',
+    name: '设备管理',
+    icon: 'crown',
+    routes: [
+      {
+        path: '/deviceManagement/list',
+        name: '设备信息',
+        icon: 'smile',
+        component: './DeviceList',
+      },
+      { component: './404' },
+    ],
+  },
+  {
     path: '/admin',
     name: '管理页',
     icon: 'crown',
