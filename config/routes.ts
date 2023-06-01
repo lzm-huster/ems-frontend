@@ -32,6 +32,28 @@ export default [
     ],
   },
   {
+    path: '/personalCenter',
+    name: '个人中心',
+    icon: 'crown',
+    routes: [
+      {
+        path: '/personalCenter/personalInfo',
+        name: '个人信息',
+        // icon: 'smile',
+        component: './PersonalInfo',
+      },
+      // {
+      //   path: '/PersonalCenter/notification',
+      //   name: '系统通知',
+      //   // icon: 'smile',
+      //   component: './DeviceList',
+      // },
+      {
+        component: './404',
+      },
+    ],
+  },
+  {
     path: '/admin',
     name: '管理页',
     icon: 'crown',
