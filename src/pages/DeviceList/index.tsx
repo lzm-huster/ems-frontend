@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Input, Space, Button, Table } from 'antd';
+import { Input, Space, Button, Table, FormInstance, Form } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { PageContainerProps } from '@ant-design/pro-components';
 import { PageContainer } from '@ant-design/pro-components';
 import { getDeviceList } from '@/services/swagger/device';
+import { Link } from 'umi';
 
 interface Device {
   key: React.Key;
@@ -64,12 +64,15 @@ const columns: ColumnsType<Device> = [
 
 const { Search } = Input;
 
-const App: React.FC = () => {
+const DeviceList: React.FC = () => {
+  const formRef = React.useRef<FormInstance>(null);
+
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
   const [initDevice, setInitDevice] = useState([]);
-  const [searchDevice, setSerachDevice] = useState([]);
+  const [searchDevice, setSearchDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
+  const [searchValue, setSearchValue] = useState('');
 
   const initial = async () => {
     const res = await getDeviceList();
@@ -83,9 +86,9 @@ const App: React.FC = () => {
   }, []);
 
   const onSearch = (value: string) => {
-    setSerachDevice(
-      showDevice.filter((x) => {
-        return x['deviceName'] != value;
+    setSearchDevice(
+      showDevice.filter((item) => {
+        return item.deviceName == value;
       }),
     );
     setShowDevice(searchDevice);
@@ -115,23 +118,40 @@ const App: React.FC = () => {
     <PageContainer>
       <div>
         <Space style={{ marginBottom: 16 }}>
-          <Button type="primary">新增设备</Button>
+          <Button type="primary">
+            <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
+          </Button>
           <Button type="primary">信息统计</Button>
-          <Button type="primary" onClick={start} disabled={!hasSelected}>
+          <Button onClick={start} disabled={!hasSelected}>
             批量借用
           </Button>
-          <Button type="primary" onClick={start} disabled={!hasSelected}>
+          <Button danger onClick={start} disabled={!hasSelected}>
             批量删除
           </Button>
           <span style={{ marginLeft: 8 }}>
             {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
           </span>
-          <Search
-            placeholder="请输入设备编号或设备名称"
-            onSearch={onSearch}
-            allowClear
-            style={{ width: 300 }}
-          />
+
+          <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
+            <Form.Item name="search">
+              <Search
+                placeholder="请输入设备编号或设备名称"
+                onSearch={onSearch}
+                style={{ width: 300 }}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="text"
+                onClick={() => {
+                  setShowDevice(initDevice);
+                  formRef.current?.setFieldsValue({ search: '' });
+                }}
+              >
+                重置
+              </Button>
+            </Form.Item>
+          </Form>
         </Space>
         <Table rowSelection={rowSelection} columns={columns} dataSource={showDevice} />
       </div>
@@ -139,4 +159,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default DeviceList;
