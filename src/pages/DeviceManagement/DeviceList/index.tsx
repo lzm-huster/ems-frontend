@@ -72,7 +72,6 @@ const DeviceList: React.FC = () => {
   const [initDevice, setInitDevice] = useState([]);
   const [searchDevice, setSearchDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
-  const [searchValue, setSearchValue] = useState('');
 
   const initial = async () => {
     const res = await getDeviceList();
@@ -81,6 +80,7 @@ const DeviceList: React.FC = () => {
       setShowDevice(res.data);
     }
   };
+
   useEffect(() => {
     initial();
   }, []);
@@ -88,7 +88,7 @@ const DeviceList: React.FC = () => {
   const onSearch = (value: string) => {
     setSearchDevice(
       showDevice.filter((item) => {
-        return item.deviceName == value;
+        return item.deviceName == (value as string);
       }),
     );
     setShowDevice(searchDevice);
@@ -134,11 +134,7 @@ const DeviceList: React.FC = () => {
 
           <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
             <Form.Item name="search">
-              <Search
-                placeholder="请输入设备编号或设备名称"
-                onSearch={onSearch}
-                style={{ width: 300 }}
-              />
+              <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
             </Form.Item>
             <Form.Item>
               <Button

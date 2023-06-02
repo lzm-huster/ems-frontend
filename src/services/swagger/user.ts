@@ -112,3 +112,11 @@ export async function deleteUser(
     ...(options || {}),
   });
 }
+
+//获取用户信息
+export async function getUserInfo(options?: { [key: string]: any }) {
+  return request<any>('/api/user/info', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
