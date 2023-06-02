@@ -1,12 +1,12 @@
-import { getDeviceList } from '@/services/swagger/device';
+import { Card, Avatar,Divider, Table, Space,Form, Button, Row, Col} from 'antd';
 import { EditOutlined, MailOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
+import './index.less';
 import { PageContainer } from '@ant-design/pro-components';
-import { Avatar, Button, Card, Col, Divider, Form, Row, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/lib/transfer/search';
+import { getDeviceList } from '@/services/swagger/device';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import './index.less';
 
 interface Device {
   key: React.Key;
@@ -65,31 +65,31 @@ const columns: ColumnsType<Device> = [
   },
 ];
 
-// const rowSelection = {
-//   onChange: (selectedRowKeys: React.Key[], selectedRows: ColumnsType[]) => {
-//     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-//   },
-// };
+const rowSelection = {
+  onChange: (selectedRowKeys: React.Key[], selectedRows: ColumnsType[]) => {
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+  },
+};
 
 const PersonalInfo: React.FC = () => {
   const [form] = Form.useForm();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [initDevice, setInitDevice] = useState([]);
-  //const [searchDevice, setSerachDevice] = useState([]);
+  const [searchDevice, setSerachDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
 
   const history = useHistory();
   const handleClick = () => {
-    history.push('/edit'); // 将路由定向到/my-page
-  };
+    history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
+  }
 
   const initial = async () => {
-    const res = await getDeviceList();
-    if (res.code === 20000) {
-      setInitDevice(res.data);
-      setShowDevice(res.data);
-    }
-  };
+  const res = await getDeviceList();
+  if (res.code === 20000) {
+    setInitDevice(res.data);
+    setShowDevice(res.data);
+  }
+  };  
   useEffect(() => {
     initial();
   }, []);
@@ -105,26 +105,27 @@ const PersonalInfo: React.FC = () => {
   };
   const hasSelected = selectedRowKeys.length > 0;
 
-  return (
+  return(
     <PageContainer>
-      <Form form={form} layout="vertical" autoComplete="off">
+      <Form
+        form={form}
+        layout="vertical"
+        autoComplete="off"
+      >
         <Form.Item>
           <Card>
             <div className="content">
               <div className="avatar-container">
-                <Avatar className="avatar" size={64} icon={<UserOutlined />} />
+              <Avatar className="avatar" size={64} icon={<UserOutlined />} />
               </div>
-              <div className="nickname">昵称</div>
-              <div className="nickname">
-                <SolutionOutlined /> 教职工 <Divider type="vertical" />
-                <MailOutlined /> 173646139@qq.com
-              </div>
+                <div className="nickname">昵称</div>
+                <div className="nickname"><SolutionOutlined /> 教职工 <Divider type="vertical" /><MailOutlined /> 173646139@qq.com</div>
             </div>
-            <EditOutlined onClick={handleClick} className="edit-icon" />
-          </Card>
+          <EditOutlined onClick={handleClick} className="edit-icon" />
+          </Card> 
         </Form.Item>
         <Form.Item>
-          <Row>
+            <Row>
             <Col span={2}>
               <Button type="primary">新增设备</Button>
             </Col>
@@ -132,16 +133,25 @@ const PersonalInfo: React.FC = () => {
               <Button type="primary">批量删除设备</Button>
             </Col>
             <Col span={8}>
-              <Search placeholder="请输入你需要搜索的记录编号或设备名称" />
+              <Search 
+                placeholder="请输入你需要搜索的记录编号或设备名称"
+              />  
             </Col>
-          </Row>
+            </Row>
         </Form.Item>
         <Form.Item>
-          <Table rowSelection={rowSelection} columns={columns} dataSource={showDevice} />
+          <Table
+            rowSelection={
+              rowSelection
+            }
+            columns={columns}
+            dataSource={showDevice}         
+          />
         </Form.Item>
-      </Form>
+      </Form>   
     </PageContainer>
   );
-};
+}
 
 export default PersonalInfo;
+
