@@ -262,6 +262,8 @@ const UserManage: React.FC = () => {
         visible={addModalVisible}
         onVisibleChange={setAddVisible}
         onFinish={async (value) => {
+          console.log(value);
+
           // const submitterList = value.submitterIdList;
           // const idList = submitterList.map((submitter: { value: string; label: string }) => {
           //   const tempValue: string = submitter.value;

@@ -45,6 +45,16 @@ declare namespace API {
     roleName: string;
     userName: string;
   };
+  type AddUserReq = {
+    roleId: number;
+    department: string;
+    email: string;
+    gender: string;
+    idnumber: string;
+    password: string;
+    phoneNumber: string;
+    userName: string;
+  };
 
   // type ResponseData = {
   //   avatar: string;

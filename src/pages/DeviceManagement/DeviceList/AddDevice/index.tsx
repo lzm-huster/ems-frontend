@@ -1,4 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { getUserInfo } from '@/services/swagger/user';
+import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
   Col,
@@ -6,17 +7,16 @@ import {
   Form,
   Input,
   InputRef,
+  message,
   Popconfirm,
   Row,
   Space,
   Table,
-  message,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { PageContainer } from '@ant-design/pro-components';
-import { getUserInfo } from '@/services/swagger/user';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import './index.less';
 
 dayjs.extend(customParseFormat);
@@ -238,13 +238,19 @@ const AddDevice: React.FC = () => {
     },
     {
       title: '操作',
-      dataIndex: 'operation',
-      render: (_, record: { key: React.Key }) =>
-        dataSource.length >= 1 ? (
-          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-            <a>Delete</a>
-          </Popconfirm>
-        ) : null,
+      valueType: 'operation',
+      key: 'option',
+      render: (text, record: { key: React.Key }, index) => {
+        console.log(record);
+        console.log(index);
+        return [
+          dataSource.length >= 1 ? (
+            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
+              <a>Delete</a>
+            </Popconfirm>
+          ) : null,
+        ];
+      },
     },
   ];
 
