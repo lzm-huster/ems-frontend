@@ -1,12 +1,12 @@
-import { Card, Avatar, Divider, Table, Space, Form, Button, Row, Col } from 'antd';
+import { getDeviceList } from '@/services/swagger/device';
 import { EditOutlined, MailOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
-import './index.less';
 import { PageContainer } from '@ant-design/pro-components';
+import { Avatar, Button, Card, Col, Divider, Form, Row, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/lib/transfer/search';
-import { getDeviceList } from '@/services/swagger/device';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
+import './index.less';
 
 interface Device {
   key: React.Key;

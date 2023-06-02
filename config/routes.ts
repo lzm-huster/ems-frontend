@@ -39,7 +39,7 @@ export default [
       {
         path: '/personalCenter/personalInfo',
         name: '个人信息',
-        // icon: 'smile',
+        icon: 'smile',
         component: './PersonalInfo',
       },
       // {
@@ -50,6 +50,19 @@ export default [
       // },
       {
         component: './404',
+      },
+    ],
+  },
+  {
+    path: '/manage',
+    name: '系统管理',
+    icon: 'Appstore',
+    routes: [
+      {
+        path: '/manage/userManage',
+        name: '用户管理',
+        icon: 'smile',
+        component: './SystemManage/UserManage',
       },
     ],
   },
