@@ -2,6 +2,22 @@
 /* eslint-disable */
 import { request } from 'umi';
 
+/**获取角色列表 */
+export async function roleList(options?: { [key: string]: any }) {
+  return request<API.BaseResponse<API.RoleSimple[]>>('/api/role/list', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/**获取用户列表 */
+export async function userList(options?: { [key: string]: any }) {
+  return request<API.BaseResponse<API.UserInfo[]>>('/api/user/list', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 /** 获取当前的用户 GET /api/currentUser */
 /* todo 修改为get*/
 export async function currentUser(options?: { [key: string]: any }) {

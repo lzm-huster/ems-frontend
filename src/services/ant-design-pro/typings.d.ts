@@ -25,6 +25,7 @@ declare namespace API {
   type CurrentUser = {
     userName: string;
     gender: string;
+
     phoneNumber: string;
     avatar: object;
     department: string;
@@ -32,6 +33,33 @@ declare namespace API {
     roleList: string[];
     userPermissionList: string[];
     idnumber: string;
+  };
+  type UserInfo = {
+    avatar: string;
+    createTime: Date;
+    department: string;
+    email: string;
+    gender: string;
+    idnumber: string;
+    phoneNumber: string;
+    roleName: string;
+    userName: string;
+  };
+
+  // type ResponseData = {
+  //   avatar: string;
+  //   department: string;
+  //   email: string;
+  //   gender: string;
+  //   idnumber: string;
+  //   password: string;
+  //   phoneNumber: string;
+  //   userName: string;
+  // };
+  type RoleSimple = {
+    roleDescription: string;
+    roleID: number;
+    roleName: string;
   };
 
   type LoginResult = {
