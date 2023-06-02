@@ -36,6 +36,17 @@ const columns: ColumnsType<Device> = [
   {
     title: '设备状态',
     dataIndex: 'deviceState',
+    filters: [
+      {
+        text: '正常',
+        value: 'normal',
+      },
+      {
+        text: '出借',
+        value: 'borrowed',
+      },
+    ],
+    onFilter: (value: string, record) => record.deviceType.indexOf(value) === 0,
   },
   {
     title: '负责人',
@@ -44,6 +55,13 @@ const columns: ColumnsType<Device> = [
   {
     title: '购入时间',
     dataIndex: 'purchaseDate',
+    sorter: (a, b) => {
+      if (a.purchaseDate.getTime() === null || b.purchaseDate.getTime() === null) {
+        return 0;
+      } else {
+        return a.purchaseDate.getTime() - b.purchaseDate.getTime();
+      }
+    },
   },
   {
     title: '操作',
@@ -88,7 +106,7 @@ const DeviceList: React.FC = () => {
   const onSearch = (value: string) => {
     setSearchDevice(
       showDevice.filter((item) => {
-        return item.deviceName == (value as string);
+        return item['deviceName'] == (value as string);
       }),
     );
     setShowDevice(searchDevice);

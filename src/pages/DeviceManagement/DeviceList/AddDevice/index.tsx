@@ -2,151 +2,41 @@ import { getUserInfo } from '@/services/swagger/user';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
+  Card,
   Col,
   DatePicker,
+  Divider,
   Form,
   Input,
-  InputRef,
+  InputNumber,
   message,
-  Popconfirm,
+  Radio,
   Row,
+  Select,
   Space,
-  Table,
+  Upload,
+  UploadProps,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './index.less';
+import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 
+//日期
 dayjs.extend(customParseFormat);
-
-const EditableContext = React.createContext<FormInstance<any> | null>(null);
-
-interface Item {
-  key: string;
-  deviceName: string;
-  deviceType: string;
-  deviceModel: string;
-  unitPrice: number;
-  stockQuantity: number;
-  assetNumber: string;
-  isPublic: boolean;
-  borrowRate: number;
-  deviceImage: string;
-}
-
-interface EditableRowProps {
-  index: number;
-}
-
-const EditableRow: React.FC<EditableRowProps> = ({ index, ...props }) => {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
-};
-
-interface EditableCellProps {
-  title: React.ReactNode;
-  editable: boolean;
-  children: React.ReactNode;
-  dataIndex: keyof Item;
-  record: Item;
-  handleSave: (record: Item) => void;
-}
-
-const EditableCell: React.FC<EditableCellProps> = ({
-  title,
-  editable,
-  children,
-  dataIndex,
-  record,
-  handleSave,
-  ...restProps
-}) => {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef<InputRef>(null);
-  const form = useContext(EditableContext)!;
-
-  useEffect(() => {
-    if (editing) {
-      inputRef.current!.focus();
-    }
-  }, [editing]);
-
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({ [dataIndex]: record[dataIndex] });
-  };
-
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
-
-      toggleEdit();
-      handleSave({ ...record, ...values });
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
-  };
-
-  let childNode = children;
-
-  if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{ margin: 0 }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      <div className="editable-cell-value-wrap" style={{ paddingRight: 24 }} onClick={toggleEdit}>
-        {children}
-      </div>
-    );
-  }
-
-  return <td {...restProps}>{childNode}</td>;
-};
-
-type EditableTableProps = Parameters<typeof Table>[0];
-
-interface DataType {
-  key: React.Key;
-  deviceName: string;
-  deviceType: string;
-  deviceModel: string;
-  unitPrice: number;
-  stockQuantity: number;
-  assetNumber: string;
-  isPublic: boolean;
-  borrowRate: number;
-  deviceImage: string;
-}
-
-type ColumnTypes = Exclude<EditableTableProps['columns'], undefined>;
 
 const dateFormat = 'YYYY/MM/DD';
 
+//样式
 const layout = {
   labelCol: { span: 4 },
   wrapperCol: { span: 20 },
 };
 
 const tailLayout = {
-  wrapperCol: { offset: 8, span: 16 },
+  wrapperCol: { offset: 0, span: 16 },
 };
 
 const formatDate = (time: any) => {
@@ -161,8 +51,25 @@ const formatDate = (time: any) => {
 
 const now = formatDate(new Date().getTime());
 
+//上传照片
+const props: UploadProps = {
+  beforeUpload: (file) => {
+    const isPNG = file.type === 'image/png';
+    if (!isPNG) {
+      message.error(`${file.name} is not a png file`);
+    }
+    return isPNG || Upload.LIST_IGNORE;
+  },
+  onChange: (info) => {
+    console.log(info.fileList);
+  },
+};
+
+//main
 const AddDevice: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
+
+  const [count, setCount] = useState(0);
 
   const initial = async () => {
     const res = await getUserInfo();
@@ -177,135 +84,12 @@ const AddDevice: React.FC = () => {
 
   const onFinish = (values: any) => {
     message.success('提交成功');
+    console.log(values);
   };
 
   const onReset = () => {
     formRef.current?.resetFields();
   };
-
-  //可编辑表格
-
-  const [dataSource, setDataSource] = useState<DataType[]>([
-    {
-      key: '0',
-      deviceName: 'Edward King 0',
-      deviceType: '32',
-      deviceModel: 'London, Park Lane no. 0',
-      unitPrice: 1,
-      stockQuantity: 1,
-      assetNumber: 'string',
-      isPublic: true,
-      borrowRate: 1,
-      deviceImage: 'image',
-    },
-    {
-      key: '1',
-      deviceModel: 'Edward King 1',
-      deviceName: '32',
-      deviceType: 'London, Park Lane no. 1',
-      unitPrice: 1,
-      stockQuantity: 1,
-      assetNumber: 'string',
-      isPublic: true,
-      borrowRate: 1,
-      deviceImage: 'image',
-    },
-  ]);
-
-  const [count, setCount] = useState(2);
-
-  //删除行
-  const handleDelete = (key: React.Key) => {
-    const newData = dataSource.filter((item) => item.key !== key);
-    setDataSource(newData);
-  };
-
-  //表格列
-  const defaultColumns: (ColumnTypes[number] & { editable?: boolean; dataIndex: string })[] = [
-    {
-      title: '设备编号',
-      dataIndex: 'deviceNum',
-      width: '30%',
-      editable: true,
-    },
-    {
-      title: '设备名称',
-      dataIndex: 'deviceName',
-    },
-    {
-      title: '设备类型',
-      dataIndex: 'deviceType',
-    },
-    {
-      title: '操作',
-      valueType: 'operation',
-      key: 'option',
-      render: (text, record: { key: React.Key }, index) => {
-        console.log(record);
-        console.log(index);
-        return [
-          dataSource.length >= 1 ? (
-            <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-              <a>Delete</a>
-            </Popconfirm>
-          ) : null,
-        ];
-      },
-    },
-  ];
-
-  //增加行
-  const handleAdd = () => {
-    const newData: DataType = {
-      key: count,
-      deviceName: `Edward King ${count}`,
-      deviceType: '32',
-      deviceModel: `London, Park Lane no. ${count}`,
-      unitPrice: 1,
-      stockQuantity: 1,
-      assetNumber: 'string',
-      isPublic: true,
-      borrowRate: 1,
-      deviceImage: 'image',
-    };
-    setDataSource([...dataSource, newData]);
-    setCount(count + 1);
-  };
-
-  //保存修改值
-  const handleSave = (row: DataType) => {
-    const newData = [...dataSource];
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, {
-      ...item,
-      ...row,
-    });
-    setDataSource(newData);
-  };
-
-  const components = {
-    body: {
-      row: EditableRow,
-      cell: EditableCell,
-    },
-  };
-
-  const columns = defaultColumns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record: DataType) => ({
-        record,
-        editable: col.editable,
-        dataIndex: col.dataIndex,
-        title: col.title,
-        handleSave,
-      }),
-    };
-  });
 
   return (
     <PageContainer>
@@ -316,6 +100,9 @@ const AddDevice: React.FC = () => {
         onFinish={onFinish}
         style={{ maxWidth: 1400 }}
       >
+        <Divider orientation="left" orientationMargin={5}>
+          基本信息
+        </Divider>
         <Row gutter={16}>
           <Col span={8}>
             <Form.Item name="userName" label="负责人" rules={[{ required: true }]}>
@@ -328,18 +115,170 @@ const AddDevice: React.FC = () => {
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item>
-          <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-            Add a row
-          </Button>
-          <Table
-            components={components}
-            rowClassName={() => 'editable-row'}
-            bordered
-            dataSource={dataSource}
-            columns={columns as ColumnTypes}
-          />
-        </Form.Item>
+        <Divider orientation="left" orientationMargin={5}>
+          设备详情
+        </Divider>
+        <Form.List name="users">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Space
+                  key={key}
+                  size={'small'}
+                  style={{ display: 'flex', marginBottom: 8 }}
+                  align="baseline"
+                >
+                  <Card
+                    style={{ width: 1400 }}
+                    title={[<MinusCircleOutlined onClick={() => remove(name)} />, `设备${count}`]}
+                  >
+                    <Row gutter={16}>
+                      <Col span={8}>
+                        <Form.Item label="设备编号" labelCol={{ offset: 0, span: 4 }}>
+                          <Input placeholder="提交后自动生成" disabled />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'deviceName']}
+                          rules={[{ required: true, message: '设备名称未填写' }]}
+                          label="设备名称"
+                          labelCol={{ span: 4 }}
+                        >
+                          <Input placeholder="设备名称" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'deviceType']}
+                          rules={[{ required: true, message: '设备类型未填写' }]}
+                          label="设备类型"
+                          labelCol={{ span: 4 }}
+                        >
+                          <Select
+                            placeholder="设备类型"
+                            options={[
+                              { value: 'jack', label: 'Jack' },
+                              { value: 'lucy', label: 'Lucy' },
+                              { value: 'Yiminghe', label: 'yiminghe' },
+                              { value: 'disabled', label: 'Disabled', disabled: true },
+                            ]}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Row gutter={16}>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'deviceModel']}
+                          rules={[{ required: true, message: '设备参数未填写！' }]}
+                          label="设备参数"
+                          labelCol={{ span: 4 }}
+                        >
+                          <Input placeholder="设备参数" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={4}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'unitPrice']}
+                          rules={[{ required: true, message: '设备单价未填写！' }]}
+                          label="设备单价"
+                          labelCol={{ span: 9 }}
+                        >
+                          <InputNumber<string>
+                            min="0"
+                            addonAfter={'￥'}
+                            step="0.01"
+                            placeholder="设备单价"
+                            stringMode
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col span={4}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'stockQuantity']}
+                          rules={[{ required: true, message: '设备数量未填写！' }]}
+                          label="设备数量"
+                          labelCol={{ span: 11 }}
+                        >
+                          <InputNumber min={1} placeholder="设备数量" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'assetNum']}
+                          rules={[{ required: true, message: '资产编号未填写！' }]}
+                          label="资产编号"
+                          labelCol={{ span: 4 }}
+                        >
+                          <Input placeholder="资产编号" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Row gutter={16}>
+                      <Col span={4}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'isPublic']}
+                          rules={[{ required: true, message: '是否公用未选择！' }]}
+                          label="是否公用"
+                          labelCol={{ span: 9 }}
+                        >
+                          <Radio.Group defaultValue="true">
+                            <Radio.Button value="true">公用</Radio.Button>
+                            <Radio.Button value="false">私人</Radio.Button>
+                          </Radio.Group>
+                        </Form.Item>
+                      </Col>
+                      <Col span={4}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'borrowRate']}
+                          rules={[{ required: true, message: '借用费率未填写！' }]}
+                          label="借用费率"
+                          labelCol={{ span: 9 }}
+                        >
+                          <InputNumber placeholder="借用费率" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={4}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'deviceImage']}
+                          rules={[{ required: true, message: '设备图片未上传！' }]}
+                          label="设备图片"
+                          labelCol={{ span: 9 }}
+                        >
+                          <Upload {...props}>
+                            <Button icon={<UploadOutlined />}>上传PNG</Button>
+                          </Upload>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Card>
+                </Space>
+              ))}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => {
+                    add();
+                    setCount(count + 1);
+                  }}
+                  icon={<PlusOutlined />}
+                >
+                  添加设备
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
         <Form.Item {...tailLayout}>
           <Space>
             <Button type="primary" htmlType="submit">
