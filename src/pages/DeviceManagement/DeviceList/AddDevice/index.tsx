@@ -214,11 +214,13 @@ const AddDevice: React.FC = () => {
 
   const [count, setCount] = useState(2);
 
+  //删除行
   const handleDelete = (key: React.Key) => {
     const newData = dataSource.filter((item) => item.key !== key);
     setDataSource(newData);
   };
 
+  //表格列
   const defaultColumns: (ColumnTypes[number] & { editable?: boolean; dataIndex: string })[] = [
     {
       title: '设备编号',
@@ -235,17 +237,18 @@ const AddDevice: React.FC = () => {
       dataIndex: 'deviceType',
     },
     {
-      title: 'operation',
+      title: '操作',
       dataIndex: 'operation',
-      // render: (_, record:{key:React.Key}) =>
-      //   dataSource.length >= 1 ? (
-      //     <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
-      //       <a>Delete</a>
-      //     </Popconfirm>
-      //   ) : null,
+      render: (_, record: { key: React.Key }) =>
+        dataSource.length >= 1 ? (
+          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.key)}>
+            <a>Delete</a>
+          </Popconfirm>
+        ) : null,
     },
   ];
 
+  //增加行
   const handleAdd = () => {
     const newData: DataType = {
       key: count,
@@ -263,6 +266,7 @@ const AddDevice: React.FC = () => {
     setCount(count + 1);
   };
 
+  //保存修改值
   const handleSave = (row: DataType) => {
     const newData = [...dataSource];
     const index = newData.findIndex((item) => row.key === item.key);
