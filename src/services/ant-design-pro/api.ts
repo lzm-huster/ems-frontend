@@ -18,6 +18,27 @@ export async function userList(options?: { [key: string]: any }) {
   });
 }
 
+/**更新用户头像 */
+export async function updateAvatar(body: FormData, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<string>>('/api/user/updateAvatar', {
+    method: 'POST',
+    data: body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requestType: 'form',
+    ...(options || {}),
+  });
+}
+/**新增用户列表 */
+export async function addUser(body: API.AddUserReq, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<API.UserInfo>>('/api/user/add', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 获取当前的用户 GET /api/currentUser */
 /* todo 修改为get*/
 export async function currentUser(options?: { [key: string]: any }) {

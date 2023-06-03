@@ -43,6 +43,7 @@ declare namespace API {
     idnumber: string;
     phoneNumber: string;
     roleName: string;
+    roleDescription: string;
     userName: string;
   };
   type AddUserReq = {
