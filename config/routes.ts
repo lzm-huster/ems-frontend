@@ -28,7 +28,32 @@ export default [
         parentKeys: ['/deviceManagement/list'],
         hideInMenu: true,
       },
+      {
+        path: '/deviceManagement/check',
+        name: '设备核查',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceCheck',
+      },
       { component: './404' },
+    ],
+  },
+  {
+    path: '/manage',
+    name: '系统管理',
+    icon: 'Appstore',
+    routes: [
+      {
+        path: '/manage/userManage',
+        name: '用户管理',
+        icon: 'smile',
+        component: './SystemManage/UserManage',
+      },
+      {
+        path: '/manage/system',
+        name: '系统说明',
+        icon: 'smile',
+        component: './SystemManage/SystemDesc',
+      },
     ],
   },
   {
@@ -53,19 +78,7 @@ export default [
       },
     ],
   },
-  {
-    path: '/manage',
-    name: '系统管理',
-    icon: 'Appstore',
-    routes: [
-      {
-        path: '/manage/userManage',
-        name: '用户管理',
-        icon: 'smile',
-        component: './SystemManage/UserManage',
-      },
-    ],
-  },
+
   {
     path: '/admin',
     name: '管理页',
