@@ -1,47 +1,52 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { getMaintenanceList } from '@/services/swagger/maintenance';
+import { getPurchaseApplySheetList } from '@/services/swagger/purchaseApp';
 import { ColumnsType } from 'antd/lib/table';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
-interface MaintenanceRecord {
+interface RepairRecord {
   key: React.Key;
-  deviceID: number;
-  deviceName: string;
-  maintenanceContent: string;
-  maintenanceID: 0;
-  maintenanceTime: Date;
+  approveTutorName: string;
+  deviceList: string;
+  purchaseApplyDate: Date;
+  purchaseApplySheetID: number;
+  purchaseApplyState: string;
+  userName: string;
 }
 
-const columns: ColumnsType<MaintenanceRecord> = [
+const columns: ColumnsType<RepairRecord> = [
   {
-    title: '保养编号',
-    dataIndex: 'maintenanceID',
+    title: '采购申请编号',
+    dataIndex: 'purchaseApplySheetID',
   },
   {
-    title: '设备编号',
-    dataIndex: 'deviceID',
+    title: '设备列表',
+    dataIndex: 'deviceList',
   },
   {
-    title: '设备名称',
-    dataIndex: 'deviceName',
+    title: '申请人',
+    dataIndex: 'userName',
   },
   {
-    title: '保养时间',
-    dataIndex: 'maintenanceTime',
+    title: '责任导师',
+    dataIndex: 'approveTutorName',
+  },
+  {
+    title: '申请时间',
+    dataIndex: 'purchaseApplyDate',
     sorter: (a, b) => {
-      if (a.maintenanceTime.getTime() === null || b.maintenanceTime.getTime() === null) {
+      if (a.purchaseApplyDate.getTime() === null || b.purchaseApplyDate.getTime() === null) {
         return 0;
       } else {
-        return a.maintenanceTime.getTime() - b.maintenanceTime.getTime();
+        return a.purchaseApplyDate.getTime() - b.purchaseApplyDate.getTime();
       }
     },
   },
   {
-    title: '保养内容',
-    dataIndex: 'maintenanceContent',
+    title: '申请状态',
+    dataIndex: 'purchaseApplyState',
   },
   {
     title: '操作',
@@ -58,31 +63,31 @@ const columns: ColumnsType<MaintenanceRecord> = [
 
 const { Search } = Input;
 
-const Maintenance: React.FC = () => {
+const PurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
-  const [initMaintenance, setInitMaintenance] = useState([]);
-  const [showMaintenance, setShowMaintenance] = useState([]);
+  const [initPurchaseApply, setInitPurchaseApply] = useState([]);
+  const [showPurchaseApply, setShowPurchaseApply] = useState([]);
 
   const initial = async () => {
-    const res = await getMaintenanceList();
-
+    const res = await getPurchaseApplySheetList();
     if (res.code === 20000) {
       for (let i = 0; i < res.data.length; i++) {
         res.data[i].key = i;
       }
-      setInitMaintenance(res.data);
-      setShowMaintenance(res.data);
+      setInitPurchaseApply(res.data);
+      setShowPurchaseApply(res.data);
     }
   };
+
   useEffect(() => {
     initial();
   }, []);
 
   const onSearch = (value: string) => {
-    setShowMaintenance(
-      showMaintenance.filter((item) => {
+    setShowPurchaseApply(
+      showPurchaseApply.filter((item) => {
         return item['deviceName'] == (value as string);
       }),
     );
@@ -111,35 +116,20 @@ const Maintenance: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
-        <Col span={12}>
-          <Card bordered={false}>
-            <Statistic
-              title="已保养设备"
-              value={5}
-              precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-              suffix="台"
-            />
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card bordered={false}>
-            <Statistic
-              title="保养中设备"
-              value={12}
-              precision={0}
-              valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
-              suffix="台"
-            />
-          </Card>
-        </Col>
         <Col span={24}>
-          <GeneralTable rowSelection={rowSelection} datasource={showMaintenance} columns={columns}>
+          <GeneralTable
+            rowSelection={rowSelection}
+            datasource={showPurchaseApply}
+            columns={columns}
+          >
             <Button type="primary">
-              <Link to={'/deviceManagement/list/addDevice'}>新增保养记录</Link>
+              <Link to={'/deviceManagement/repair/addRecord'}>新增采购申请</Link>
+            </Button>
+            <Button onClick={start} disabled={!hasSelected}>
+              设备采购入库
             </Button>
             <Button danger onClick={start} disabled={!hasSelected}>
-              批量删除
+              批量撤销申请
             </Button>
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
@@ -152,7 +142,7 @@ const Maintenance: React.FC = () => {
                 <Button
                   type="text"
                   onClick={() => {
-                    setShowMaintenance(initMaintenance);
+                    setShowPurchaseApply(initPurchaseApply);
                     formRef.current?.setFieldsValue({ search: '' });
                   }}
                 >
@@ -166,4 +156,4 @@ const Maintenance: React.FC = () => {
     </PageContainer>
   );
 };
-export default Maintenance;
+export default PurchaseApp;

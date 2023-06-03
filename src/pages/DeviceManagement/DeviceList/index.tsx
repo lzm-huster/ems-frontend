@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Input, Space, Button, Table, FormInstance, Form } from 'antd';
+import { Input, Space, Button, FormInstance, Form } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { PageContainer } from '@ant-design/pro-components';
 import { getDeviceList } from '@/services/swagger/device';
@@ -100,6 +100,9 @@ const DeviceList: React.FC = () => {
   const initial = async () => {
     const res = await getDeviceList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+      }
       setInitDevice(res.data);
       setShowDevice(res.data);
     }

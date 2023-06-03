@@ -8,10 +8,9 @@ import {
   ProFormTextArea,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Form, Modal } from 'antd';
+import { Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useState } from 'react';
-const Item = Form.Item;
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -39,70 +38,66 @@ const AddCheck: React.FC = () => {
   const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) =>
     setFileList(newFileList);
 
-  const uploadButton = (
-    <div>
-      <PlusOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </div>
-  );
   return (
     <PageContainer>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <ProForm style={{ width: 400 }}>
-          <ProFormSelect label={'设备编号'} name={'deviceId'} required />
-          <ProFormText
-            label={'设备名称'}
-            name={'deviceName'}
-            disabled={true}
-            placeholder={'根据设备编号自动填写'}
-            required
-          />
-          <ProFormText
-            label={'设备负责人'}
-            name={'responsibleUser'}
-            disabled={true}
-            placeholder={'根据设备编号自动填写'}
-            required
-          />
-
-          <ProFormSelect label={'设备状态'} name={'deviceState'} required />
-          <ProFormDateTimePicker
-            width={300}
-            name="date"
-            fieldProps={{
-              format: 'yyyy-MM-DD HH:mm:ss',
-            }}
-            label="核查时间"
-            required
-          />
-
-          <ProFormTextArea
-            name="remark"
-            label="备注"
-            placeholder="核查详细说明"
-            // fieldProps={inputTextAreaProps}
-          />
-          <>
-            <ProFormUploadButton
-              name="upload"
-              label="核查图片"
-              max={5}
-              fieldProps={{
-                name: 'file',
-                listType: 'picture-card',
-                fileList: fileList,
-                onPreview: handlePreview,
-                onChange: handleChange,
-                multiple: true,
-                maxCount: 5,
-              }}
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <ProForm style={{ width: 600 }}>
+            <ProFormSelect label={'设备编号'} name={'deviceId'} required />
+            <ProFormText
+              label={'设备名称'}
+              name={'deviceName'}
+              disabled={true}
+              placeholder={'根据设备编号自动填写'}
+              required
             />
-            <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={handleCancel}>
-              <img alt="example" style={{ width: '100%' }} src={previewImage} />
-            </Modal>
-          </>
-        </ProForm>
-      </div>
+            <ProFormText
+              label={'设备负责人'}
+              name={'responsibleUser'}
+              disabled={true}
+              placeholder={'根据设备编号自动填写'}
+              required
+            />
+
+            <ProFormSelect label={'设备状态'} name={'deviceState'} required />
+            <ProFormDateTimePicker
+              width={300}
+              name="date"
+              fieldProps={{
+                format: 'yyyy-MM-DD HH:mm:ss',
+              }}
+              label="核查时间"
+              required
+            />
+
+            <ProFormTextArea
+              name="remark"
+              label="备注"
+              placeholder="核查详细说明"
+              // fieldProps={inputTextAreaProps}
+            />
+            <>
+              <ProFormUploadButton
+                name="upload"
+                label="核查图片"
+                max={5}
+                fieldProps={{
+                  name: 'file',
+                  listType: 'picture-card',
+                  fileList: fileList,
+                  onPreview: handlePreview,
+                  onChange: handleChange,
+                  multiple: true,
+                  maxCount: 5,
+                }}
+              />
+              <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={handleCancel}>
+                <img alt="example" style={{ width: '100%' }} src={previewImage} />
+              </Modal>
+            </>
+          </ProForm>
+        </div>
+      </Card>
     </PageContainer>
   );
 };

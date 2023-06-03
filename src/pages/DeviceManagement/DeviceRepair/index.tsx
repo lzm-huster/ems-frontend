@@ -73,6 +73,9 @@ const Repair: React.FC = () => {
   const initial = async () => {
     const res = await getRepairList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+      }
       setInitRepair(res.data);
       setShowRepair(res.data);
     }
@@ -137,7 +140,7 @@ const Repair: React.FC = () => {
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showRepair} columns={columns}>
             <Button type="primary">
-              <Link to={'/deviceManagement/list/addDevice'}>新增维修记录</Link>
+              <Link to={'/deviceManagement/repair/addRecord'}>新增维修记录</Link>
             </Button>
             <Button danger onClick={start} disabled={!hasSelected}>
               批量删除

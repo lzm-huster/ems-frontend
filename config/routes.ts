@@ -29,6 +29,18 @@ export default [
         hideInMenu: true,
       },
       {
+        path: '/deviceManagement/purchaseApply',
+        name: '采购申请',
+        icon: 'smile',
+        component: './DeviceManagement/PurchaseApplication',
+      },
+      {
+        path: '/deviceManagement/borrow',
+        name: '设备借用',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceBorrow',
+      },
+      {
         path: '/deviceManagement/repair',
         name: '设备维修',
         icon: 'smile',

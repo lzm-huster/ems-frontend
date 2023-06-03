@@ -5,17 +5,21 @@ import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
 const DeviceScrap: React.FC = () => {
-  const [initData, setInitData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
+
+  const hasSelected = selectedRowKeys.length > 0;
+
   const columns = [
     {
       title: '序号',
@@ -85,7 +89,7 @@ const DeviceScrap: React.FC = () => {
   return (
     <PageContainer>
       <div style={{ marginBottom: 10 }}>
-        <Row gutter={10}>
+        <Row gutter={[16, 24]}>
           <Col span={12}>
             <Card bordered={false}>
               <Statistic
@@ -108,17 +112,18 @@ const DeviceScrap: React.FC = () => {
               />
             </Card>
           </Col>
+          <Col>
+            <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
+              <Button type="primary">
+                <Link to={'/deviceManagement/scrap/add'}>新增报废记录</Link>
+              </Button>
+              <Button danger disabled={!hasSelected}>
+                批量删除记录
+              </Button>
+            </GeneralTable>
+          </Col>
         </Row>
       </div>
-      <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
-        <Button type="primary">
-          <Link to={'/deviceManagement/scrap/add'}>新增报废记录</Link>
-        </Button>
-        <Button danger>
-          {/* <Button danger onClick={start} disabled={!hasSelected}> */}
-          批量报废记录
-        </Button>
-      </GeneralTable>
     </PageContainer>
   );
 };
