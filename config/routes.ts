@@ -29,6 +29,12 @@ export default [
         hideInMenu: true,
       },
       {
+        path: '/deviceManagement/repair',
+        name: '设备维修',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceRepair',
+      },
+      {
         path: '/deviceManagement/check',
         name: '设备核查',
         icon: 'smile',
