@@ -39,14 +39,20 @@ const columns: ColumnsType<Device> = [
     filters: [
       {
         text: '正常',
-        value: 'normal',
+        value: '正常',
       },
       {
         text: '出借',
-        value: 'borrowed',
+        value: '出借',
+      },
+      {
+        text: '已报废',
+        value: '已报废',
       },
     ],
-    onFilter: (value: string, record) => record.deviceType.indexOf(value) === 0,
+    onFilter: (value: string, record) => {
+      return record.deviceState == value;
+    },
   },
   {
     title: '负责人',
@@ -88,7 +94,6 @@ const DeviceList: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
   const [initDevice, setInitDevice] = useState([]);
-  const [searchDevice, setSearchDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
 
   const initial = async () => {
@@ -104,12 +109,11 @@ const DeviceList: React.FC = () => {
   }, []);
 
   const onSearch = (value: string) => {
-    setSearchDevice(
+    setShowDevice(
       showDevice.filter((item) => {
-        return item['deviceName'] == (value as string);
+        return item['deviceName'] == value;
       }),
     );
-    setShowDevice(searchDevice);
   };
 
   const start = () => {

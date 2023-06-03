@@ -9,6 +9,22 @@ import React, { useState, useEffect } from 'react';
 const Home: React.FC = () => {
   const [deviceNum, setDeviceNum] = useState(0);
   const [initDevice, setInitDevice] = useState([]);
+  const [timeNow, setTime] = useState('00:00:00');
+
+  function formatDate() {
+    const date = new Date();
+    const hours = date.getHours();
+    const hoursString = hours < 10 ? '0' + hours : hours;
+    const minutes = date.getMinutes();
+    const minutesString = minutes < 10 ? '0' + minutes : minutes;
+    const seconds = date.getSeconds();
+    const secondsString = seconds < 10 ? '0' + seconds : seconds;
+    return hoursString + ':' + minutesString + ':' + secondsString;
+  }
+
+  setInterval(function () {
+    setTime(formatDate());
+  }, 1000);
 
   const initial = async () => {
     const res = await getDeviceList();
@@ -137,7 +153,7 @@ const Home: React.FC = () => {
           <Card bordered={false}>
             <Statistic
               title="当前时间"
-              value={'17:09:00'}
+              value={timeNow}
               valueStyle={{ color: '#000000', fontSize: 42 }}
             />
           </Card>

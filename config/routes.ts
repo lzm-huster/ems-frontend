@@ -28,6 +28,12 @@ export default [
         parentKeys: ['/deviceManagement/list'],
         hideInMenu: true,
       },
+      {
+        path: '/deviceManagement/repair',
+        name: '设备维修',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceRepair',
+      },
       { component: './404' },
     ],
   },

@@ -21,7 +21,6 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import './index.less';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 
 //日期
@@ -69,7 +68,7 @@ const props: UploadProps = {
 const AddDevice: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
 
-  const [count, setCount] = useState(0);
+  const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
 
   const initial = async () => {
     const res = await getUserInfo();
@@ -84,6 +83,7 @@ const AddDevice: React.FC = () => {
 
   const onFinish = (values: any) => {
     message.success('提交成功');
+    setComponentDisabled(true);
     console.log(values);
   };
 
@@ -99,6 +99,7 @@ const AddDevice: React.FC = () => {
         name="control-ref"
         onFinish={onFinish}
         style={{ maxWidth: 1400 }}
+        disabled={componentDisabled}
       >
         <Divider orientation="left" orientationMargin={5}>
           基本信息
@@ -118,7 +119,7 @@ const AddDevice: React.FC = () => {
         <Divider orientation="left" orientationMargin={5}>
           设备详情
         </Divider>
-        <Form.List name="users">
+        <Form.List name="devices">
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
@@ -129,8 +130,12 @@ const AddDevice: React.FC = () => {
                   align="baseline"
                 >
                   <Card
+                    id="deviceCard"
                     style={{ width: 1400 }}
-                    title={[<MinusCircleOutlined onClick={() => remove(name)} />, `设备${count}`]}
+                    title={[
+                      <MinusCircleOutlined style={{ color: 'red' }} onClick={() => remove(name)} />,
+                      `  设备${key + 1}`,
+                    ]}
                   >
                     <Row gutter={16}>
                       <Col span={8}>
@@ -230,7 +235,7 @@ const AddDevice: React.FC = () => {
                           label="是否公用"
                           labelCol={{ span: 9 }}
                         >
-                          <Radio.Group defaultValue="true">
+                          <Radio.Group>
                             <Radio.Button value="true">公用</Radio.Button>
                             <Radio.Button value="false">私人</Radio.Button>
                           </Radio.Group>
@@ -240,24 +245,34 @@ const AddDevice: React.FC = () => {
                         <Form.Item
                           {...restField}
                           name={[name, 'borrowRate']}
-                          rules={[{ required: true, message: '借用费率未填写！' }]}
+                          rules={[{ required: false, message: '借用费率未填写！' }]}
                           label="借用费率"
                           labelCol={{ span: 9 }}
                         >
-                          <InputNumber placeholder="借用费率" />
+                          <InputNumber disabled placeholder="借用费率" />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'deviceImage']}
                           rules={[{ required: true, message: '设备图片未上传！' }]}
                           label="设备图片"
-                          labelCol={{ span: 9 }}
+                          labelCol={{ span: 4 }}
                         >
                           <Upload {...props}>
                             <Button icon={<UploadOutlined />}>上传PNG</Button>
                           </Upload>
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'deviceSpecification']}
+                          label="设备说明"
+                          labelCol={{ span: 4 }}
+                        >
+                          <Input placeholder="设备说明" />
                         </Form.Item>
                       </Col>
                     </Row>
@@ -269,7 +284,6 @@ const AddDevice: React.FC = () => {
                   type="dashed"
                   onClick={() => {
                     add();
-                    setCount(count + 1);
                   }}
                   icon={<PlusOutlined />}
                 >
