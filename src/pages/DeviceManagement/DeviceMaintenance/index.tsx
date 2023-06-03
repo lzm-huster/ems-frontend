@@ -1,25 +1,24 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { getRepairList } from '@/services/swagger/repair';
-import Table, { ColumnsType } from 'antd/lib/table';
+import { getMaintenanceList } from '@/services/swagger/maintenance';
+import { ColumnsType } from 'antd/lib/table';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
-interface RepairRecord {
+interface MaintenanceRecord {
   key: React.Key;
   deviceID: number;
   deviceName: string;
-  repairContent: string;
-  repairFee: 0;
-  repairID: 0;
-  repairTime: Date;
+  maintenanceContent: string;
+  maintenanceID: 0;
+  maintenanceTime: Date;
 }
 
-const columns: ColumnsType<RepairRecord> = [
+const columns: ColumnsType<MaintenanceRecord> = [
   {
-    title: '维修编号',
-    dataIndex: 'repairID',
+    title: '保养编号',
+    dataIndex: 'maintenanceID',
   },
   {
     title: '设备编号',
@@ -30,23 +29,19 @@ const columns: ColumnsType<RepairRecord> = [
     dataIndex: 'deviceName',
   },
   {
-    title: '维修时间',
-    dataIndex: 'repairTime',
+    title: '保养时间',
+    dataIndex: 'maintenanceTime',
     sorter: (a, b) => {
-      if (a.repairTime.getTime() === null || b.repairTime.getTime() === null) {
+      if (a.maintenanceTime.getTime() === null || b.maintenanceTime.getTime() === null) {
         return 0;
       } else {
-        return a.repairTime.getTime() - b.repairTime.getTime();
+        return a.maintenanceTime.getTime() - b.maintenanceTime.getTime();
       }
     },
   },
   {
-    title: '维修内容',
-    dataIndex: 'repairContent',
-  },
-  {
-    title: '维修费用',
-    dataIndex: 'repairFee',
+    title: '保养内容',
+    dataIndex: 'maintenanceContent',
   },
   {
     title: '操作',
@@ -63,18 +58,18 @@ const columns: ColumnsType<RepairRecord> = [
 
 const { Search } = Input;
 
-const Repair: React.FC = () => {
+const Maintenance: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
-  const [initRepair, setInitRepair] = useState([]);
-  const [showRepair, setShowRepair] = useState([]);
+  const [initMaintenance, setInitMaintenance] = useState([]);
+  const [showMaintenance, setShowMaintenance] = useState([]);
 
   const initial = async () => {
-    const res = await getRepairList();
+    const res = await getMaintenanceList();
     if (res.code === 20000) {
-      setInitRepair(res.data);
-      setShowRepair(res.data);
+      setInitMaintenance(res.data);
+      setShowMaintenance(res.data);
     }
   };
   useEffect(() => {
@@ -82,8 +77,8 @@ const Repair: React.FC = () => {
   }, []);
 
   const onSearch = (value: string) => {
-    setShowRepair(
-      showRepair.filter((item) => {
+    setShowMaintenance(
+      showMaintenance.filter((item) => {
         return item['deviceName'] == (value as string);
       }),
     );
@@ -115,7 +110,7 @@ const Repair: React.FC = () => {
         <Col span={12}>
           <Card bordered={false}>
             <Statistic
-              title="已维修设备"
+              title="已保养设备"
               value={5}
               precision={0}
               valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
@@ -126,7 +121,7 @@ const Repair: React.FC = () => {
         <Col span={12}>
           <Card bordered={false}>
             <Statistic
-              title="维修中设备"
+              title="保养中设备"
               value={12}
               precision={0}
               valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
@@ -135,9 +130,9 @@ const Repair: React.FC = () => {
           </Card>
         </Col>
         <Col span={24}>
-          <GeneralTable rowSelection={rowSelection} datasource={showRepair} columns={columns}>
+          <GeneralTable rowSelection={rowSelection} datasource={showMaintenance} columns={columns}>
             <Button type="primary">
-              <Link to={'/deviceManagement/list/addDevice'}>新增维修记录</Link>
+              <Link to={'/deviceManagement/list/addDevice'}>新增保养记录</Link>
             </Button>
             <Button danger onClick={start} disabled={!hasSelected}>
               批量删除
@@ -153,7 +148,7 @@ const Repair: React.FC = () => {
                 <Button
                   type="text"
                   onClick={() => {
-                    setShowRepair(initRepair);
+                    setShowMaintenance(initMaintenance);
                     formRef.current?.setFieldsValue({ search: '' });
                   }}
                 >
@@ -167,4 +162,4 @@ const Repair: React.FC = () => {
     </PageContainer>
   );
 };
-export default Repair;
+export default Maintenance;

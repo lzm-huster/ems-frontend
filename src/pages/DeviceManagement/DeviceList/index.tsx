@@ -4,6 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { PageContainer } from '@ant-design/pro-components';
 import { getDeviceList } from '@/services/swagger/device';
 import { Link } from 'umi';
+import GeneralTable from './generalTable/GeneralTable';
 
 interface Device {
   key: React.Key;
@@ -138,41 +139,38 @@ const DeviceList: React.FC = () => {
 
   return (
     <PageContainer>
-      <div>
-        <Space style={{ marginBottom: 16 }}>
-          <Button type="primary">
-            <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
-          </Button>
-          <Button type="primary">信息统计</Button>
-          <Button onClick={start} disabled={!hasSelected}>
-            批量借用
-          </Button>
-          <Button danger onClick={start} disabled={!hasSelected}>
-            批量删除
-          </Button>
-          <span style={{ marginLeft: 8 }}>
-            {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
-          </span>
+      <GeneralTable rowSelection={rowSelection} datasource={showDevice} columns={columns}>
+        <Button type="primary">
+          <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
+        </Button>
+        <Button type="primary">信息统计</Button>
+        <Button onClick={start} disabled={!hasSelected}>
+          批量借用
+        </Button>
+        <Button danger onClick={start} disabled={!hasSelected}>
+          批量删除
+        </Button>
+        <span style={{ marginLeft: 8 }}>
+          {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
+        </span>
 
-          <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-            <Form.Item name="search">
-              <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="text"
-                onClick={() => {
-                  setShowDevice(initDevice);
-                  formRef.current?.setFieldsValue({ search: '' });
-                }}
-              >
-                重置
-              </Button>
-            </Form.Item>
-          </Form>
-        </Space>
-        <Table rowSelection={rowSelection} columns={columns} dataSource={showDevice} />
-      </div>
+        <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
+          <Form.Item name="search">
+            <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="text"
+              onClick={() => {
+                setShowDevice(initDevice);
+                formRef.current?.setFieldsValue({ search: '' });
+              }}
+            >
+              重置
+            </Button>
+          </Form.Item>
+        </Form>
+      </GeneralTable>
     </PageContainer>
   );
 };

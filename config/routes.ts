@@ -35,6 +35,20 @@ export default [
         component: './DeviceManagement/DeviceRepair',
       },
       {
+        path: '/deviceManagement/repair/addRecord',
+        name: '新增维修记录',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceRepair/AddRepair',
+        parentKeys: ['/deviceManagement/repair'],
+        hideInMenu: true,
+      },
+      {
+        path: '/deviceManagement/maintenance',
+        name: '设备保养',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceMaintenance',
+      },
+      {
         path: '/deviceManagement/check',
         name: '设备核查',
         icon: 'smile',
