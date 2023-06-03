@@ -19,7 +19,7 @@ const getBase64 = (file: RcFile): Promise<string> =>
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
   });
-const AddCheck: React.FC = () => {
+const AddScrap: React.FC = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
@@ -65,27 +65,26 @@ const AddCheck: React.FC = () => {
             required
           />
 
-          <ProFormSelect label={'设备状态'} name={'deviceState'} required />
           <ProFormDateTimePicker
             width={300}
             name="date"
             fieldProps={{
               format: 'yyyy-MM-DD HH:mm:ss',
             }}
-            label="核查时间"
+            label="报废时间"
             required
           />
 
           <ProFormTextArea
-            name="remark"
+            name="reason"
             label="备注"
-            placeholder="核查详细说明"
+            placeholder="报废原因说明"
             // fieldProps={inputTextAreaProps}
           />
           <>
             <ProFormUploadButton
               name="upload"
-              label="核查图片"
+              label="报废图片"
               max={5}
               fieldProps={{
                 name: 'file',
@@ -106,4 +105,4 @@ const AddCheck: React.FC = () => {
     </PageContainer>
   );
 };
-export default AddCheck;
+export default AddScrap;

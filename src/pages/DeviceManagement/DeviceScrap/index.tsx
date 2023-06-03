@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
-const DeviceCheck: React.FC = () => {
+const DeviceScrap: React.FC = () => {
   const [initData, setInitData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -24,32 +24,31 @@ const DeviceCheck: React.FC = () => {
       width: 60,
     },
     {
-      title: '核查编号',
-      dataIndex: 'userName',
-      copyable: true,
-      ellipsis: true,
-    },
-    {
       title: '设备编号',
       dataIndex: 'userName',
       copyable: true,
       ellipsis: true,
     },
+
     {
       title: '设备名称',
       dataIndex: 'userName',
-      copyable: true,
       ellipsis: true,
     },
     {
-      title: '核查时间',
+      title: '设备负责人',
+      dataIndex: 'userName',
+      ellipsis: true,
+    },
+    {
+      title: '报废时间',
       dataIndex: 'userName',
       valueType: 'date',
       sorter: true,
       hideInSearch: true,
     },
     {
-      title: '设备状态',
+      title: '报废原因',
       dataIndex: 'userName',
       copyable: true,
       ellipsis: true,
@@ -90,7 +89,7 @@ const DeviceCheck: React.FC = () => {
           <Col span={12}>
             <Card bordered={false}>
               <Statistic
-                title="已核查设备"
+                title="已报废设备"
                 value={5}
                 precision={0}
                 valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
@@ -101,7 +100,7 @@ const DeviceCheck: React.FC = () => {
           <Col span={12}>
             <Card bordered={false}>
               <Statistic
-                title="待核查设备"
+                title="待报废设备"
                 value={12}
                 precision={0}
                 valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
@@ -113,14 +112,14 @@ const DeviceCheck: React.FC = () => {
       </div>
       <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
         <Button type="primary">
-          <Link to={'/deviceManagement/check/add'}>新增核查记录</Link>
+          <Link to={'/deviceManagement/scrap/add'}>新增报废记录</Link>
         </Button>
         <Button danger>
           {/* <Button danger onClick={start} disabled={!hasSelected}> */}
-          批量删除记录
+          批量报废记录
         </Button>
       </GeneralTable>
     </PageContainer>
   );
 };
-export default DeviceCheck;
+export default DeviceScrap;
