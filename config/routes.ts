@@ -67,12 +67,13 @@ export default [
         icon: 'smile',
         component: './PersonalInfo',
       },
-      // {
-      //   path: '/PersonalCenter/notification',
-      //   name: '系统通知',
-      //   // icon: 'smile',
-      //   component: './DeviceList',
-      // },
+      {
+        path: '/personalCenter/personalInfo/edit',
+        name: '编辑个人信息',
+        component: './PersonalInfo/Edit',
+        parentKeys: ['/personalCenter/personalInfo'],
+        hideInMenu: true,
+      },
       {
         component: './404',
       },
@@ -89,7 +90,6 @@ export default [
       { component: './404' },
     ],
   },
-  { name: '查询表格', icon: 'table', path: '/list', component: './TableList' },
   { path: '/', redirect: '/home' },
   { component: './404' },
 ];
