@@ -14,12 +14,16 @@ interface BorrowRecord {
   borrowApplyState: string;
   deviceList: string;
   userName: string;
+  r: number;
 }
 
 const columns: ColumnsType<BorrowRecord> = [
   {
     title: '借用申请编号',
     dataIndex: 'borrowApplyID',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '设备列表',
@@ -28,10 +32,16 @@ const columns: ColumnsType<BorrowRecord> = [
   {
     title: '借用人',
     dataIndex: 'userName',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '责任导师',
     dataIndex: 'approveTutorName',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '借用时间',
@@ -43,10 +53,16 @@ const columns: ColumnsType<BorrowRecord> = [
         return a.borrowApplyDate.getTime() - b.borrowApplyDate.getTime();
       }
     },
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '借用状态',
     dataIndex: 'borrowApplyState',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '操作',
@@ -59,17 +75,53 @@ const columns: ColumnsType<BorrowRecord> = [
         <a>删除</a>
       </Space>
     ),
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
 ];
 
 const { Search } = Input;
 
+const rowCombination = (initData: BorrowRecord[]) => {
+  let sameN = 0;
+  for (let i = 0, j = 0; i < initData.length; i++) {
+    if (i > 0 && i < initData.length - 1) {
+      if (initData[i].borrowApplyID - initData[i - 1].borrowApplyID == 0) {
+        initData[i].key = j;
+        initData[i].r = 0;
+        sameN++;
+      } else {
+        j++;
+        initData[i].key = j;
+        initData[i - sameN - 1].r = sameN + 1;
+        sameN = 0;
+      }
+    } else if (i == 0) {
+      initData[i].key = 0;
+    } else {
+      if (initData[i].borrowApplyID - initData[i - 1].borrowApplyID == 0) {
+        initData[i].key = j;
+        initData[i].r = 0;
+        sameN++;
+        initData[i - sameN].r = sameN + 1;
+      } else {
+        j++;
+        initData[i].key = j;
+        initData[i].r = 1;
+        initData[i - sameN - 1].r = sameN + 1;
+      }
+    }
+  }
+  return initData;
+};
+
 const Borrow: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
-  const [initBorrow, setInitBorrow] = useState([]);
-  const [showBorrow, setShowBorrow] = useState([]);
+  const [initBorrow, setInitBorrow] = useState<BorrowRecord[]>([]);
+  const [showBorrow, setShowBorrow] = useState<BorrowRecord[]>([]);
   const [borrowNum, setBorrowNum] = useState(0);
 
   const initial = async () => {
@@ -77,11 +129,9 @@ const Borrow: React.FC = () => {
     const res2 = await getBorrowDeviceNumber();
 
     if (res1.code === 20000) {
-      for (let i = 0; i < res1.data.length; i++) {
-        res1.data[i].key = i;
-      }
-      setInitBorrow(res1.data);
-      setShowBorrow(res1.data);
+      const initData = rowCombination(res1.data);
+      setInitBorrow(initData);
+      setShowBorrow(initData);
     }
     if (res2.code === 20000) {
       setBorrowNum(res2.data);
@@ -92,11 +142,14 @@ const Borrow: React.FC = () => {
   }, []);
 
   const onSearch = (value: string) => {
-    setShowBorrow(
-      showBorrow.filter((item) => {
-        return item['deviceName'] == (value as string);
-      }),
-    );
+    setShowBorrow(initBorrow);
+    if (value !== '') {
+      const t = showBorrow.filter((item: BorrowRecord) => {
+        return item['deviceList'].indexOf(value) != -1;
+      });
+      setShowBorrow(rowCombination(t));
+    }
+    console.log(showBorrow);
   };
 
   const start = () => {

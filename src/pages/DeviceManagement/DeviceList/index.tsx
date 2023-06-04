@@ -13,7 +13,7 @@ interface Device {
   deviceName: string;
   deviceState: string;
   deviceType: string;
-  purchaseDate: Date;
+  purchaseDate: string;
   userName: string;
 }
 
@@ -43,8 +43,8 @@ const columns: ColumnsType<Device> = [
         value: '正常',
       },
       {
-        text: '出借',
-        value: '出借',
+        text: '借出中',
+        value: '借出中',
       },
       {
         text: '已报废',
@@ -63,10 +63,12 @@ const columns: ColumnsType<Device> = [
     title: '购入时间',
     dataIndex: 'purchaseDate',
     sorter: (a, b) => {
-      if (a.purchaseDate.getTime() === null || b.purchaseDate.getTime() === null) {
+      if (a.purchaseDate === null || b.purchaseDate === null) {
         return 0;
       } else {
-        return a.purchaseDate.getTime() - b.purchaseDate.getTime();
+        const aDate = Date.parse(a.purchaseDate);
+        const bDate = Date.parse(b.purchaseDate);
+        return aDate - bDate;
       }
     },
   },
@@ -102,6 +104,7 @@ const DeviceList: React.FC = () => {
     if (res.code === 20000) {
       for (let i = 0; i < res.data.length; i++) {
         res.data[i].key = i;
+        res.data[i].purchaseDate = new Date(res.data[i].purchaseDate).toLocaleString();
       }
       setInitDevice(res.data);
       setShowDevice(res.data);
@@ -114,9 +117,11 @@ const DeviceList: React.FC = () => {
 
   const onSearch = (value: string) => {
     setShowDevice(
-      showDevice.filter((item) => {
-        return item['deviceName'] == value;
-      }),
+      value === ''
+        ? initDevice
+        : showDevice.filter((item: Device) => {
+            return item['deviceName'].indexOf(value) != -1;
+          }),
     );
   };
 

@@ -82,9 +82,11 @@ const Maintenance: React.FC = () => {
 
   const onSearch = (value: string) => {
     setShowMaintenance(
-      showMaintenance.filter((item) => {
-        return item['deviceName'] == (value as string);
-      }),
+      value === ''
+        ? initMaintenance
+        : showMaintenance.filter((item: MaintenanceRecord) => {
+            return item['deviceName'].indexOf(value) != -1;
+          }),
     );
   };
 
@@ -136,7 +138,7 @@ const Maintenance: React.FC = () => {
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showMaintenance} columns={columns}>
             <Button type="primary">
-              <Link to={'/deviceManagement/list/addDevice'}>新增保养记录</Link>
+              <Link to={'/deviceManagement/maintenance/addMaintenance'}>新增保养记录</Link>
             </Button>
             <Button danger onClick={start} disabled={!hasSelected}>
               批量删除

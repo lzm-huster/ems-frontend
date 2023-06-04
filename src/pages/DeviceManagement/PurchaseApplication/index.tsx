@@ -1,12 +1,12 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic } from 'antd';
+import { Button, Col, Form, FormInstance, Input, Row, Space } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { getPurchaseApplySheetList } from '@/services/swagger/purchaseApp';
 import { ColumnsType } from 'antd/lib/table';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
-interface RepairRecord {
+interface PurchaseApply {
   key: React.Key;
   approveTutorName: string;
   deviceList: string;
@@ -14,12 +14,16 @@ interface RepairRecord {
   purchaseApplySheetID: number;
   purchaseApplyState: string;
   userName: string;
+  r: number;
 }
 
-const columns: ColumnsType<RepairRecord> = [
+const columns: ColumnsType<PurchaseApply> = [
   {
     title: '采购申请编号',
     dataIndex: 'purchaseApplySheetID',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '设备列表',
@@ -28,10 +32,16 @@ const columns: ColumnsType<RepairRecord> = [
   {
     title: '申请人',
     dataIndex: 'userName',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '责任导师',
     dataIndex: 'approveTutorName',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '申请时间',
@@ -43,10 +53,16 @@ const columns: ColumnsType<RepairRecord> = [
         return a.purchaseApplyDate.getTime() - b.purchaseApplyDate.getTime();
       }
     },
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '申请状态',
     dataIndex: 'purchaseApplyState',
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
   {
     title: '操作',
@@ -58,6 +74,9 @@ const columns: ColumnsType<RepairRecord> = [
         <a>删除</a>
       </Space>
     ),
+    onCell: (data) => {
+      return { rowSpan: data.r };
+    },
   },
 ];
 
@@ -73,11 +92,37 @@ const PurchaseApp: React.FC = () => {
   const initial = async () => {
     const res = await getPurchaseApplySheetList();
     if (res.code === 20000) {
-      for (let i = 0; i < res.data.length; i++) {
-        res.data[i].key = i;
+      const initData = res.data;
+      let sameN = 0;
+      for (let i = 0, j = 0; i < initData.length; i++) {
+        if (i > 0 && i < initData.length - 1) {
+          if (initData[i].purchaseApplySheetID - initData[i - 1].purchaseApplySheetID == 0) {
+            initData[i].key = j;
+            initData[i].r = 0;
+            sameN++;
+          } else {
+            j++;
+            initData[i].key = j;
+            initData[i - sameN - 1].r = sameN + 1;
+            sameN = 0;
+          }
+        } else if (i == 0) {
+          initData[i].key = 0;
+        } else {
+          if (initData[i].purchaseApplySheetID - initData[i - 1].purchaseApplySheetID == 0) {
+            initData[i].key = j;
+            initData[i].r = 0;
+            sameN++;
+            initData[i - sameN].r = sameN + 1;
+          } else {
+            j++;
+            initData[i].key = j;
+            initData[i].r = 1;
+          }
+        }
       }
-      setInitPurchaseApply(res.data);
-      setShowPurchaseApply(res.data);
+      setInitPurchaseApply(initData);
+      setShowPurchaseApply(initData);
     }
   };
 
@@ -87,9 +132,11 @@ const PurchaseApp: React.FC = () => {
 
   const onSearch = (value: string) => {
     setShowPurchaseApply(
-      showPurchaseApply.filter((item) => {
-        return item['deviceName'] == (value as string);
-      }),
+      value === ''
+        ? initPurchaseApply
+        : showPurchaseApply.filter((item: PurchaseApply) => {
+            return item['deviceList'].indexOf(value) != -1;
+          }),
     );
   };
 
@@ -123,7 +170,7 @@ const PurchaseApp: React.FC = () => {
             columns={columns}
           >
             <Button type="primary">
-              <Link to={'/deviceManagement/repair/addRecord'}>新增采购申请</Link>
+              <Link to={'/deviceManagement/purchaseApply/addPurchaseApply'}>新增采购申请</Link>
             </Button>
             <Button onClick={start} disabled={!hasSelected}>
               设备采购入库

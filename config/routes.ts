@@ -35,6 +35,14 @@ export default [
         component: './DeviceManagement/PurchaseApplication',
       },
       {
+        path: '/deviceManagement/purchaseApply/addPurchaseApply',
+        name: '新增设备采购申请',
+        icon: 'smile',
+        component: './DeviceManagement/PurchaseApplication/AddPurchaseApp',
+        parentKeys: ['/deviceManagement/purchaseApply'],
+        hideInMenu: true,
+      },
+      {
         path: '/deviceManagement/borrow',
         name: '设备借用',
         icon: 'smile',
@@ -47,7 +55,7 @@ export default [
         component: './DeviceManagement/DeviceRepair',
       },
       {
-        path: '/deviceManagement/repair/addRecord',
+        path: '/deviceManagement/repair/addRepair',
         name: '新增维修记录',
         icon: 'smile',
         component: './DeviceManagement/DeviceRepair/AddRepair',
@@ -59,6 +67,14 @@ export default [
         name: '设备保养',
         icon: 'smile',
         component: './DeviceManagement/DeviceMaintenance',
+      },
+      {
+        path: '/deviceManagement/maintenance/addMaintenance',
+        name: '新增保养记录',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceMaintenance/AddMaintenance',
+        parentKeys: ['/deviceManagement/maintenance'],
+        hideInMenu: true,
       },
       {
         path: '/deviceManagement/check',

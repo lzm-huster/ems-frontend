@@ -86,9 +86,11 @@ const Repair: React.FC = () => {
 
   const onSearch = (value: string) => {
     setShowRepair(
-      showRepair.filter((item) => {
-        return item['deviceName'] == (value as string);
-      }),
+      value === ''
+        ? initRepair
+        : showRepair.filter((item: RepairRecord) => {
+            return item['deviceName'].indexOf(value) != -1;
+          }),
     );
   };
 
@@ -140,7 +142,7 @@ const Repair: React.FC = () => {
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showRepair} columns={columns}>
             <Button type="primary">
-              <Link to={'/deviceManagement/repair/addRecord'}>新增维修记录</Link>
+              <Link to={'/deviceManagement/repair/addRepair'}>新增维修记录</Link>
             </Button>
             <Button danger onClick={start} disabled={!hasSelected}>
               批量删除
