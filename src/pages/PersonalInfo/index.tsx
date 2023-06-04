@@ -65,11 +65,11 @@ const columns: ColumnsType<Device> = [
   },
 ];
 
-// const rowSelection = {
-//   onChange: (selectedRowKeys: React.Key[], selectedRows: ColumnsType[]) => {
-//     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-//   },
-// };
+const rowSelection = {
+  onChange: (selectedRowKeys: React.Key[], selectedRows: ColumnsType[]) => {
+    console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+  },
+};
 
 const PersonalInfo: React.FC = () => {
   const [form] = Form.useForm();
@@ -81,7 +81,7 @@ const PersonalInfo: React.FC = () => {
   const history = useHistory();
   const handleClick = () => {
     history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
-  };
+  }
 
   const initial = async () => {
     const res = await getDeviceList();
@@ -107,7 +107,11 @@ const PersonalInfo: React.FC = () => {
 
   return (
     <PageContainer>
-      <Form form={form} layout="vertical" autoComplete="off">
+      <Form
+        form={form}
+        layout="vertical"
+        autoComplete="off"
+      >
         <Form.Item>
           <Card>
             <div className="content">
@@ -115,10 +119,7 @@ const PersonalInfo: React.FC = () => {
                 <Avatar className="avatar" size={64} icon={<UserOutlined />} />
               </div>
               <div className="nickname">昵称</div>
-              <div className="nickname">
-                <SolutionOutlined /> 教职工 <Divider type="vertical" />
-                <MailOutlined /> 173646139@qq.com
-              </div>
+              <div className="nickname"><SolutionOutlined /> 教职工 <Divider type="vertical" /><MailOutlined /> 173646139@qq.com</div>
             </div>
             <EditOutlined onClick={handleClick} className="edit-icon" />
           </Card>
@@ -132,16 +133,25 @@ const PersonalInfo: React.FC = () => {
               <Button type="primary">批量删除设备</Button>
             </Col>
             <Col span={8}>
-              <Search placeholder="请输入你需要搜索的记录编号或设备名称" />
+              <Search
+                placeholder="请输入你需要搜索的记录编号或设备名称"
+              />
             </Col>
           </Row>
         </Form.Item>
         <Form.Item>
-          <Table rowSelection={rowSelection} columns={columns} dataSource={showDevice} />
+          <Table
+            rowSelection={
+              rowSelection
+            }
+            columns={columns}
+            dataSource={showDevice}
+          />
         </Form.Item>
       </Form>
     </PageContainer>
   );
-};
+}
 
 export default PersonalInfo;
+
