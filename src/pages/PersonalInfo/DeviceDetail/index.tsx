@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { PageContainer } from '@ant-design/pro-components';
 import { Descriptions } from 'antd';
 
 
@@ -13,7 +12,6 @@ const DeviceDetail: React.FC = () => {
             <Descriptions
                 title="设备详情"
                 bordered
-                // layout="vertical"
                 labelStyle={{
                     backgroundColor: "#fdffff9e",
                 }}
@@ -26,7 +24,6 @@ const DeviceDetail: React.FC = () => {
             >
                 <Descriptions.Item label="设备编号" span={1}>
                     {/* {detail?.u_name} */}
-
                     xxxxxx
                 </Descriptions.Item>
                 <Descriptions.Item label="设备名称" span={1}>
@@ -75,12 +72,9 @@ const DeviceDetail: React.FC = () => {
                 </Descriptions.Item>
                 <Descriptions.Item label="设备图片列表" span={3}>
                     {/* {detail?.u_sex} */}
-
                 </Descriptions.Item>
             </Descriptions>
         </>
-
-
     );
 };
 
