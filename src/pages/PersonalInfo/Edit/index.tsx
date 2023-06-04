@@ -15,6 +15,7 @@ import {
 import type { FormInstance } from 'antd/es/form';
 import { PlusOutlined, UserOutlined } from '@ant-design/icons';
 import Meta from 'antd/lib/card/Meta';
+import './index.less';
 const { Option } = Select;
 
 const layout = {
