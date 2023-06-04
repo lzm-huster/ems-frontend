@@ -1,9 +1,10 @@
 import { getDeviceList } from '@/services/swagger/device';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Form, FormInstance, Input, Space, Table } from 'antd';
+import { Button, Form, FormInstance, Input, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'umi';
+import GeneralTable from './generalTable/GeneralTable';
 
 interface Device {
   key: React.Key;
@@ -12,7 +13,7 @@ interface Device {
   deviceName: string;
   deviceState: string;
   deviceType: string;
-  purchaseDate: Date;
+  purchaseDate: string;
   userName: string;
 }
 
@@ -42,8 +43,8 @@ const columns: ColumnsType<Device> = [
         value: '正常',
       },
       {
-        text: '出借',
-        value: '出借',
+        text: '借出中',
+        value: '借出中',
       },
       {
         text: '已报废',
@@ -62,10 +63,12 @@ const columns: ColumnsType<Device> = [
     title: '购入时间',
     dataIndex: 'purchaseDate',
     sorter: (a, b) => {
-      if (a.purchaseDate.getTime() === null || b.purchaseDate.getTime() === null) {
+      if (a.purchaseDate === null || b.purchaseDate === null) {
         return 0;
       } else {
-        return a.purchaseDate.getTime() - b.purchaseDate.getTime();
+        const aDate = Date.parse(a.purchaseDate);
+        const bDate = Date.parse(b.purchaseDate);
+        return aDate - bDate;
       }
     },
   },
@@ -100,6 +103,10 @@ const DeviceList: React.FC = () => {
   const initial = async () => {
     const res = await getDeviceList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+        res.data[i].purchaseDate = new Date(res.data[i].purchaseDate).toLocaleString();
+      }
       setInitDevice(res.data);
       setShowDevice(res.data);
     }
@@ -111,9 +118,11 @@ const DeviceList: React.FC = () => {
 
   const onSearch = (value: string) => {
     setShowDevice(
-      showDevice.filter((item) => {
-        return item['deviceName'] == value;
-      }),
+      value === ''
+        ? initDevice
+        : showDevice.filter((item: Device) => {
+            return item['deviceName'].indexOf(value) != -1;
+          }),
     );
   };
 
@@ -139,41 +148,38 @@ const DeviceList: React.FC = () => {
 
   return (
     <PageContainer>
-      <div>
-        <Space style={{ marginBottom: 16 }}>
-          <Button type="primary">
-            <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
-          </Button>
-          <Button type="primary">信息统计</Button>
-          <Button onClick={start} disabled={!hasSelected}>
-            批量借用
-          </Button>
-          <Button danger onClick={start} disabled={!hasSelected}>
-            批量删除
-          </Button>
-          <span style={{ marginLeft: 8 }}>
-            {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
-          </span>
+      <GeneralTable rowSelection={rowSelection} datasource={showDevice} columns={columns}>
+        <Button type="primary">
+          <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
+        </Button>
+        <Button type="primary">信息统计</Button>
+        <Button onClick={start} disabled={!hasSelected}>
+          批量借用
+        </Button>
+        <Button danger onClick={start} disabled={!hasSelected}>
+          批量删除
+        </Button>
+        <span style={{ marginLeft: 8 }}>
+          {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
+        </span>
 
-          <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-            <Form.Item name="search">
-              <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="text"
-                onClick={() => {
-                  setShowDevice(initDevice);
-                  formRef.current?.setFieldsValue({ search: '' });
-                }}
-              >
-                重置
-              </Button>
-            </Form.Item>
-          </Form>
-        </Space>
-        <Table rowSelection={rowSelection} columns={columns} dataSource={showDevice} />
-      </div>
+        <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
+          <Form.Item name="search">
+            <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="text"
+              onClick={() => {
+                setShowDevice(initDevice);
+                formRef.current?.setFieldsValue({ search: '' });
+              }}
+            >
+              重置
+            </Button>
+          </Form.Item>
+        </Form>
+      </GeneralTable>
     </PageContainer>
   );
 };

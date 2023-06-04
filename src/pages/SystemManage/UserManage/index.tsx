@@ -300,7 +300,7 @@ const UserManage: React.FC = () => {
   return (
     <PageContainer>
       <div style={{ marginBottom: 10 }}>
-        <Row gutter={24}>
+        <Row gutter={[16, 24]}>
           <Col span={6}>
             <Card bordered={false}>
               <Statistic
@@ -345,35 +345,37 @@ const UserManage: React.FC = () => {
               />
             </Card>
           </Col>
+          <Col span={24}>
+            <ProTable
+              columns={columns}
+              actionRef={actionRef}
+              cardBordered
+              rowKey="id"
+              search={false}
+              dataSource={tableData}
+              pagination={{
+                pageSize: 5,
+                onChange: (page) => console.log(page),
+              }}
+              dateFormatter="string"
+              toolBarRender={() => [
+                <Button
+                  key="button"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setAddVisible(true);
+                    // actionRef.current?.reload();
+                  }}
+                  type="primary"
+                >
+                  添加用户
+                </Button>,
+              ]}
+            />
+          </Col>
         </Row>
       </div>
 
-      <ProTable
-        columns={columns}
-        actionRef={actionRef}
-        cardBordered
-        rowKey="id"
-        search={false}
-        dataSource={tableData}
-        pagination={{
-          pageSize: 5,
-          onChange: (page) => console.log(page),
-        }}
-        dateFormatter="string"
-        toolBarRender={() => [
-          <Button
-            key="button"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setAddVisible(true);
-              // actionRef.current?.reload();
-            }}
-            type="primary"
-          >
-            添加用户
-          </Button>,
-        ]}
-      />
       <ModalForm
         destroyOnClose={true}
         title="新增用户"

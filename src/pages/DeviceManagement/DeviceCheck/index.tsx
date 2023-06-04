@@ -3,19 +3,34 @@ import { Button, Card, Col, Row, Statistic } from 'antd';
 import { useState } from 'react';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { ColumnsType } from 'antd/es/table';
+
+interface CheckRecord {
+  key: React.Key;
+  checkID: number;
+  checkTime: Date;
+  checker: string;
+  deviceID: number;
+  deviceName: string;
+  deviceState: string;
+}
 
 const DeviceCheck: React.FC = () => {
-  const [initData, setInitData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
+
+  const hasSelected = selectedRowKeys.length > 0;
+
   const columns = [
     {
       title: '序号',
@@ -25,32 +40,32 @@ const DeviceCheck: React.FC = () => {
     },
     {
       title: '核查编号',
-      dataIndex: 'userName',
+      dataIndex: 'checkID',
       copyable: true,
       ellipsis: true,
     },
     {
       title: '设备编号',
-      dataIndex: 'userName',
+      dataIndex: 'deviceID',
       copyable: true,
       ellipsis: true,
     },
     {
       title: '设备名称',
-      dataIndex: 'userName',
+      dataIndex: 'deviceName',
       copyable: true,
       ellipsis: true,
     },
     {
       title: '核查时间',
-      dataIndex: 'userName',
+      dataIndex: 'checkTime',
       valueType: 'date',
       sorter: true,
       hideInSearch: true,
     },
     {
       title: '设备状态',
-      dataIndex: 'userName',
+      dataIndex: 'deviceState',
       copyable: true,
       ellipsis: true,
     },
@@ -115,8 +130,7 @@ const DeviceCheck: React.FC = () => {
         <Button type="primary">
           <Link to={'/deviceManagement/check/add'}>新增核查记录</Link>
         </Button>
-        <Button danger>
-          {/* <Button danger onClick={start} disabled={!hasSelected}> */}
+        <Button danger disabled={!hasSelected}>
           批量删除记录
         </Button>
       </GeneralTable>

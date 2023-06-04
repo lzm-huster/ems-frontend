@@ -1,8 +1,8 @@
-import { PlusOutlined } from '@ant-design/icons';
 import {
   PageContainer,
   ProForm,
   ProFormDateTimePicker,
+  ProFormMoney,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
@@ -11,6 +11,7 @@ import {
 import { Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useState } from 'react';
+
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -18,7 +19,8 @@ const getBase64 = (file: RcFile): Promise<string> =>
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
   });
-const AddCheck: React.FC = () => {
+
+const AddRepair: React.FC = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
@@ -43,6 +45,12 @@ const AddCheck: React.FC = () => {
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <ProForm style={{ width: 600 }}>
+            <ProFormText
+              label={'维修记录编号'}
+              name={'repairID'}
+              disabled={true}
+              placeholder={'提交后自动生成'}
+            />
             <ProFormSelect label={'设备编号'} name={'deviceId'} required />
             <ProFormText
               label={'设备名称'}
@@ -52,53 +60,31 @@ const AddCheck: React.FC = () => {
               required
             />
             <ProFormText
-              label={'设备负责人'}
-              name={'responsibleUser'}
-              disabled={true}
-              placeholder={'根据设备编号自动填写'}
+              label={'维修内容'}
+              name={'repairContent'}
+              placeholder={'维修内容'}
               required
             />
-
-            <ProFormSelect label={'设备状态'} name={'deviceState'} required />
+            <ProFormMoney
+              label={'维修费用'}
+              name={'repairFee'}
+              placeholder={'维修费用'}
+              min={0}
+              required
+            />
             <ProFormDateTimePicker
               width={300}
               name="date"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}
-              label="核查时间"
+              label="维修时间"
               required
             />
-
-            <ProFormTextArea
-              name="remark"
-              label="备注"
-              placeholder="核查详细说明"
-              // fieldProps={inputTextAreaProps}
-            />
-            <>
-              <ProFormUploadButton
-                name="upload"
-                label="核查图片"
-                max={5}
-                fieldProps={{
-                  name: 'file',
-                  listType: 'picture-card',
-                  fileList: fileList,
-                  onPreview: handlePreview,
-                  onChange: handleChange,
-                  multiple: true,
-                  maxCount: 5,
-                }}
-              />
-              <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={handleCancel}>
-                <img alt="example" style={{ width: '100%' }} src={previewImage} />
-              </Modal>
-            </>
           </ProForm>
         </div>
       </Card>
     </PageContainer>
   );
 };
-export default AddCheck;
+export default AddRepair;

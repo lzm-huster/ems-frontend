@@ -4,6 +4,9 @@ import { Bar, Pie } from '@ant-design/charts';
 import { getDeviceList } from '@/services/swagger/device';
 
 import React, { useState, useEffect } from 'react';
+import { render } from 'react-dom';
+import { RightOutlined } from '@ant-design/icons';
+import { Link } from 'umi';
 //import styles from './Home.less';
 
 const Home: React.FC = () => {
@@ -11,7 +14,7 @@ const Home: React.FC = () => {
   const [initDevice, setInitDevice] = useState([]);
   const [timeNow, setTime] = useState('00:00:00');
 
-  function formatDate() {
+  function formatTime() {
     const date = new Date();
     const hours = date.getHours();
     const hoursString = hours < 10 ? '0' + hours : hours;
@@ -23,7 +26,7 @@ const Home: React.FC = () => {
   }
 
   setInterval(function () {
-    setTime(formatDate());
+    setTime(formatTime());
   }, 1000);
 
   const initial = async () => {
@@ -44,27 +47,27 @@ const Home: React.FC = () => {
       }).length,
     },
     {
-      state: '出借',
+      state: '借出中',
       num: initDevice.filter((x) => {
-        return x.deviceState == '出借';
+        return x.deviceState == '借出中';
       }).length,
     },
     {
-      state: '维修',
+      state: '维修中',
       num: initDevice.filter((x) => {
-        return x.deviceState == '维修';
+        return x.deviceState == '维修中';
       }).length,
     },
     {
-      state: '保养',
+      state: '保养中',
       num: initDevice.filter((x) => {
-        return x.deviceState == '保养';
+        return x.deviceState == '保养中';
       }).length,
     },
     {
-      state: '报废',
+      state: '已报废',
       num: initDevice.filter((x) => {
-        return x.deviceState == '报废';
+        return x.deviceState == '已报废';
       }).length,
     },
   ];
@@ -79,9 +82,9 @@ const Home: React.FC = () => {
   };
   const pieData = [
     {
-      type: '出借',
+      type: '借出中',
       num: initDevice.filter((x) => {
-        return x.deviceState == '出借';
+        return x.deviceState == '借出中';
       }).length,
     },
     {
@@ -89,7 +92,10 @@ const Home: React.FC = () => {
       num:
         deviceNum -
         initDevice.filter((x) => {
-          return x.deviceState == '出借';
+          return x.deviceState == '借出中';
+        }).length -
+        initDevice.filter((x) => {
+          return x.deviceState == '已报废';
         }).length,
     },
   ];
@@ -117,15 +123,17 @@ const Home: React.FC = () => {
     <PageContainer>
       <Row gutter={[16, 24]}>
         <Col span={6}>
-          <Card bordered={false}>
-            <Statistic
-              title="待办事项"
-              value={5}
-              precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-              suffix="件"
-            />
-          </Card>
+          <Link to={'/deviceManagement/repair/addRecord'}>
+            <Card bordered={false} hoverable={true}>
+              <Statistic
+                title="待办事项"
+                value={5}
+                precision={0}
+                valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
+                suffix="件"
+              />
+            </Card>
+          </Link>
         </Col>
         <Col span={6}>
           <Card bordered={false}>
@@ -139,15 +147,17 @@ const Home: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card bordered={false}>
-            <Statistic
-              title="设备数量"
-              value={deviceNum}
-              precision={0}
-              valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
-              suffix="台"
-            />
-          </Card>
+          <Link to={'/deviceManagement/list/'}>
+            <Card bordered={false} hoverable={true}>
+              <Statistic
+                title="设备数量"
+                value={deviceNum}
+                precision={0}
+                valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
+                suffix="台"
+              />
+            </Card>
+          </Link>
         </Col>
         <Col span={6}>
           <Card bordered={false}>
