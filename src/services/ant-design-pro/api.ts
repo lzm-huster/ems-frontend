@@ -2,6 +2,14 @@
 /* eslint-disable */
 import { request } from 'umi';
 
+/**重置密码 /api/user/password/reset */
+export async function resetPassword(body: any, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<boolean>>('/api/user/password/reset', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
 /**获取角色列表 */
 export async function roleList(options?: { [key: string]: any }) {
   return request<API.BaseResponse<API.RoleSimple[]>>('/api/role/list', {
