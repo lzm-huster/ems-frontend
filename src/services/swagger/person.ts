@@ -15,3 +15,10 @@ export async function deleteDeviceByDeviceID(
     ...(options || {}),
   });
 }
+
+export async function updateInfo(body: any) {
+  return request(`/api/user/updateInfo`, {
+    method: 'POST',
+    data: body,
+  });
+}

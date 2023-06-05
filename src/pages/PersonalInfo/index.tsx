@@ -1,11 +1,11 @@
-import { Card, Avatar, Divider, Table, Space, Form, Button, Row, Col, message } from 'antd';
+import { Card, Avatar, Divider, Table, Space, Form, Button, Row, Col, message, Input } from 'antd';
 import { EditOutlined, MailOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
 import './index.less';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/lib/transfer/search';
 import { getDeviceList } from '@/services/swagger/device';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import { useModel } from 'umi';
 import { deleteDeviceByDeviceID } from '@/services/swagger/person';
@@ -56,16 +56,16 @@ const PersonalInfo: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
   const [initDevice, setInitDevice] = useState([]);
-  const [searchDevice, setSerachDevice] = useState([]);
+  const [searchDevice, setSearchDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
   //added
   const { initialState } = useModel('@@initialState');
-
   const { currentUser } = initialState;
+  const firstUpdate = useRef(true);
 
   const history = useHistory();
   const handleClick = () => {
-    history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
+    history.push('/personalCenter/personalInfo/editDetail'); // 将路由定向到/my-page
   };
 
   const initial = async () => {
@@ -82,6 +82,7 @@ const PersonalInfo: React.FC = () => {
     initial();
   }, []);
 
+  //批量删除
   const massRemove = () => {
     setLoading(true);
 
@@ -116,6 +117,26 @@ const PersonalInfo: React.FC = () => {
     }, 1000);
   };
 
+  //查询
+  const handleSearch = (value: string) => {
+    setSearchDevice(
+      initDevice.filter((device: Device) => {
+        return device.deviceID.toString().includes(value) || device.deviceName.includes(value);
+      }),
+    );
+  };
+
+  //防止首次查询时出现message通知
+  useLayoutEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    } else {
+      if (searchDevice.length === 0) message.error('未找到');
+      else message.success('查询成功');
+    }
+  }, [searchDevice]);
+
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
@@ -143,7 +164,8 @@ const PersonalInfo: React.FC = () => {
               </div>
               <div className="nickname">{currentUser.userName}</div>
               <div className="nickname">
-                <SolutionOutlined /> {currentUser.roleList} <Divider type="vertical" />
+                <SolutionOutlined /> {currentUser.roleName ? currentUser.roleName : '普通用户'}{' '}
+                <Divider type="vertical" />
                 <MailOutlined /> {currentUser.email}
               </div>
             </div>
@@ -161,12 +183,19 @@ const PersonalInfo: React.FC = () => {
               </Button>
             </Col>
             <Col span={8}>
-              <Search placeholder="请输入你需要搜索的记录编号或设备名称" />
+              <Input.Search
+                placeholder="请输入你需要搜索的记录编号或设备名称"
+                onSearch={handleSearch}
+              />
             </Col>
           </Row>
         </Form.Item>
         <Form.Item>
-          <Table rowSelection={rowSelection} columns={columns} dataSource={showDevice} />
+          <Table
+            rowSelection={rowSelection}
+            columns={columns}
+            dataSource={searchDevice.length > 0 ? searchDevice : showDevice}
+          />
         </Form.Item>
       </Form>
     </PageContainer>
