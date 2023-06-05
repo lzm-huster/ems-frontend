@@ -161,6 +161,14 @@ export default [
         hideInMenu: true,
       },
       {
+        //added
+        path: '/personalCenter/personalInfo/editDetail',
+        name: '编辑个人信息',
+        component: './PersonalInfo/EditDetail',
+        parentKeys: ['/personalCenter/personalInfo'],
+        hideInMenu: true,
+      },
+      {
         path: '/personalCenter/deviceDetail',
         name: '设备详情',
         // icon: 'smile',
