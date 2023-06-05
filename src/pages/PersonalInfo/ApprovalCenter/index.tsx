@@ -28,7 +28,7 @@ import { Menu } from 'antd';
 import './index.less';
 import { ActionType, PageContainer } from '@ant-design/pro-components';
 import { useHistory } from 'umi';
-import { purchaseApprovalList } from '@/services/swagger/Approval';
+import { purchaseApprovalList } from '@/services/swagger/approval';
 
 const tailLayout = {
   wrapperCol: { offset: 21, span: 16 },

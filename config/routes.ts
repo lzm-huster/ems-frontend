@@ -99,6 +99,14 @@ export default [
         hideInMenu: true,
       },
       {
+        path: '/deviceManagement/check/detail',
+        name: '核查记录详情',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceCheck/DetailCheck',
+        parentKeys: ['/deviceManagement/check'],
+        hideInMenu: true,
+      },
+      {
         path: '/deviceManagement/scrap',
         name: '设备报废',
         icon: 'smile',

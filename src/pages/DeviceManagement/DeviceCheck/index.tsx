@@ -1,14 +1,15 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Row, Statistic } from 'antd';
-import { useState } from 'react';
+import { Button, Card, Col, Row, Space, Statistic } from 'antd';
+import { useEffect, useState } from 'react';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { getCheckList } from '@/services/swagger/check';
 import { ColumnsType } from 'antd/es/table';
 
 interface CheckRecord {
   key: React.Key;
   checkID: number;
-  checkTime: Date;
+  checkTime: string;
   checker: string;
   deviceID: number;
   deviceName: string;
@@ -16,8 +17,24 @@ interface CheckRecord {
 }
 
 const DeviceCheck: React.FC = () => {
-  const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState<CheckRecord[]>([]);
+  const [currentRow, setCurrentRow] = useState<CheckRecord>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  const initial = async () => {
+    const res = await getCheckList();
+    if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+        res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
+      }
+      setTableData(res.data);
+    }
+  };
+
+  useEffect(() => {
+    initial();
+  }, []);
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
@@ -60,15 +77,15 @@ const DeviceCheck: React.FC = () => {
       title: '核查时间',
       dataIndex: 'checkTime',
       valueType: 'date',
-      // sorter: (a, b) => {
-      //   if (a.purchaseDate === null || b.purchaseDate === null) {
-      //     return 0;
-      //   } else {
-      //     const aDate = Date.parse(a.purchaseDate);
-      //     const bDate = Date.parse(b.purchaseDate);
-      //     return aDate - bDate;
-      //   }
-      // },
+      sorter: (a: CheckRecord, b: CheckRecord) => {
+        if (a.checkTime === null || b.checkTime === null) {
+          return 0;
+        } else {
+          const aDate = Date.parse(a.checkTime);
+          const bDate = Date.parse(b.checkTime);
+          return aDate - bDate;
+        }
+      },
       hideInSearch: true,
     },
     {
@@ -81,28 +98,39 @@ const DeviceCheck: React.FC = () => {
       title: '操作',
       valueType: 'option',
       key: 'option',
-      render: (text, record, _, action) => [
-        <a
-          key="editable"
-          onClick={() => {
-            // setCurrentRow(record);
-            // console.log(record);
-            // setEditVisible(true);
-            // action?.startEditable?.(record.id);
-          }}
-        >
-          编辑
-        </a>,
-        <a
-          onClick={() => {
-            // setCurrentRow(record);
-            // setShowDetail(true);
-          }}
-          key="view"
-        >
-          查看详情
-        </a>,
-      ],
+      render: (text, record: CheckRecord, _, action) => {
+        return (
+          <Space size={'middle'}>
+            <a
+              key="editable"
+              onClick={() => {
+                // setCurrentRow(record);
+                // console.log(record);
+                // setEditVisible(true);
+                // action?.startEditable?.(record.id);
+              }}
+            >
+              编辑
+            </a>
+            <a
+              onClick={() => {
+                setCurrentRow(record);
+                // setShowDetail(true);
+              }}
+              key="view"
+            >
+              <Link
+                to={{
+                  pathname: '/deviceManagement/check/detail',
+                  state: { checkID: record.checkID },
+                }}
+              >
+                详情
+              </Link>
+            </a>
+          </Space>
+        );
+      },
     },
   ];
 
