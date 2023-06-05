@@ -10,6 +10,7 @@ import {
 import { Button, Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useState } from 'react';
+import { useLocation } from 'umi';
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -17,17 +18,24 @@ const getBase64 = (file: RcFile): Promise<string> =>
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
   });
+
+interface stateType {
+  checkID: number;
+}
+//使用钩子获取state
+
 const DetailCheck: React.FC = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [checkRecord, setCheckRecord] = useState();
-  const [isEditable, setEditable] = useState(false);
+  const [isUneditable, setUneditable] = useState(true);
+  const { state } = useLocation<stateType>();
 
   const submitterEdit = () => {
     return [
-      <Button key="submit" type="primary" onClick={() => setEditable(true)}>
+      <Button key="submit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
         修改
       </Button>,
     ];
@@ -35,7 +43,14 @@ const DetailCheck: React.FC = () => {
 
   const submitterSubmit = (props) => {
     return [
-      <Button key="submit" type="primary" onClick={() => props.form?.submit()}>
+      <Button
+        key="submit"
+        type="primary"
+        onClick={() => {
+          props.form?.submit();
+          setUneditable(true);
+        }}
+      >
         提交
       </Button>,
     ];
@@ -67,8 +82,8 @@ const DetailCheck: React.FC = () => {
           <ProForm
             style={{ width: 600 }}
             initialValues={checkRecord}
-            disabled={isEditable}
-            submitter={{ render: isEditable ? submitterSubmit : submitterEdit }}
+            disabled={isUneditable}
+            submitter={{ render: isUneditable ? submitterEdit : submitterSubmit }}
             resetter={{ render: resetterRender }}
           >
             <ProFormSelect label={'设备编号'} name={'deviceId'} required />
