@@ -113,6 +113,7 @@ const UserManage: React.FC = () => {
     {
       title: '操作',
       valueType: 'option',
+      width: 200,
       key: 'option',
       render: (text, record, _, action) => [
         <a
@@ -125,6 +126,9 @@ const UserManage: React.FC = () => {
           }}
         >
           编辑
+        </a>,
+        <a onClick={() => {}} key="reset">
+          重置密码
         </a>,
         <a
           onClick={() => {

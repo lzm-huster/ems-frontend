@@ -1,4 +1,4 @@
-import { Card, Avatar, Divider, Table, Space, Form, Button, Row, Col } from 'antd';
+import { Card, Avatar, Divider, Table, Space, Form, Button, Row, Col, message } from 'antd';
 import { EditOutlined, MailOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
 import './index.less';
 import { PageContainer } from '@ant-design/pro-components';
@@ -7,6 +7,8 @@ import Search from 'antd/lib/transfer/search';
 import { getDeviceList } from '@/services/swagger/device';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
+import { useModel } from 'umi';
+import { deleteDeviceByDeviceID } from '@/services/swagger/person';
 
 interface Device {
   key: React.Key;
@@ -29,54 +31,37 @@ const columns: ColumnsType<Device> = [
     dataIndex: 'deviceName',
   },
   {
-    title: '设备类型',
-    dataIndex: 'deviceType',
-  },
-  {
-    title: '设备参数',
-    dataIndex: 'deviceModel',
+    title: '添加时间',
+    dataIndex: 'purchaseDate',
   },
   {
     title: '设备状态',
     dataIndex: 'deviceState',
   },
   {
-    title: '负责人',
-    dataIndex: 'userName',
-  },
-  {
-    title: '购入时间',
-    dataIndex: 'purchaseDate',
-  },
-  {
     title: '操作',
     key: 'action',
     render: () => (
       <Space size="middle">
-        <a>详情</a>
-        <a>借用</a>
-        <a>维修</a>
-        <a>保养</a>
-        <a>报废</a>
-        <a>修改</a>
-        <a>删除</a>
+        <a>查看详情</a>
+        <a>修改记录</a>
+        <a>删除记录</a>
       </Space>
     ),
   },
 ];
 
-// const rowSelection = {
-//   onChange: (selectedRowKeys: React.Key[], selectedRows: ColumnsType[]) => {
-//     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-//   },
-// };
-
 const PersonalInfo: React.FC = () => {
   const [form] = Form.useForm();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [loading, setLoading] = useState(false);
   const [initDevice, setInitDevice] = useState([]);
   const [searchDevice, setSerachDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
+  //added
+  const { initialState } = useModel('@@initialState');
+
+  const { currentUser } = initialState;
 
   const history = useHistory();
   const handleClick = () => {
@@ -86,6 +71,9 @@ const PersonalInfo: React.FC = () => {
   const initial = async () => {
     const res = await getDeviceList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+      }
       setInitDevice(res.data);
       setShowDevice(res.data);
     }
@@ -93,6 +81,40 @@ const PersonalInfo: React.FC = () => {
   useEffect(() => {
     initial();
   }, []);
+
+  const massRemove = () => {
+    setLoading(true);
+
+    const selectedDeviceIds = selectedRowKeys
+      .map((selectedKey) => {
+        const selectedDevice = showDevice.find((device: Device) => device.key === selectedKey);
+        if (selectedDevice && selectedDevice.deviceID) {
+          return selectedDevice.deviceID;
+        }
+        return null;
+      })
+      .filter((deviceId): deviceId is number => deviceId !== null);
+    console.log('test', selectedDeviceIds);
+    // 依次删除每个设备
+    const deletePromises = selectedDeviceIds.map((deviceID) =>
+      deleteDeviceByDeviceID({ DeviceID: deviceID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then((results) => {
+      if (results.every((result) => result)) {
+        const newShowDevice = showDevice.filter((item) => !selectedRowKeys.includes(item.key));
+        setShowDevice(newShowDevice);
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
+  };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
@@ -112,12 +134,17 @@ const PersonalInfo: React.FC = () => {
           <Card>
             <div className="content">
               <div className="avatar-container">
-                <Avatar className="avatar" size={64} icon={<UserOutlined />} />
+                <Avatar
+                  className="avatar"
+                  src={currentUser.avatar}
+                  size={64}
+                  icon={<UserOutlined />}
+                />
               </div>
-              <div className="nickname">昵称</div>
+              <div className="nickname">{currentUser.userName}</div>
               <div className="nickname">
-                <SolutionOutlined /> 教职工 <Divider type="vertical" />
-                <MailOutlined /> 173646139@qq.com
+                <SolutionOutlined /> {currentUser.roleList} <Divider type="vertical" />
+                <MailOutlined /> {currentUser.email}
               </div>
             </div>
             <EditOutlined onClick={handleClick} className="edit-icon" />
@@ -129,7 +156,9 @@ const PersonalInfo: React.FC = () => {
               <Button type="primary">新增设备</Button>
             </Col>
             <Col span={3}>
-              <Button type="primary">批量删除设备</Button>
+              <Button danger onClick={massRemove} disabled={!hasSelected}>
+                批量删除设备
+              </Button>
             </Col>
             <Col span={8}>
               <Search placeholder="请输入你需要搜索的记录编号或设备名称" />

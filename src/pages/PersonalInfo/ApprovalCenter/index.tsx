@@ -25,78 +25,10 @@ import {
   Upload,
 } from 'antd';
 import { Menu } from 'antd';
-import FormItem from 'antd/lib/form/FormItem';
-import TabPane from 'antd/lib/tabs/TabPane';
 import './index.less';
-import TableList from '@/pages/TableList';
-import {
-  ActionType,
-  ModalForm,
-  PageContainer,
-  ProFormRadio,
-  ProFormSelect,
-  ProFormText,
-  ProTable,
-} from '@ant-design/pro-components';
+import { ActionType, PageContainer } from '@ant-design/pro-components';
 import { useHistory } from 'umi';
-import { getDeviceList } from '@/services/swagger/device';
-
-interface Device {
-  key: React.Key;
-  deviceID: number;
-  deviceModel: string;
-  deviceName: string;
-  deviceState: string;
-  deviceType: string;
-  purchaseDate: Date;
-  userName: string;
-}
-
-const columns: ColumnsType<Device> = [
-  {
-    title: '设备编号',
-    dataIndex: 'deviceID',
-  },
-  {
-    title: '设备名称',
-    dataIndex: 'deviceName',
-  },
-  {
-    title: '设备类型',
-    dataIndex: 'deviceType',
-  },
-  {
-    title: '设备参数',
-    dataIndex: 'deviceModel',
-  },
-  {
-    title: '设备状态',
-    dataIndex: 'deviceState',
-  },
-  {
-    title: '负责人',
-    dataIndex: 'userName',
-  },
-  {
-    title: '购入时间',
-    dataIndex: 'purchaseDate',
-  },
-  {
-    title: '操作',
-    key: 'action',
-    render: () => (
-      <Space size="middle">
-        <a>详情</a>
-        <a>借用</a>
-        <a>维修</a>
-        <a>保养</a>
-        <a>报废</a>
-        <a>修改</a>
-        <a>删除</a>
-      </Space>
-    ),
-  },
-];
+import { purchaseApprovalList } from '@/services/swagger/Approval';
 
 const tailLayout = {
   wrapperCol: { offset: 21, span: 16 },
@@ -124,18 +56,71 @@ const ApprovalCenter: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [initDevice, setInitDevice] = useState([]);
   const [searchDevice, setSerachDevice] = useState([]);
-  const [showDevice, setShowDevice] = useState([]);
+  const [PurchaseApproval, setPurchaseApproval] = useState([]);
   const actionRef = useRef<ActionType>();
   const history = useHistory();
   const handleClick = () => {
     history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
   };
 
+  const purchaseColumns = [
+    {
+      title: '审批编号',
+      dataIndex: 'index',
+      valueType: 'index',
+      width: 100,
+    },
+    {
+      title: '申请内容',
+      dataIndex: 'deviceList',
+    },
+    {
+      title: '申请时间',
+      dataIndex: 'purchaseApplyDate',
+    },
+    {
+      title: '申请人',
+      dataIndex: 'userName',
+    },
+    {
+      title: '备注',
+      dataIndex: 'purchaseApplyState',
+    },
+    // {
+    //   title: '操作',
+    //   key: 'action',
+    //   width: 200,
+    //   render: () => (
+    //     <Space size="middle">
+    //       <a>同意</a>
+    //       <a>驳回</a>
+    //     </Space>
+    // ),
+    // },
+    {
+      title: '操作',
+      key: 'action',
+      width: 400,
+      render: () => (
+        <Space size="middle">
+          <a>详情</a>
+          <a>借用</a>
+          <a>维修</a>
+          <a>保养</a>
+          <a>报废</a>
+          <a>修改</a>
+          <a>删除</a>
+        </Space>
+      ),
+    },
+  ];
+
+  //获取数据
   const initial = async () => {
-    const res = await getDeviceList();
+    const res = await purchaseApprovalList({ state: '未审批' });
     if (res.code === 20000) {
       setInitDevice(res.data);
-      setShowDevice(res.data);
+      setPurchaseApproval(res.data);
     }
   };
   useEffect(() => {
@@ -249,7 +234,11 @@ const ApprovalCenter: React.FC = () => {
               </Button>
             </Col>
           </Row>
-          <Table rowSelection={rowSelection} columns={columns} dataSource={showDevice} />
+          <Table
+            rowSelection={rowSelection}
+            columns={purchaseColumns}
+            dataSource={PurchaseApproval}
+          />
         </Space>
       </Card>
     </PageContainer>

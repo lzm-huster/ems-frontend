@@ -153,6 +153,24 @@ export default [
         hideInMenu: true,
       },
       {
+        path: '/personalCenter/deviceDetail',
+        name: '设备详情',
+        // icon: 'smile',
+        component: './PersonalInfo/DeviceDetail',
+      },
+      {
+        path: '/personalCenter/approvalCenter',
+        name: '审批中心',
+        // icon: 'smile',
+        component: './PersonalInfo/ApprovalCenter',
+      },
+      {
+        path: '/personalCenter/systemNotification',
+        name: '系统通知',
+        icon: 'smile',
+        component: './PersonalInfo/SystemNotification',
+      },
+      {
         component: './404',
       },
     ],

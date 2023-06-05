@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Input, Space, Button, FormInstance, Form } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { PageContainer } from '@ant-design/pro-components';
 import { getDeviceList } from '@/services/swagger/device';
+import { PageContainer } from '@ant-design/pro-components';
+import { Button, Form, FormInstance, Input, Space } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'umi';
 import GeneralTable from './generalTable/GeneralTable';
 
@@ -75,6 +75,7 @@ const columns: ColumnsType<Device> = [
   {
     title: '操作',
     key: 'action',
+    width: 400,
     render: () => (
       <Space size="middle">
         <a>详情</a>
