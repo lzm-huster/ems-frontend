@@ -12,7 +12,7 @@ interface MaintenanceRecord {
   deviceName: string;
   maintenanceContent: string;
   maintenanceID: 0;
-  maintenanceTime: Date;
+  maintenanceTime: string;
 }
 
 const columns: ColumnsType<MaintenanceRecord> = [
@@ -32,10 +32,12 @@ const columns: ColumnsType<MaintenanceRecord> = [
     title: '保养时间',
     dataIndex: 'maintenanceTime',
     sorter: (a, b) => {
-      if (a.maintenanceTime.getTime() === null || b.maintenanceTime.getTime() === null) {
+      if (a.maintenanceTime === null || b.maintenanceTime === null) {
         return 0;
       } else {
-        return a.maintenanceTime.getTime() - b.maintenanceTime.getTime();
+        const aDate = Date.parse(a.maintenanceTime);
+        const bDate = Date.parse(b.maintenanceTime);
+        return aDate - bDate;
       }
     },
   },
@@ -70,6 +72,7 @@ const Maintenance: React.FC = () => {
 
     if (res.code === 20000) {
       for (let i = 0; i < res.data.length; i++) {
+        res.data[i].maintenanceTime = new Date(res.data[i].maintenanceTime).toLocaleString();
         res.data[i].key = i;
       }
       setInitMaintenance(res.data);

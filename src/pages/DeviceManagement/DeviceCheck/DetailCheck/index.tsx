@@ -25,7 +25,7 @@ const DetailCheck: React.FC = () => {
   const [checkRecord, setCheckRecord] = useState();
   const [isEditable, setEditable] = useState(false);
 
-  const submitterRender = (props, defaultDoms) => {
+  const submitterEdit = () => {
     return [
       <Button key="submit" type="primary" onClick={() => setEditable(true)}>
         修改
@@ -33,12 +33,16 @@ const DetailCheck: React.FC = () => {
     ];
   };
 
-  const resetterRender = (props, defaultDoms) => {
+  const submitterSubmit = (props) => {
     return [
-      <Button key="reset" onClick={() => props.form?.resetFields()}>
-        自定义重置
+      <Button key="submit" type="primary" onClick={() => props.form?.submit()}>
+        提交
       </Button>,
     ];
+  };
+
+  const resetterRender = () => {
+    return [<Button key="reset">删除</Button>];
   };
 
   const handleCancel = () => setPreviewOpen(false);
@@ -56,10 +60,6 @@ const DetailCheck: React.FC = () => {
   const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) =>
     setFileList(newFileList);
 
-  const handleEdit = () => {
-    setEditable(true);
-  };
-
   return (
     <PageContainer>
       <Card>
@@ -68,7 +68,8 @@ const DetailCheck: React.FC = () => {
             style={{ width: 600 }}
             initialValues={checkRecord}
             disabled={isEditable}
-            submitter={{ render: submitterRender }}
+            submitter={{ render: isEditable ? submitterSubmit : submitterEdit }}
+            resetter={{ render: resetterRender }}
           >
             <ProFormSelect label={'设备编号'} name={'deviceId'} required />
             <ProFormText

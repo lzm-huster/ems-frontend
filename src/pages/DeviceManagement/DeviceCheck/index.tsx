@@ -60,7 +60,15 @@ const DeviceCheck: React.FC = () => {
       title: '核查时间',
       dataIndex: 'checkTime',
       valueType: 'date',
-      sorter: true,
+      // sorter: (a, b) => {
+      //   if (a.purchaseDate === null || b.purchaseDate === null) {
+      //     return 0;
+      //   } else {
+      //     const aDate = Date.parse(a.purchaseDate);
+      //     const bDate = Date.parse(b.purchaseDate);
+      //     return aDate - bDate;
+      //   }
+      // },
       hideInSearch: true,
     },
     {
@@ -101,7 +109,7 @@ const DeviceCheck: React.FC = () => {
   return (
     <PageContainer>
       <div style={{ marginBottom: 10 }}>
-        <Row gutter={10}>
+        <Row gutter={[16, 24]}>
           <Col span={12}>
             <Card bordered={false}>
               <Statistic
@@ -124,16 +132,18 @@ const DeviceCheck: React.FC = () => {
               />
             </Card>
           </Col>
+          <Col span={24}>
+            <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
+              <Button type="primary">
+                <Link to={'/deviceManagement/check/add'}>新增核查记录</Link>
+              </Button>
+              <Button danger disabled={!hasSelected}>
+                批量删除记录
+              </Button>
+            </GeneralTable>
+          </Col>
         </Row>
       </div>
-      <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
-        <Button type="primary">
-          <Link to={'/deviceManagement/check/add'}>新增核查记录</Link>
-        </Button>
-        <Button danger disabled={!hasSelected}>
-          批量删除记录
-        </Button>
-      </GeneralTable>
     </PageContainer>
   );
 };

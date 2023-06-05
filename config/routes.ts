@@ -49,6 +49,14 @@ export default [
         component: './DeviceManagement/DeviceBorrow',
       },
       {
+        path: '/deviceManagement/borrow/addBorrowApply',
+        name: '新增设备借用申请',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceBorrow/AddBorrowApp',
+        parentKeys: ['/deviceManagement/borrow'],
+        hideInMenu: true,
+      },
+      {
         path: '/deviceManagement/repair',
         name: '设备维修',
         icon: 'smile',

@@ -10,7 +10,7 @@ interface PurchaseApply {
   key: React.Key;
   approveTutorName: string;
   deviceList: string;
-  purchaseApplyDate: Date;
+  purchaseApplyDate: string;
   purchaseApplySheetID: number;
   purchaseApplyState: string;
   userName: string;
@@ -47,10 +47,12 @@ const columns: ColumnsType<PurchaseApply> = [
     title: '申请时间',
     dataIndex: 'purchaseApplyDate',
     sorter: (a, b) => {
-      if (a.purchaseApplyDate.getTime() === null || b.purchaseApplyDate.getTime() === null) {
+      if (a.purchaseApplyDate === null || b.purchaseApplyDate === null) {
         return 0;
       } else {
-        return a.purchaseApplyDate.getTime() - b.purchaseApplyDate.getTime();
+        const aDate = Date.parse(a.purchaseApplyDate);
+        const bDate = Date.parse(b.purchaseApplyDate);
+        return aDate - bDate;
       }
     },
     onCell: (data) => {
@@ -92,6 +94,9 @@ const PurchaseApp: React.FC = () => {
   const initial = async () => {
     const res = await getPurchaseApplySheetList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].purchaseApplyDate = new Date(res.data[i].purchaseApplyDate).toLocaleString();
+      }
       const initData = res.data;
       let sameN = 0;
       for (let i = 0, j = 0; i < initData.length; i++) {

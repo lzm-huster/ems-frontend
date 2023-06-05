@@ -13,7 +13,7 @@ interface RepairRecord {
   repairContent: string;
   repairFee: 0;
   repairID: 0;
-  repairTime: Date;
+  repairTime: string;
 }
 
 const columns: ColumnsType<RepairRecord> = [
@@ -33,10 +33,12 @@ const columns: ColumnsType<RepairRecord> = [
     title: '维修时间',
     dataIndex: 'repairTime',
     sorter: (a, b) => {
-      if (a.repairTime.getTime() === null || b.repairTime.getTime() === null) {
+      if (a.repairTime === null || b.repairTime === null) {
         return 0;
       } else {
-        return a.repairTime.getTime() - b.repairTime.getTime();
+        const aDate = Date.parse(a.repairTime);
+        const bDate = Date.parse(b.repairTime);
+        return aDate - bDate;
       }
     },
   },
@@ -74,6 +76,7 @@ const Repair: React.FC = () => {
     const res = await getRepairList();
     if (res.code === 20000) {
       for (let i = 0; i < res.data.length; i++) {
+        res.data[i].repairTime = new Date(res.data[i].repairTime).toLocaleString();
         res.data[i].key = i;
       }
       setInitRepair(res.data);

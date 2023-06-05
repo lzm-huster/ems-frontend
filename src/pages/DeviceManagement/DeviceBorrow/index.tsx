@@ -9,7 +9,7 @@ import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 interface BorrowRecord {
   key: React.Key;
   approveTutorName: string;
-  borrowApplyDate: Date;
+  borrowApplyDate: string;
   borrowApplyID: number;
   borrowApplyState: string;
   deviceList: string;
@@ -47,10 +47,12 @@ const columns: ColumnsType<BorrowRecord> = [
     title: '借用时间',
     dataIndex: 'borrowApplyDate',
     sorter: (a, b) => {
-      if (a.borrowApplyDate.getTime() === null || b.borrowApplyDate.getTime() === null) {
+      if (a.borrowApplyDate === null || b.borrowApplyDate === null) {
         return 0;
       } else {
-        return a.borrowApplyDate.getTime() - b.borrowApplyDate.getTime();
+        const aDate = Date.parse(a.borrowApplyDate);
+        const bDate = Date.parse(b.borrowApplyDate);
+        return aDate - bDate;
       }
     },
     onCell: (data) => {
@@ -129,6 +131,9 @@ const Borrow: React.FC = () => {
     const res2 = await getBorrowDeviceNumber();
 
     if (res1.code === 20000) {
+      for (let i = 0; i < res1.data.length; i++) {
+        res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+      }
       const initData = rowCombination(res1.data);
       setInitBorrow(initData);
       setShowBorrow(initData);
@@ -200,7 +205,7 @@ const Borrow: React.FC = () => {
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showBorrow} columns={columns}>
             <Button type="primary">
-              <Link to={'/deviceManagement/repair/addRecord'}>新增借用申请</Link>
+              <Link to={'/deviceManagement/borrow/addBorrowApply'}>新增借用申请</Link>
             </Button>
             <Button onClick={start} disabled={!hasSelected}>
               批量归还设备

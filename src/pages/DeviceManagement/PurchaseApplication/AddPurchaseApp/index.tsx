@@ -259,7 +259,7 @@ const AddPurchaseApp: React.FC = () => {
                   }}
                   icon={<PlusOutlined />}
                 >
-                  添加借用设备
+                  添加采购设备
                 </Button>
               </Form.Item>
             </>
