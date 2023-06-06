@@ -7,9 +7,11 @@ import {
   ProFormTextArea,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Card, Modal } from 'antd';
+import { Button, Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'umi';
+import { getScrapDetail } from '@/services/swagger/scrap';
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -19,11 +21,62 @@ const getBase64 = (file: RcFile): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 
-const AddScrap: React.FC = () => {
+interface stateType {
+  scrapID: number;
+  deviceName: string;
+  edit: boolean;
+}
+
+const DetailCheck: React.FC = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [scrapRecord, setScrapRecord] = useState();
+  const [isUneditable, setUneditable] = useState(true);
+  const { state } = useLocation<stateType>();
+
+  const initial = async () => {
+    const res = await getScrapDetail({ scrapID: state.scrapID });
+    if (res.code === 20000) {
+      res.data.scrapTime = new Date(res.data.scrapTime).toLocaleString();
+      res.data.deviceName = state.deviceName;
+      setScrapRecord(res.data);
+      setUneditable(!state.edit);
+    }
+  };
+
+  useEffect(() => {
+    initial();
+  }, []);
+
+  const submitterEdit = () => {
+    return [
+      <Button key="submit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
+        修改
+      </Button>,
+    ];
+  };
+
+  const submitterSubmit = (props) => {
+    return [
+      <Button
+        key="submit"
+        type="primary"
+        onClick={() => {
+          props.form?.submit();
+          setUneditable(true);
+        }}
+      >
+        提交
+      </Button>,
+    ];
+  };
+
+  const resetterRender = () => {
+    return [<Button key="reset">删除</Button>];
+  };
+
   const handleCancel = () => setPreviewOpen(false);
 
   const handlePreview = async (file: UploadFile) => {
@@ -43,8 +96,21 @@ const AddScrap: React.FC = () => {
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm style={{ width: 600 }}>
-            <ProFormSelect label={'设备编号'} name={'deviceId'} required />
+          <ProForm
+            style={{ width: 600 }}
+            initialValues={scrapRecord}
+            disabled={isUneditable}
+            submitter={{ render: isUneditable ? submitterEdit : submitterSubmit }}
+            //resetter={{ render: resetterRender }}
+            params={scrapRecord}
+            request={(params) => {
+              return Promise.resolve({
+                data: params,
+                success: true,
+              });
+            }}
+          >
+            <ProFormSelect label={'设备编号'} name={'deviceID'} required />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -54,7 +120,7 @@ const AddScrap: React.FC = () => {
             />
             <ProFormText
               label={'设备负责人'}
-              name={'responsibleUser'}
+              name={'scrapPerson'}
               disabled={true}
               placeholder={'根据设备编号自动填写'}
               required
@@ -62,7 +128,7 @@ const AddScrap: React.FC = () => {
 
             <ProFormDateTimePicker
               width={300}
-              name="date"
+              name="scrapTime"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}
@@ -71,14 +137,14 @@ const AddScrap: React.FC = () => {
             />
 
             <ProFormTextArea
-              name="reason"
+              name="scrapReason"
               label="报废原因"
               placeholder="报废原因说明"
               // fieldProps={inputTextAreaProps}
             />
             <>
               <ProFormUploadButton
-                name="upload"
+                name="scrapImage"
                 label="报废图片"
                 max={5}
                 fieldProps={{
@@ -101,4 +167,4 @@ const AddScrap: React.FC = () => {
     </PageContainer>
   );
 };
-export default AddScrap;
+export default DetailCheck;

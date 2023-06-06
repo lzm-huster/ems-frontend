@@ -136,12 +136,7 @@ const AddPurchaseApp: React.FC = () => {
                       `  设备${key + 1}`,
                     ]}
                   >
-                    <Row gutter={16}>
-                      <Col span={8}>
-                        <Form.Item label="设备编号" labelCol={{ offset: 0, span: 4 }}>
-                          <Input placeholder="提交后自动生成" disabled />
-                        </Form.Item>
-                      </Col>
+                    <Row gutter={[16, 12]}>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
@@ -172,8 +167,6 @@ const AddPurchaseApp: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                    </Row>
-                    <Row gutter={16}>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
@@ -189,15 +182,15 @@ const AddPurchaseApp: React.FC = () => {
                         <Form.Item
                           {...restField}
                           name={[name, 'unitPrice']}
-                          rules={[{ required: true, message: '设备单价未填写！' }]}
-                          label="设备单价"
+                          rules={[{ required: true, message: '采购预算未填写！' }]}
+                          label="采购预算"
                           labelCol={{ span: 9 }}
                         >
                           <InputNumber<string>
                             min="0"
                             addonAfter={'￥'}
                             step="0.01"
-                            placeholder="设备单价"
+                            placeholder="采购预算"
                             stringMode
                           />
                         </Form.Item>
@@ -211,40 +204,6 @@ const AddPurchaseApp: React.FC = () => {
                           labelCol={{ span: 11 }}
                         >
                           <InputNumber min={1} placeholder="设备数量" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'assetNum']}
-                          rules={[{ required: true, message: '资产编号未填写！' }]}
-                          label="资产编号"
-                          labelCol={{ span: 4 }}
-                        >
-                          <Input placeholder="资产编号" />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    <Row gutter={16}>
-                      <Col span={4}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'borrowRate']}
-                          rules={[{ required: false, message: '借用费率未填写！' }]}
-                          label="借用费率"
-                          labelCol={{ span: 9 }}
-                        >
-                          <InputNumber disabled placeholder="借用费率" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'deviceSpecification']}
-                          label="设备说明"
-                          labelCol={{ span: 4 }}
-                        >
-                          <Input placeholder="设备说明" />
                         </Form.Item>
                       </Col>
                     </Row>

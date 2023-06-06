@@ -6,3 +6,14 @@ export async function getCheckList(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+export async function getCheckDetail(
+  params: { checkID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/check/getCheckDetail', {
+    method: 'GET',
+    ...(options || {}),
+    params: { ...params },
+  });
+}

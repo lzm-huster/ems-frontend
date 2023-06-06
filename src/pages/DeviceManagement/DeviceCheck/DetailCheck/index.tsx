@@ -1,3 +1,4 @@
+import { getCheckDetail } from '@/services/swagger/check';
 import {
   PageContainer,
   ProForm,
@@ -9,7 +10,7 @@ import {
 } from '@ant-design/pro-components';
 import { Button, Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'umi';
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -21,6 +22,8 @@ const getBase64 = (file: RcFile): Promise<string> =>
 
 interface stateType {
   checkID: number;
+  deviceName: string;
+  edit: boolean;
 }
 //使用钩子获取state
 
@@ -32,6 +35,20 @@ const DetailCheck: React.FC = () => {
   const [checkRecord, setCheckRecord] = useState();
   const [isUneditable, setUneditable] = useState(true);
   const { state } = useLocation<stateType>();
+
+  const initial = async () => {
+    const res = await getCheckDetail({ checkID: state.checkID });
+    if (res.code === 20000) {
+      res.data.scrapTime = new Date(res.data.scrapTime).toLocaleString();
+      res.data.deviceName = state.deviceName;
+      setCheckRecord(res.data);
+      setUneditable(!state.edit);
+    }
+  };
+
+  useEffect(() => {
+    initial();
+  }, []);
 
   const submitterEdit = () => {
     return [
@@ -54,10 +71,6 @@ const DetailCheck: React.FC = () => {
         提交
       </Button>,
     ];
-  };
-
-  const resetterRender = () => {
-    return [<Button key="reset">删除</Button>];
   };
 
   const handleCancel = () => setPreviewOpen(false);
@@ -84,9 +97,15 @@ const DetailCheck: React.FC = () => {
             initialValues={checkRecord}
             disabled={isUneditable}
             submitter={{ render: isUneditable ? submitterEdit : submitterSubmit }}
-            resetter={{ render: resetterRender }}
+            params={checkRecord}
+            request={(params) => {
+              return Promise.resolve({
+                data: params,
+                success: true,
+              });
+            }}
           >
-            <ProFormSelect label={'设备编号'} name={'deviceId'} required />
+            <ProFormSelect label={'设备编号'} name={'deviceID'} required />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -96,7 +115,7 @@ const DetailCheck: React.FC = () => {
             />
             <ProFormText
               label={'设备负责人'}
-              name={'responsibleUser'}
+              name={'checker'}
               disabled={true}
               placeholder={'根据设备编号自动填写'}
               required
@@ -105,7 +124,7 @@ const DetailCheck: React.FC = () => {
             <ProFormSelect label={'设备状态'} name={'deviceState'} required />
             <ProFormDateTimePicker
               width={300}
-              name="date"
+              name="checkTime"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}
@@ -121,7 +140,7 @@ const DetailCheck: React.FC = () => {
             />
             <>
               <ProFormUploadButton
-                name="upload"
+                name="checkImage"
                 label="核查图片"
                 max={5}
                 fieldProps={{

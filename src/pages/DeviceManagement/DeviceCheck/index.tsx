@@ -101,31 +101,24 @@ const DeviceCheck: React.FC = () => {
       render: (text, record: CheckRecord, _, action) => {
         return (
           <Space size={'middle'}>
-            <a
-              key="editable"
-              onClick={() => {
-                // setCurrentRow(record);
-                // console.log(record);
-                // setEditVisible(true);
-                // action?.startEditable?.(record.id);
-              }}
-            >
-              编辑
-            </a>
-            <a
-              onClick={() => {
-                setCurrentRow(record);
-                // setShowDetail(true);
-              }}
-              key="view"
-            >
+            <a key="editable">
               <Link
                 to={{
                   pathname: '/deviceManagement/check/detail',
-                  state: { checkID: record.checkID },
+                  state: { checkID: record.checkID, deviceName: record.deviceName, edit: false },
                 }}
               >
                 详情
+              </Link>
+            </a>
+            <a key="view">
+              <Link
+                to={{
+                  pathname: '/deviceManagement/check/detail',
+                  state: { checkID: record.checkID, deviceName: record.deviceName, edit: true },
+                }}
+              >
+                编辑
               </Link>
             </a>
           </Space>

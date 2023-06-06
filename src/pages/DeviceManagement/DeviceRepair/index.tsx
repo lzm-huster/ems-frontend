@@ -2,7 +2,7 @@ import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { getRepairList } from '@/services/swagger/repair';
-import Table, { ColumnsType } from 'antd/lib/table';
+import { ColumnsType } from 'antd/lib/table';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
@@ -53,10 +53,28 @@ const columns: ColumnsType<RepairRecord> = [
   {
     title: '操作',
     key: 'action',
-    render: () => (
+    render: (text, record: RepairRecord, _, action) => (
       <Space size="middle">
-        <a>详情</a>
-        <a>修改</a>
+        <a>
+          <Link
+            to={{
+              pathname: '/deviceManagement/repair/detail',
+              state: { repairID: record.repairID, deviceName: record.deviceName, edit: false },
+            }}
+          >
+            详情
+          </Link>
+        </a>
+        <a>
+          <Link
+            to={{
+              pathname: '/deviceManagement/repair/detail',
+              state: { repairID: record.repairID, deviceName: record.deviceName, edit: true },
+            }}
+          >
+            修改
+          </Link>
+        </a>
         <a>删除</a>
       </Space>
     ),
