@@ -14,6 +14,7 @@ import {
   Row,
   Select,
   Space,
+  TreeSelect,
   Upload,
   UploadProps,
 } from 'antd';
@@ -22,7 +23,18 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { getDeviceCategoryList } from '@/services/swagger/category';
 
+interface Category {
+  categoryCode: string;
+  categoryDesc: string;
+  categoryId: number;
+  categoryLevel: number;
+  categoryName: string;
+  categoryRemark: string;
+  parentId: number;
+  unit: string;
+}
 //日期
 dayjs.extend(customParseFormat);
 
@@ -33,6 +45,28 @@ const layout = {
   labelCol: { span: 4 },
   wrapperCol: { span: 20 },
 };
+
+function convertToTreeData(categories: Category[], parentId: number = 0) {
+  const treeData = [];
+  categories.forEach((category) => {
+    if (category.parentId === parentId) {
+      const node = {
+        title:
+          category.categoryDesc == null
+            ? category.categoryName
+            : category.categoryName + '-' + category.categoryDesc,
+        value: category.categoryCode,
+        key: category.categoryCode,
+      };
+      const children = convertToTreeData(categories, category.categoryId);
+      if (children.length > 0) {
+        node.children = children;
+      }
+      treeData.push(node);
+    }
+  });
+  return treeData;
+}
 
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
@@ -69,12 +103,17 @@ const AddDevice: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
 
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
+  const [tree, setTree] = useState([]);
 
   const initial = async () => {
     const res = await getUserInfo();
     if (res.code === 20000) {
       formRef.current?.setFieldsValue({ userName: res.data.userName });
       formRef.current?.setFieldsValue({ purchaseDate: dayjs(now, dateFormat) });
+    }
+    const category = await getDeviceCategoryList();
+    if (category.code === 20000) {
+      setTree(convertToTreeData(category.data));
     }
   };
   useEffect(() => {
@@ -162,14 +201,13 @@ const AddDevice: React.FC = () => {
                           label="设备类型"
                           labelCol={{ span: 4 }}
                         >
-                          <Select
+                          <TreeSelect
+                            showSearch
                             placeholder="设备类型"
-                            options={[
-                              { value: 'jack', label: 'Jack' },
-                              { value: 'lucy', label: 'Lucy' },
-                              { value: 'Yiminghe', label: 'yiminghe' },
-                              { value: 'disabled', label: 'Disabled', disabled: true },
-                            ]}
+                            treeData={tree}
+                            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                            allowClear
+                            treeDefaultExpandAll
                           />
                         </Form.Item>
                       </Col>

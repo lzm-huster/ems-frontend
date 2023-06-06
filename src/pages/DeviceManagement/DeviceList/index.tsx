@@ -8,7 +8,7 @@ import GeneralTable from './generalTable/GeneralTable';
 
 interface Device {
   key: React.Key;
-  deviceID: number;
+  deviceID: string;
   deviceModel: string;
   deviceName: string;
   deviceState: string;
@@ -20,7 +20,7 @@ interface Device {
 const columns: ColumnsType<Device> = [
   {
     title: '设备编号',
-    dataIndex: 'deviceID',
+    dataIndex: 'assetNumber',
   },
   {
     title: '设备名称',

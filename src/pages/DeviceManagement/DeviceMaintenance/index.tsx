@@ -48,10 +48,36 @@ const columns: ColumnsType<MaintenanceRecord> = [
   {
     title: '操作',
     key: 'action',
-    render: () => (
+    render: (record) => (
       <Space size="middle">
-        <a>详情</a>
-        <a>修改</a>
+        <a>
+          <Link
+            to={{
+              pathname: '/deviceManagement/maintenance/detail',
+              state: {
+                maintenanceID: record.maintenanceID,
+                deviceName: record.deviceName,
+                edit: false,
+              },
+            }}
+          >
+            详情
+          </Link>
+        </a>
+        <a>
+          <Link
+            to={{
+              pathname: '/deviceManagement/maintenance/detail',
+              state: {
+                maintenanceID: record.maintenanceID,
+                deviceName: record.deviceName,
+                edit: true,
+              },
+            }}
+          >
+            修改
+          </Link>
+        </a>
         <a>删除</a>
       </Space>
     ),

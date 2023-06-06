@@ -93,6 +93,14 @@ export default [
         hideInMenu: true,
       },
       {
+        path: '/deviceManagement/maintenance/detail',
+        name: '保养记录详情',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceMaintenance/MaintenanceDetail',
+        parentKeys: ['/deviceManagement/maintenance'],
+        hideInMenu: true,
+      },
+      {
         path: '/deviceManagement/check',
         name: '设备核查',
         icon: 'smile',
