@@ -7,6 +7,14 @@ export async function getDeviceList(options?: { [key: string]: any }) {
   });
 }
 
+export async function UpdateDevice(body: API.Device, options?: { [key: string]: any }) {
+  return request<any>('/api/device/UpdateDevice', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 // export async function insertDevice(
 //   params: {
 //     // path
