@@ -1,7 +1,7 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic } from 'antd';
 import React, { useState, useEffect } from 'react';
-import { getRepairList } from '@/services/swagger/repair';
+import { getRepairList, getRepairedNum, getRepairingNum } from '@/services/swagger/repair';
 import { ColumnsType } from 'antd/lib/table';
 import { Link } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
@@ -9,6 +9,7 @@ import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 interface RepairRecord {
   key: React.Key;
   deviceID: number;
+  assetNumber: string;
   deviceName: string;
   repairContent: string;
   repairFee: 0;
@@ -23,7 +24,7 @@ const columns: ColumnsType<RepairRecord> = [
   },
   {
     title: '设备编号',
-    dataIndex: 'deviceID',
+    dataIndex: 'assetNumber',
   },
   {
     title: '设备名称',
@@ -89,6 +90,8 @@ const Repair: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [initRepair, setInitRepair] = useState([]);
   const [showRepair, setShowRepair] = useState([]);
+  const [repairing, setRepairing] = useState(0);
+  const [repaired, setRepaired] = useState(0);
 
   const initial = async () => {
     const res = await getRepairList();
@@ -100,6 +103,14 @@ const Repair: React.FC = () => {
       setInitRepair(res.data);
       setShowRepair(res.data);
     }
+    const repairingNum = await getRepairingNum();
+    const repairedNum = await getRepairedNum();
+    if (repairedNum.code === 20000) {
+      setRepaired(repairedNum.data);
+    }
+    if (repairingNum.code === 20000) {
+      setRepairing(repairingNum.data);
+    }
   };
   useEffect(() => {
     initial();
@@ -109,7 +120,7 @@ const Repair: React.FC = () => {
     setShowRepair(
       value === ''
         ? initRepair
-        : showRepair.filter((item: RepairRecord) => {
+        : initRepair.filter((item: RepairRecord) => {
             return item['deviceName'].indexOf(value) != -1;
           }),
     );
@@ -142,7 +153,7 @@ const Repair: React.FC = () => {
           <Card bordered={false}>
             <Statistic
               title="已维修设备"
-              value={5}
+              value={repaired}
               precision={0}
               valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
               suffix="台"
@@ -153,7 +164,7 @@ const Repair: React.FC = () => {
           <Card bordered={false}>
             <Statistic
               title="维修中设备"
-              value={12}
+              value={repairing}
               precision={0}
               valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
               suffix="台"

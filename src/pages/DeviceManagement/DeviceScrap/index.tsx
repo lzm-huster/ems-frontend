@@ -8,6 +8,7 @@ import { getScrapList } from '@/services/swagger/scrap';
 interface ScrapRecord {
   deviceID: number;
   deviceName: string;
+  assetNumber: string;
   scrapID: number;
   scrapPerson: string;
   scrapReason: string;
@@ -48,14 +49,12 @@ const DeviceScrap: React.FC = () => {
 
   const columns = [
     {
-      title: '序号',
-      dataIndex: 'index',
-      valueType: 'index',
-      width: 60,
+      title: '报废编号',
+      dataIndex: 'scrapID',
     },
     {
       title: '设备编号',
-      dataIndex: 'deviceID',
+      dataIndex: 'assetNumber',
       copyable: true,
       ellipsis: true,
     },

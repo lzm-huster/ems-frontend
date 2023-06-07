@@ -134,9 +134,8 @@ const Borrow: React.FC = () => {
       for (let i = 0; i < res1.data.length; i++) {
         res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
       }
-      const initData = rowCombination(res1.data);
-      setInitBorrow(initData);
-      setShowBorrow(initData);
+      setInitBorrow(rowCombination(res1.data));
+      setShowBorrow(rowCombination(res1.data));
     }
     if (res2.code === 20000) {
       setBorrowNum(res2.data);
@@ -147,13 +146,14 @@ const Borrow: React.FC = () => {
   }, []);
 
   const onSearch = (value: string) => {
-    setShowBorrow(initBorrow);
-    if (value !== '') {
-      const t = showBorrow.filter((item: BorrowRecord) => {
-        return item['deviceList'].indexOf(value) != -1;
-      });
-      setShowBorrow(rowCombination(t));
-    }
+    setShowBorrow([]);
+    setShowBorrow(
+      value === ''
+        ? initBorrow
+        : initBorrow.filter((item) => {
+            return item['deviceList'].indexOf(value) != -1;
+          }),
+    );
     console.log(showBorrow);
   };
 

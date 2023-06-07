@@ -12,7 +12,6 @@ import {
   message,
   Radio,
   Row,
-  Select,
   Space,
   TreeSelect,
   Upload,
@@ -24,17 +23,8 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { getDeviceCategoryList } from '@/services/swagger/category';
+import { convertToTreeData } from '@/services/general/dataProcess';
 
-interface Category {
-  categoryCode: string;
-  categoryDesc: string;
-  categoryId: number;
-  categoryLevel: number;
-  categoryName: string;
-  categoryRemark: string;
-  parentId: number;
-  unit: string;
-}
 //日期
 dayjs.extend(customParseFormat);
 
@@ -45,28 +35,6 @@ const layout = {
   labelCol: { span: 4 },
   wrapperCol: { span: 20 },
 };
-
-function convertToTreeData(categories: Category[], parentId: number = 0) {
-  const treeData = [];
-  categories.forEach((category) => {
-    if (category.parentId === parentId) {
-      const node = {
-        title:
-          category.categoryDesc == null
-            ? category.categoryName
-            : category.categoryName + '-' + category.categoryDesc,
-        value: category.categoryCode,
-        key: category.categoryCode,
-      };
-      const children = convertToTreeData(categories, category.categoryId);
-      if (children.length > 0) {
-        node.children = children;
-      }
-      treeData.push(node);
-    }
-  });
-  return treeData;
-}
 
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
@@ -104,6 +72,7 @@ const AddDevice: React.FC = () => {
 
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
+  const [assetNum, setAssetNum] = useState('资产编号');
 
   const initial = async () => {
     const res = await getUserInfo();
@@ -208,6 +177,9 @@ const AddDevice: React.FC = () => {
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                             allowClear
                             treeDefaultExpandAll
+                            onChange={(value) => {
+                              formRef?.current?.setFieldsValue({ assetNumber: value });
+                            }}
                           />
                         </Form.Item>
                       </Col>
@@ -255,12 +227,11 @@ const AddDevice: React.FC = () => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'assetNum']}
-                          rules={[{ required: true, message: '资产编号未填写！' }]}
+                          name={[name, 'assetNumber']}
                           label="资产编号"
                           labelCol={{ span: 4 }}
                         >
-                          <Input placeholder="资产编号" />
+                          <Input placeholder="资产编号" disabled />
                         </Form.Item>
                       </Col>
                     </Row>

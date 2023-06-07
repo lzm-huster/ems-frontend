@@ -12,6 +12,7 @@ interface CheckRecord {
   checkTime: string;
   checker: string;
   deviceID: number;
+  assetNumber: string;
   deviceName: string;
   deviceState: string;
 }
@@ -63,7 +64,7 @@ const DeviceCheck: React.FC = () => {
     },
     {
       title: '设备编号',
-      dataIndex: 'deviceID',
+      dataIndex: 'assetNumber',
       copyable: true,
       ellipsis: true,
     },
@@ -98,7 +99,7 @@ const DeviceCheck: React.FC = () => {
       title: '操作',
       valueType: 'option',
       key: 'option',
-      render: (text, record: CheckRecord, _, action) => {
+      render: (record: CheckRecord) => {
         return (
           <Space size={'middle'}>
             <a key="editable">

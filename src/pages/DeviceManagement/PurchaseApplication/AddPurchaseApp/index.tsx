@@ -9,10 +9,10 @@ import {
   Input,
   InputNumber,
   message,
-  Radio,
   Row,
   Select,
   Space,
+  TreeSelect,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
@@ -20,6 +20,8 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
+import { getDeviceCategoryList } from '@/services/swagger/category';
+import { convertToTreeData } from '@/services/general/dataProcess';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -53,12 +55,17 @@ const AddPurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
 
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
+  const [tree, setTree] = useState([]);
 
   const initial = async () => {
     const res = await getUserInfo();
     if (res.code === 20000) {
       formRef.current?.setFieldsValue({ userName: res.data.userName });
-      formRef.current?.setFieldsValue({ purchaseDate: dayjs(now, dateFormat) });
+      formRef.current?.setFieldsValue({ purchaseApplyDate: dayjs(now) });
+    }
+    const category = await getDeviceCategoryList();
+    if (category.code === 20000) {
+      setTree(convertToTreeData(category.data));
     }
   };
   useEffect(() => {
@@ -105,7 +112,7 @@ const AddPurchaseApp: React.FC = () => {
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="purchaseDate" label="申请时间" rules={[{ required: true }]}>
+            <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
               <DateTimePicker />
             </Form.Item>
           </Col>
@@ -156,14 +163,13 @@ const AddPurchaseApp: React.FC = () => {
                           label="设备类型"
                           labelCol={{ span: 4 }}
                         >
-                          <Select
+                          <TreeSelect
+                            showSearch
                             placeholder="设备类型"
-                            options={[
-                              { value: 'jack', label: 'Jack' },
-                              { value: 'lucy', label: 'Lucy' },
-                              { value: 'Yiminghe', label: 'yiminghe' },
-                              { value: 'disabled', label: 'Disabled', disabled: true },
-                            ]}
+                            treeData={tree}
+                            dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                            allowClear
+                            treeDefaultExpandAll
                           />
                         </Form.Item>
                       </Col>

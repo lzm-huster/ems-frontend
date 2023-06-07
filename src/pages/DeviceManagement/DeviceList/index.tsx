@@ -120,7 +120,7 @@ const DeviceList: React.FC = () => {
     setShowDevice(
       value === ''
         ? initDevice
-        : showDevice.filter((item: Device) => {
+        : initDevice.filter((item: Device) => {
             return item['deviceName'].indexOf(value) != -1;
           }),
     );

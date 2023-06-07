@@ -9,6 +9,7 @@ import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 interface MaintenanceRecord {
   key: React.Key;
   deviceID: number;
+  assetNumber: string;
   deviceName: string;
   maintenanceContent: string;
   maintenanceID: 0;
@@ -22,7 +23,7 @@ const columns: ColumnsType<MaintenanceRecord> = [
   },
   {
     title: '设备编号',
-    dataIndex: 'deviceID',
+    dataIndex: 'assetNumber',
   },
   {
     title: '设备名称',
@@ -113,7 +114,7 @@ const Maintenance: React.FC = () => {
     setShowMaintenance(
       value === ''
         ? initMaintenance
-        : showMaintenance.filter((item: MaintenanceRecord) => {
+        : initMaintenance.filter((item: MaintenanceRecord) => {
             return item['deviceName'].indexOf(value) != -1;
           }),
     );
