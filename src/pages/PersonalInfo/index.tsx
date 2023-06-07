@@ -1,14 +1,37 @@
-import { Card, Avatar, Divider, Table, Space, Form, Button, Row, Col, message, Input } from 'antd';
-import { EditOutlined, MailOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Avatar,
+  Divider,
+  Table,
+  Space,
+  Form,
+  Button,
+  Row,
+  Col,
+  message,
+  Input,
+  Popconfirm,
+  Modal,
+  Descriptions,
+  Select,
+} from 'antd';
+import {
+  AlignCenterOutlined,
+  EditOutlined,
+  MailOutlined,
+  SolutionOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import './index.less';
 import { PageContainer } from '@ant-design/pro-components';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/lib/transfer/search';
-import { getDeviceList } from '@/services/swagger/device';
+import { UpdateDevice, getDeviceList } from '@/services/swagger/device';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import { useModel } from 'umi';
 import { deleteDeviceByDeviceID } from '@/services/swagger/person';
+import moment from 'moment';
 
 interface Device {
   key: React.Key;
@@ -17,42 +40,12 @@ interface Device {
   deviceName: string;
   deviceState: string;
   deviceType: string;
-  purchaseDate: Date;
+  purchaseDate: string;
   userName: string;
 }
 
-const columns: ColumnsType<Device> = [
-  {
-    title: '设备编号',
-    dataIndex: 'deviceID',
-  },
-  {
-    title: '设备名称',
-    dataIndex: 'deviceName',
-  },
-  {
-    title: '添加时间',
-    dataIndex: 'purchaseDate',
-  },
-  {
-    title: '设备状态',
-    dataIndex: 'deviceState',
-  },
-  {
-    title: '操作',
-    key: 'action',
-    render: () => (
-      <Space size="middle">
-        <a>查看详情</a>
-        <a>修改记录</a>
-        <a>删除记录</a>
-      </Space>
-    ),
-  },
-];
-
 const PersonalInfo: React.FC = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm(); // 可以获取表单元素实例
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
   const [initDevice, setInitDevice] = useState([]);
@@ -61,7 +54,11 @@ const PersonalInfo: React.FC = () => {
   //added
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState;
+  const [currentDeviceId, setCurrentDeviceId] = useState(''); // 当前id，如果为空表示新增
+  const [currentDevice, setCurrentDevice] = useState({});
   const firstUpdate = useRef(true);
+  const [isShow, setIsShow] = useState(false); // 控制modal显示和隐藏
+  const [isEditShow, setIsEditShow] = useState(false); // 控制编辑modal显示和隐藏
 
   const history = useHistory();
   const handleClick = () => {
@@ -81,6 +78,18 @@ const PersonalInfo: React.FC = () => {
   useEffect(() => {
     initial();
   }, []);
+
+  //删除我的设备
+  const handleDelete = async (deviceID: any) => {
+    // 过滤掉选中的设备对象
+    const newDevices = showDevice.filter((item: Device) => {
+      return item.deviceID !== deviceID;
+    });
+    // 执行删除操作
+    await deleteDeviceByDeviceID({ DeviceID: deviceID });
+    // 更新设备列表
+    setShowDevice(newDevices);
+  };
 
   //批量删除
   const massRemove = () => {
@@ -193,11 +202,190 @@ const PersonalInfo: React.FC = () => {
         <Form.Item>
           <Table
             rowSelection={rowSelection}
-            columns={columns}
             dataSource={searchDevice.length > 0 ? searchDevice : showDevice}
+            rowKey="deviceID"
+            columns={[
+              {
+                title: '设备编号',
+                dataIndex: 'deviceID',
+              },
+              {
+                title: '设备名称',
+                dataIndex: 'deviceName',
+              },
+              {
+                title: '添加时间',
+                dataIndex: 'purchaseDate',
+                render: (text, record) => moment(text).format('YYYY-MM-DD HH:mm:ss'),
+              },
+              {
+                title: '设备状态',
+                dataIndex: 'deviceState',
+              },
+              {
+                title: '操作',
+                key: 'action',
+                render: (v, r: any) => (
+                  <Space size="middle">
+                    <a
+                      onClick={() => {
+                        setIsShow(true); //显示Modal
+                        setCurrentDeviceId(r.deviceID);
+                        setCurrentDevice(r);
+                        form.setFieldsValue(r);
+                      }}
+                    >
+                      查看详情
+                    </a>
+                    <a
+                      onClick={() => {
+                        setIsEditShow(true); //显示Modal
+                        setCurrentDeviceId(r.deviceID);
+                        setCurrentDevice(r);
+                        form.setFieldsValue(r);
+                      }}
+                    >
+                      修改记录
+                    </a>
+
+                    <Popconfirm
+                      title="是否确认删除此项?"
+                      onConfirm={() => handleDelete(r.deviceID)}
+                    >
+                      <a>删除记录</a>
+                    </Popconfirm>
+                  </Space>
+                ),
+              },
+            ]}
           />
         </Form.Item>
       </Form>
+      <Modal
+        title="编辑设备信息"
+        open={isEditShow}
+        // 点击遮罩层时不关闭
+        maskClosable={false}
+        onCancel={() => setIsEditShow(false)}
+        // 关闭modal的时候清除数据
+        destroyOnClose
+        onOk={() => {
+          form.submit(); //手动触发表单的提交事件
+        }}
+      >
+        <Form
+          // 表单配合modal一起使用的时候，需要设置这个属性，要不然关了窗口之后不会清空数据
+          preserve={false}
+          onFinish={async (v) => {
+            if (currentDeviceId) {
+              await UpdateDevice({ ...v }); // 修改
+            }
+            // else {
+            //   await insertAPI({ ...v, image: imageUrl }); // 新增
+            // }
+            message.success('保存成功');
+            setIsEditShow(false);
+            setSearchDevice([]); // 重置查询条件，取数据
+          }}
+          // labelCol={{ span: 3 }}
+          form={form}
+        >
+          <Form.Item
+            label="设备名称"
+            name="name"
+            rules={[
+              {
+                required: true,
+                message: '请输入设备名称',
+              },
+            ]}
+          >
+            <Input placeholder="请输入设备名称" />
+          </Form.Item>
+          <Form.Item label=" 设备状态" name="state">
+            <Select style={{ width: 200 }} placeholder="设备状态">
+              <Select.Option value="wait">正常</Select.Option>
+              <Select.Option value="already">借出中</Select.Option>
+              <Select.Option value="already">已报废</Select.Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="查看设备详情"
+        width="60%"
+        open={isShow}
+        // 点击遮罩层时不关闭
+        maskClosable={false}
+        onCancel={() => setIsShow(false)}
+        // 关闭modal的时候清除数据
+        // destroyOnClose
+        onOk={() => {
+          setIsShow(false);
+        }}
+      >
+        <Descriptions
+          title="设备详情"
+          bordered
+          labelStyle={{
+            backgroundColor: '#fdffff9e',
+          }}
+          style={{
+            paddingBottom: '10px',
+          }}
+          contentStyle={{
+            backgroundColor: '#fdffff9e',
+          }}
+        >
+          <Descriptions.Item label="设备编号">
+            {}
+            {/* {detail?.u_name} */}
+            xxxxxxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="设备名称">
+            {/* {detail?.u_sex} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="设备型号">
+            {/* {detail?.u_age} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="购买类型">
+            {/* {detail?.u_first} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="设备状态">
+            {/* {detail?.u_last} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="设备负责人">
+            {/* {detail?.u_name} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="单价">
+            {/* {detail?.u_sex} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="借用费率">
+            {/* {detail?.u_age} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="购买日期">
+            {/* {detail?.u_first} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="资产编号">
+            {/* {detail?.u_last} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="预计报废时间">
+            {/* {detail?.u_last} */}
+            xxxxxx
+          </Descriptions.Item>
+          <Descriptions.Item label="设备参数">{/* {detail?.u_name} */}</Descriptions.Item>
+          <Descriptions.Item label="设备图片列表">{/* {detail?.u_sex} */}</Descriptions.Item>
+        </Descriptions>
+      </Modal>
     </PageContainer>
   );
 };
