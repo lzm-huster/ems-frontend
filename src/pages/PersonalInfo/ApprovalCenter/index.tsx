@@ -28,7 +28,11 @@ import { Menu } from 'antd';
 import './index.less';
 import { ActionType, PageContainer } from '@ant-design/pro-components';
 import { useHistory } from 'umi';
-import { purchaseApprovalList } from '@/services/swagger/approval';
+import {
+  purchaseApprovalList,
+  repairApprovalList,
+  scrapApprovalList,
+} from '@/services/swagger/approval';
 
 const tailLayout = {
   wrapperCol: { offset: 21, span: 16 },
@@ -42,7 +46,7 @@ const items: MenuProps['items'] = [
   },
   {
     label: '维修审核',
-    key: 'app',
+    key: 'repair',
     icon: <AppstoreOutlined />,
   },
   {
@@ -53,74 +57,156 @@ const items: MenuProps['items'] = [
 ];
 
 const ApprovalCenter: React.FC = () => {
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>(['purchase']);
   const [initDevice, setInitDevice] = useState([]);
   const [searchDevice, setSerachDevice] = useState([]);
-  const [PurchaseApproval, setPurchaseApproval] = useState([]);
+  const [ApprovalList, setApprovalList] = useState([]);
+  const hasSelected = selectedRowKeys.length > 0;
+  const [current, setCurrent] = useState('purchase');
   const actionRef = useRef<ActionType>();
   const history = useHistory();
   const handleClick = () => {
     history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
   };
 
-  const purchaseColumns = [
-    {
-      title: '审批编号',
-      dataIndex: 'index',
-      valueType: 'index',
-      width: 100,
-    },
-    {
-      title: '申请内容',
-      dataIndex: 'deviceList',
-    },
-    {
-      title: '申请时间',
-      dataIndex: 'purchaseApplyDate',
-    },
-    {
-      title: '申请人',
-      dataIndex: 'userName',
-    },
-    {
-      title: '备注',
-      dataIndex: 'purchaseApplyState',
-    },
-    // {
-    //   title: '操作',
-    //   key: 'action',
-    //   width: 200,
-    //   render: () => (
-    //     <Space size="middle">
-    //       <a>同意</a>
-    //       <a>驳回</a>
-    //     </Space>
-    // ),
-    // },
-    {
-      title: '操作',
-      key: 'action',
-      width: 400,
-      render: () => (
-        <Space size="middle">
-          <a>详情</a>
-          <a>借用</a>
-          <a>维修</a>
-          <a>保养</a>
-          <a>报废</a>
-          <a>修改</a>
-          <a>删除</a>
-        </Space>
-      ),
-    },
-  ];
+  const getColumns = (currentKey: any) => {
+    switch (currentKey) {
+      case 'purchase':
+        return [
+          {
+            title: '审批编号',
+            dataIndex: 'purchaseApplySheetID',
+            valueType: 'index',
+            width: 100,
+          },
+          {
+            title: '申请内容',
+            dataIndex: 'deviceName',
+          },
+          {
+            title: '申请时间',
+            dataIndex: 'purchaseApplyDate',
+          },
+          {
+            title: '申请人',
+            dataIndex: 'applicant',
+          },
+          {
+            title: '备注',
+            dataIndex: 'purchaseApplyState',
+          },
+          {
+            title: '操作',
+            key: 'action',
+            width: 400,
+            render: () => (
+              <Space size="middle">
+                <a>详情</a>
+                <a>借用</a>
+                <a>维修</a>
+                <a>保养</a>
+                <a>报废</a>
+                <a>修改</a>
+                <a>删除</a>
+              </Space>
+            ),
+          },
+        ];
+      case 'repair':
+        return [
+          {
+            title: '审批编号',
+            dataIndex: 'repairApplySheetID',
+            valueType: 'index',
+            width: 100,
+          },
+          {
+            title: '申请内容',
+            dataIndex: 'deviceName',
+          },
+          {
+            title: '申请时间',
+            dataIndex: 'repairApplyDate',
+          },
+          {
+            title: '申请人',
+            dataIndex: 'applicant',
+          },
+          {
+            title: '备注',
+            dataIndex: 'repairApplyState',
+          },
+          {
+            title: '操作',
+            key: 'action',
+            width: 400,
+            render: () => (
+              <Space size="middle">
+                <a>详情</a>
+                <a>借用</a>
+                <a>维修</a>
+                <a>保养</a>
+                <a>报废</a>
+                <a>修改</a>
+                <a>删除</a>
+              </Space>
+            ),
+          },
+        ];
+      case 'scrap':
+        return [
+          {
+            title: '报废编号',
+            dataIndex: 'scrapID',
+            valueType: 'index',
+            width: 100,
+          },
+          {
+            title: '报废设备',
+            dataIndex: 'deviceName',
+          },
+          {
+            title: '报废时间',
+            dataIndex: 'scrapTime',
+          },
+          {
+            title: '设备负责人',
+            dataIndex: 'scrapPerson',
+          },
+          {
+            title: '报废原因',
+            dataIndex: 'scrapReason',
+            width: 150,
+          },
+          {
+            title: '设备状态',
+            dataIndex: 'scrapState',
+          },
+          {
+            title: '操作',
+            key: 'action',
+            width: 200,
+            render: () => (
+              <Space size="middle">
+                <a>详情</a>
+                <a>报废</a>
+                <a>修改</a>
+                <a>删除</a>
+              </Space>
+            ),
+          },
+        ];
+      default:
+        return [];
+    }
+  };
 
   //获取数据
   const initial = async () => {
-    const res = await purchaseApprovalList({ state: '未审批' });
+    const res = await purchaseApprovalList('未审批');
     if (res.code === 20000) {
       setInitDevice(res.data);
-      setPurchaseApproval(res.data);
+      setApprovalList(res.data);
     }
   };
   useEffect(() => {
@@ -136,12 +222,28 @@ const ApprovalCenter: React.FC = () => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const hasSelected = selectedRowKeys.length > 0;
-  const [current, setCurrent] = useState('purchase');
 
-  const onClick: MenuProps['onClick'] = (e) => {
+  const onClick: MenuProps['onClick'] = async (e) => {
     console.log('click ', e);
+    let res;
     setCurrent(e.key);
+    switch (e.key) {
+      case 'purchase':
+        res = await purchaseApprovalList('未审批');
+        break;
+      case 'repair':
+        res = await repairApprovalList('未审批');
+        break;
+      case 'scrap':
+        res = await scrapApprovalList('已完成');
+        break;
+      default:
+        res = await purchaseApprovalList('未审批');
+        break;
+    }
+    if (res.code === 20000) {
+      setApprovalList(res.data);
+    } else setApprovalList([]);
   };
 
   const onChange = (key: string) => {
@@ -203,12 +305,18 @@ const ApprovalCenter: React.FC = () => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={4}>
+            <Col span={6}>
               <Form.Item label="时间">
                 <DatePicker />
               </Form.Item>
             </Col>
-            <Col span={4} offset={4}>
+          </Row>
+          <Row>
+            {/* 启用下面将提交和重置按钮放置在右边 */}
+            {/* <Col span={16}>
+              <></>
+            </Col> */}
+            <Col span={8}>
               <Form.Item>
                 <Space>
                   <Button type="primary" htmlType="submit">
@@ -227,7 +335,9 @@ const ApprovalCenter: React.FC = () => {
             <Col span={10}>
               <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={items} />
             </Col>
-            <Col span={12}></Col>
+            <Col span={10}>
+              <></>
+            </Col>
             <Col span={2}>
               <Button type="primary" style={{ margin: '10px' }}>
                 批量审批
@@ -236,8 +346,8 @@ const ApprovalCenter: React.FC = () => {
           </Row>
           <Table
             rowSelection={rowSelection}
-            columns={purchaseColumns}
-            dataSource={PurchaseApproval}
+            columns={getColumns(current)}
+            dataSource={ApprovalList}
           />
         </Space>
       </Card>

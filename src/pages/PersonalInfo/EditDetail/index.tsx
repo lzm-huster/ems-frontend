@@ -20,7 +20,7 @@ const EditDetail: React.FC = () => {
     security: '安全设置',
   };
 
-  const [initConfig, setInitConfig] = useState<AccountSettingsState>({
+  const [initConfig, setInitConfFig] = useState<AccountSettingsState>({
     mode: 'inline',
     selectKey: 'base',
   });
