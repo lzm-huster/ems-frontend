@@ -43,7 +43,7 @@ const AddCheck: React.FC = () => {
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <ProForm style={{ width: 600 }}>
-            <ProFormSelect label={'设备编号'} name={'deviceId'} required />
+            <ProFormSelect label={'设备编号'} name={'assetNumber'} required />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -52,24 +52,29 @@ const AddCheck: React.FC = () => {
               required
             />
             <ProFormText
-              label={'设备负责人'}
-              name={'responsibleUser'}
+              label={'设备核查人'}
+              name={'checker'}
               disabled={true}
               placeholder={'根据设备编号自动填写'}
               required
             />
 
-            <ProFormSelect label={'设备状态'} name={'deviceState'} required />
+            <ProFormSelect
+              label={'设备状态'}
+              name={'deviceState'}
+              required
+              options={['正常', '已报废', '丢失']}
+            />
             <ProFormDateTimePicker
               width={300}
-              name="date"
+              name="checkTime"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}
               label="核查时间"
               required
+              initialValue={new Date()}
             />
-
             <ProFormTextArea
               name="remark"
               label="备注"
@@ -78,7 +83,7 @@ const AddCheck: React.FC = () => {
             />
             <>
               <ProFormUploadButton
-                name="upload"
+                name="checkImage"
                 label="核查图片"
                 max={5}
                 fieldProps={{

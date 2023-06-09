@@ -2,56 +2,52 @@ import {
   PageContainer,
   ProForm,
   ProFormDateTimePicker,
+  ProFormDependency,
+  ProFormInstance,
   ProFormMoney,
   ProFormSelect,
   ProFormText,
-  ProFormTextArea,
-  ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Card, Modal } from 'antd';
-import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
-import { useState } from 'react';
-
-const getBase64 = (file: RcFile): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+import { Card, message } from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { convertToSelectData } from '@/services/general/dataProcess';
 
 const AddRepair: React.FC = () => {
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [previewTitle, setPreviewTitle] = useState('');
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const handleCancel = () => setPreviewOpen(false);
+  const formRef = useRef<ProFormInstance>();
+  const [selectData, setSelectData] = useState([]);
 
-  const handlePreview = async (file: UploadFile) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj as RcFile);
+  const initial = async () => {
+    const res = await getAssetNumber();
+    if (res.code === 20000) {
+      console.log(res.data);
+      setSelectData(convertToSelectData(res.data));
     }
-
-    setPreviewImage(file.url || (file.preview as string));
-    setPreviewOpen(true);
-    setPreviewTitle(file.name || file.url!.substring(file.url!.lastIndexOf('/') + 1));
   };
-
-  const handleChange: UploadProps['onChange'] = ({ fileList: newFileList }) =>
-    setFileList(newFileList);
+  useEffect(() => {
+    initial();
+  }, []);
 
   return (
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm style={{ width: 600 }}>
+          <ProForm
+            style={{ width: 600 }}
+            formRef={formRef}
+            onFinish={async (values: any) => {
+              message.success('提交成功');
+              // setComponentDisabled(true);
+              console.log(values);
+            }}
+          >
             <ProFormText
               label={'维修记录编号'}
               name={'repairID'}
               disabled={true}
               placeholder={'提交后自动生成'}
             />
-            <ProFormSelect label={'设备编号'} name={'deviceId'} required />
+            <ProFormSelect label={'设备编号'} name={'deviceID'} required options={selectData} />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -59,6 +55,42 @@ const AddRepair: React.FC = () => {
               placeholder={'根据设备编号自动填写'}
               required
             />
+            {/* <ProFormDependency name={['deviceN']}>
+              {async ({ 'deviceN' })=>{
+                const id = formRef.current?.getFieldValue('deviceID')
+                if (id === null){
+                  return(<ProFormText
+                    label={'设备名称'}
+                    name={'deviceName'}
+                    disabled={true}
+                    placeholder={'根据设备编号自动填写'}
+                    required
+                  />)
+                } 
+                else{
+                  const res = await getDeviceDetail({DeviceID: id})
+                  if(res.code === 20000){
+                    return(<ProFormText
+                      label={'设备名称'}
+                      name={'deviceName'}
+                      disabled={true}
+                      required
+                      initialValue={res.data['deviceName']}
+                    />)
+                  }
+                  else{
+                    message.error('');
+                    return(null)
+                  }
+                }
+                
+                
+                
+                  
+              }
+              }
+            </ProFormDependency> */}
+
             <ProFormText
               label={'维修内容'}
               name={'repairContent'}
@@ -74,12 +106,13 @@ const AddRepair: React.FC = () => {
             />
             <ProFormDateTimePicker
               width={300}
-              name="date"
+              name="repairTime"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}
               label="维修时间"
               required
+              initialValue={new Date()}
             />
           </ProForm>
         </div>

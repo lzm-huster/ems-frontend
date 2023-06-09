@@ -31,3 +31,14 @@ export async function getRepairingNum(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+export async function deleteRepairRecord(
+  params: { repairID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/repair/deleteDeviceRepairRecord', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}

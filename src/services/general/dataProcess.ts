@@ -9,6 +9,11 @@ interface Category {
   unit: string;
 }
 
+interface Asset {
+  DeviceID: number;
+  AssetNumber: string;
+}
+
 export function convertToTreeData(categories: Category[], parentId: number = 0) {
   const treeData = [];
   categories.forEach((category) => {
@@ -29,4 +34,17 @@ export function convertToTreeData(categories: Category[], parentId: number = 0) 
     }
   });
   return treeData;
+}
+
+export function convertToSelectData(assets: Asset[], parentId: number = 0) {
+  const selectData = [];
+  assets.forEach((asset) => {
+    const node = {
+      label: asset.AssetNumber,
+      value: asset.DeviceID,
+      key: asset.DeviceID,
+    };
+    selectData.push(node);
+  });
+  return selectData;
 }

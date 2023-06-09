@@ -7,14 +7,37 @@ export async function getDeviceList(options?: { [key: string]: any }) {
   });
 }
 
-export async function UpdateDevice(body: API.Device, options?: { [key: string]: any }) {
-  return request<any>('/api/device/UpdateDevice', {
-    method: 'POST',
-    data: body,
+export async function getAssetNumber(options?: { [key: string]: any }) {
+  return request('/api/device/getDeviceIDAndAssetNumber', {
+    method: 'GET',
     ...(options || {}),
   });
 }
 
+export async function getPublicAssetNumber(options?: { [key: string]: any }) {
+  return request('/api/device/getPublicDeviceIDAndAssetNumber', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+export async function UpdateDevice(options?: { [key: string]: any }) {
+  return request<any>('/api/device/UpdateDevice', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
+export async function getDeviceDetail(
+  params: { DeviceID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/device/getDeviceDetail', {
+    method: 'GET',
+    ...(options || {}),
+    params: { ...params },
+  });
+}
 // export async function insertDevice(
 //   params: {
 //     // path
