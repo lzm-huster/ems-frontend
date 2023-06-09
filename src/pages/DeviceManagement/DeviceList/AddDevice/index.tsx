@@ -1,4 +1,7 @@
+import { convertToTreeData } from '@/services/general/dataProcess';
+import { getDeviceCategoryList } from '@/services/swagger/category';
 import { getUserInfo } from '@/services/swagger/user';
+import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
@@ -21,9 +24,6 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { getDeviceCategoryList } from '@/services/swagger/category';
-import { convertToTreeData } from '@/services/general/dataProcess';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -178,7 +178,15 @@ const AddDevice: React.FC = () => {
                             allowClear
                             treeDefaultExpandAll
                             onChange={(value) => {
-                              formRef?.current?.setFieldsValue({ assetNumber: value });
+                              const tempName = name;
+                              console.log(name);
+                              console.log(formRef?.current?.getFieldValue(tempName));
+                              // formRef?.current?.setFieldsValue({
+                              //   tempName: { assetNumber: value },
+                              // });
+                              const { devices } = formRef?.current?.getFieldsValue();
+                              Object.assign(devices[key], { assetNumber: value });
+                              formRef?.current?.setFieldsValue({ devices });
                             }}
                           />
                         </Form.Item>
