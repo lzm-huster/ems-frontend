@@ -7,7 +7,6 @@ import {
   Button,
   Card,
   Col,
-  DatePicker,
   Divider,
   Form,
   Input,
@@ -24,11 +23,11 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
+import { insertDevice } from '@/services/swagger/device';
+import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
 
 //日期
 dayjs.extend(customParseFormat);
-
-const dateFormat = 'YYYY/MM/DD';
 
 //样式
 const layout = {
@@ -39,18 +38,6 @@ const layout = {
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
 };
-
-const formatDate = (time: any) => {
-  // 格式化日期，获取今天的日期
-  const Dates = new Date(time);
-  const year: number = Dates.getFullYear();
-  const month: any =
-    Dates.getMonth() + 1 < 10 ? '0' + (Dates.getMonth() + 1) : Dates.getMonth() + 1;
-  const day: any = Dates.getDate() < 10 ? '0' + Dates.getDate() : Dates.getDate();
-  return year + '/' + month + '/' + day;
-};
-
-const now = formatDate(new Date().getTime());
 
 //上传照片
 const props: UploadProps = {
@@ -72,13 +59,13 @@ const AddDevice: React.FC = () => {
 
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
-  const [assetNum, setAssetNum] = useState('资产编号');
+  const deviceT: string[] = [];
 
   const initial = async () => {
     const res = await getUserInfo();
     if (res.code === 20000) {
       formRef.current?.setFieldsValue({ userName: res.data.userName });
-      formRef.current?.setFieldsValue({ purchaseDate: dayjs(now, dateFormat) });
+      formRef.current?.setFieldsValue({ purchaseDate: new Date() });
     }
     const category = await getDeviceCategoryList();
     if (category.code === 20000) {
@@ -90,9 +77,29 @@ const AddDevice: React.FC = () => {
   }, []);
 
   const onFinish = (values: any) => {
-    message.success('提交成功');
-    setComponentDisabled(true);
-    console.log(values);
+    const pDate = Date.parse(values.purchaseDate);
+    const uName = values.userName;
+    values.devices.forEach(async (device, ind: number) => {
+      device.deviceType = deviceT[ind];
+      device['purchaseDate'] = Date.parse(device['purchaseDate']);
+      const res = await insertDevice({
+        deviceModel: device['deviceModel'],
+        deviceName: device['deviceName'],
+        deviceType: device['deviceType'],
+        purchaseDate: pDate,
+        userName: uName,
+        unitPrice: device['unitPrice'],
+        stockQuantity: device['stockQuantity'],
+        isPublic: device['isPublic'],
+        deviceSpecification: device['deviceSpecification'],
+        assetNumber: device['assetNumber'],
+      });
+      if (res.code === 20000) {
+        message.success('提交成功');
+        setComponentDisabled(true);
+      }
+      console.log(values);
+    });
   };
 
   const onReset = () => {
@@ -120,7 +127,7 @@ const AddDevice: React.FC = () => {
           </Col>
           <Col span={8}>
             <Form.Item name="purchaseDate" label="购买时间" rules={[{ required: true }]}>
-              <DatePicker format={dateFormat} />
+              <DateTimePicker />
             </Form.Item>
           </Col>
         </Row>
@@ -177,15 +184,12 @@ const AddDevice: React.FC = () => {
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                             allowClear
                             treeDefaultExpandAll
-                            onChange={(value) => {
-                              const tempName = name;
-                              console.log(name);
-                              console.log(formRef?.current?.getFieldValue(tempName));
-                              // formRef?.current?.setFieldsValue({
-                              //   tempName: { assetNumber: value },
-                              // });
+                            onSelect={(value, node) => {
                               const { devices } = formRef?.current?.getFieldsValue();
+                              console.log(devices);
                               Object.assign(devices[key], { assetNumber: value });
+                              console.log(devices);
+                              deviceT.push(node['title']);
                               formRef?.current?.setFieldsValue({ devices });
                             }}
                           />
@@ -253,8 +257,8 @@ const AddDevice: React.FC = () => {
                           labelCol={{ span: 9 }}
                         >
                           <Radio.Group>
-                            <Radio.Button value="true">公用</Radio.Button>
-                            <Radio.Button value="false">私人</Radio.Button>
+                            <Radio.Button value={1}>公用</Radio.Button>
+                            <Radio.Button value={0}>私人</Radio.Button>
                           </Radio.Group>
                         </Form.Item>
                       </Col>

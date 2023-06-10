@@ -42,3 +42,22 @@ export async function deleteRepairRecord(
     params: { ...params },
   });
 }
+
+export async function insertRepair(
+  params: {
+    deviceID: number;
+    deviceName: string;
+    remark: string;
+    repairContent: string;
+    repairFee: number;
+    repairTime: string;
+    repairID: number;
+  },
+  options?: { [key: string]: any },
+) {
+  return request('/api/repair/insertDeviceRepairRecord', {
+    method: 'POST',
+    params: { ...params },
+    ...(options || {}),
+  });
+}
