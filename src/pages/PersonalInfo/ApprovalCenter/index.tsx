@@ -86,6 +86,7 @@ const ApprovalCenter: React.FC = () => {
           {
             title: '申请时间',
             dataIndex: 'purchaseApplyDate',
+            valueType: 'date',
           },
           {
             title: '申请人',
@@ -168,6 +169,7 @@ const ApprovalCenter: React.FC = () => {
           {
             title: '报废时间',
             dataIndex: 'scrapTime',
+            valueType: 'date',
           },
           {
             title: '设备负责人',
@@ -217,6 +219,15 @@ const ApprovalCenter: React.FC = () => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
+
+  function processData(data: any) {
+    return data.map((item: any) => {
+      item.purchaseApplyDate = new Date(item.purchaseApplyDate).toLocaleString();
+      item.repairApplyDate = new Date(item.repairApplyDate).toLocaleString();
+      item.scrapTime = new Date(item.scrapTime).toLocaleString();
+      return item;
+    });
+  }
 
   const rowSelection = {
     selectedRowKeys,
@@ -347,7 +358,7 @@ const ApprovalCenter: React.FC = () => {
           <Table
             rowSelection={rowSelection}
             columns={getColumns(current)}
-            dataSource={ApprovalList}
+            dataSource={processData(ApprovalList)}
           />
         </Space>
       </Card>
