@@ -143,7 +143,7 @@ const Maintenance: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
-        <Col span={12}>
+        {/* <Col span={12}>
           <Card bordered={false}>
             <Statistic
               title="已保养设备"
@@ -164,7 +164,7 @@ const Maintenance: React.FC = () => {
               suffix="台"
             />
           </Card>
-        </Col>
+        </Col> */}
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showMaintenance} columns={columns}>
             <Button type="primary">

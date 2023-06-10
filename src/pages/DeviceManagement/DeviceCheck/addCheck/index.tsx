@@ -1,8 +1,11 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { convertToSelectData } from '@/services/general/dataProcess';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getUserDetail } from '@/services/swagger/user';
 import {
   PageContainer,
   ProForm,
   ProFormDateTimePicker,
+  ProFormInstance,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
@@ -10,7 +13,7 @@ import {
 } from '@ant-design/pro-components';
 import { Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -19,11 +22,25 @@ const getBase64 = (file: RcFile): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 const AddCheck: React.FC = () => {
+  const formRef = useRef<ProFormInstance>();
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [selectData, setSelectData] = useState([]);
   const handleCancel = () => setPreviewOpen(false);
+
+  const initial = async () => {
+    const res = await getAssetNumber();
+    if (res.code === 20000) {
+      console.log(res.data);
+      setSelectData(convertToSelectData(res.data));
+    }
+  };
+  useEffect(() => {
+    initial();
+  }, []);
 
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
@@ -42,8 +59,25 @@ const AddCheck: React.FC = () => {
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm style={{ width: 600 }}>
-            <ProFormSelect label={'设备编号'} name={'assetNumber'} required />
+          <ProForm style={{ width: 600 }} formRef={formRef}>
+            <ProFormSelect
+              label={'设备编号'}
+              name={'assetNumber'}
+              required
+              options={selectData}
+              fieldProps={{
+                onChange: async (value) => {
+                  const did = await getDeviceDetail({ DeviceID: value });
+                  if (did.code === 20000) {
+                    const uName = await getUserDetail({ userId: did.data['userID'] });
+                    if (uName.code === 20000) {
+                      formRef?.current?.setFieldValue('checker', uName.data['userName']);
+                    }
+                    formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
+                  }
+                },
+              }}
+            />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -54,11 +88,9 @@ const AddCheck: React.FC = () => {
             <ProFormText
               label={'设备核查人'}
               name={'checker'}
-              disabled={true}
-              placeholder={'根据设备编号自动填写'}
+              placeholder={'设备核查人姓名'}
               required
             />
-
             <ProFormSelect
               label={'设备状态'}
               name={'deviceState'}

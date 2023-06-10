@@ -17,3 +17,21 @@ export async function getMaintenanceDetail(
     params: { ...params },
   });
 }
+
+export async function insertMaintenance(
+  params: {
+    deviceID: number;
+    deviceName: string;
+    remark: string;
+    maintenanceContent: string;
+    maintenanceTime: string;
+    maintenanceID: number;
+  },
+  options?: { [key: string]: any },
+) {
+  return request('/api/maintenance/insertDeviceMaintenanceRecord', {
+    method: 'POST',
+    params: { ...params },
+    ...(options || {}),
+  });
+}
