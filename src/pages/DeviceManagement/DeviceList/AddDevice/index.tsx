@@ -59,6 +59,7 @@ const AddDevice: React.FC = () => {
 
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
+  const [uId, setUId] = useState(0);
   const deviceT: string[] = [];
 
   const initial = async () => {
@@ -66,6 +67,7 @@ const AddDevice: React.FC = () => {
     if (res.code === 20000) {
       formRef.current?.setFieldsValue({ userName: res.data.userName });
       formRef.current?.setFieldsValue({ purchaseDate: new Date() });
+      setUId(res.data.userID);
     }
     const category = await getDeviceCategoryList();
     if (category.code === 20000) {
@@ -77,22 +79,30 @@ const AddDevice: React.FC = () => {
   }, []);
 
   const onFinish = (values: any) => {
-    const pDate = Date.parse(values.purchaseDate);
-    const uName = values.userName;
+    const pDate = Date.parse(values.purchaseDate).toLocaleString();
     values.devices.forEach(async (device, ind: number) => {
       device.deviceType = deviceT[ind];
-      device['purchaseDate'] = Date.parse(device['purchaseDate']);
+      device['purchaseDate'] = pDate;
+      console.log(device);
       const res = await insertDevice({
         deviceModel: device['deviceModel'],
         deviceName: device['deviceName'],
         deviceType: device['deviceType'],
-        purchaseDate: pDate,
-        userName: uName,
+        purchaseDate: device['purchaseDate'],
+        userID: uId,
         unitPrice: device['unitPrice'],
         stockQuantity: device['stockQuantity'],
         isPublic: device['isPublic'],
         deviceSpecification: device['deviceSpecification'],
         assetNumber: device['assetNumber'],
+        borrowRate: 0.01,
+        createTime: 'string',
+        deviceImageList: 'String',
+        deviceState: '正常',
+        expectedScrapDate: 'string',
+        isDeleted: 0,
+        updateTime: 'string',
+        deviceID: 0,
       });
       if (res.code === 20000) {
         message.success('提交成功');
@@ -221,7 +231,7 @@ const AddDevice: React.FC = () => {
                             addonAfter={'￥'}
                             step="0.01"
                             placeholder="设备单价"
-                            stringMode
+                            //stringMode
                           />
                         </Form.Item>
                       </Col>

@@ -44,13 +44,21 @@ export async function insertDevice(
     deviceModel: string;
     deviceName: string;
     deviceType: string;
-    purchaseDate: number;
-    userName: string;
+    purchaseDate: string;
+    userID: number;
     unitPrice: number;
     stockQuantity: number;
     isPublic: number;
     deviceSpecification: string;
     assetNumber: string;
+    borrowRate: number;
+    createTime: string;
+    deviceImageList: string;
+    deviceState: string;
+    expectedScrapDate: string;
+    isDeleted: number;
+    updateTime: string;
+    deviceID: number;
   },
   options?: { [key: string]: any },
 ) {
