@@ -10,6 +10,34 @@ export async function resetPassword(body: any, options?: { [key: string]: any })
     ...(options || {}),
   });
 }
+
+/**增加角色 /api/role/add */
+export async function addRole(body: any, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<boolean>>('/api/role/add', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/**获取角色详情 */
+export async function getRoleDetail(body: any, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<API.RoleDetail>>('/api/role/detail', {
+    method: 'GET',
+    params: {
+      roleId: body,
+    },
+    ...(options || {}),
+  });
+}
+
+/**获取权限列表 */
+export async function permissionList(options?: { [key: string]: any }) {
+  return request<API.BaseResponse<API.PermissionSimple[]>>('/api/permission/list', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
 /**获取角色列表 */
 export async function roleList(options?: { [key: string]: any }) {
   return request<API.BaseResponse<API.RoleSimple[]>>('/api/role/list', {
@@ -26,6 +54,14 @@ export async function userList(options?: { [key: string]: any }) {
   });
 }
 
+/**更新用户信息 */
+export async function updateInfo(body: any, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<boolean>>('/api/user/updateInfo', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
 /**更新用户头像 */
 export async function updateAvatar(body: FormData, options?: { [key: string]: any }) {
   return request<API.BaseResponse<string>>('/api/user/updateAvatar', {

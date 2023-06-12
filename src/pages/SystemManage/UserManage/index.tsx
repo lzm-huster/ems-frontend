@@ -1,8 +1,14 @@
 /* eslint-disable react/jsx-key */
-import { addUser, roleList, updateAvatar, userList } from '@/services/ant-design-pro/api';
-import { PlusOutlined } from '@ant-design/icons';
-import type { ActionType, RequestOptionsType } from '@ant-design/pro-components';
 import {
+  addUser,
+  roleList,
+  updateAvatar,
+  updateInfo,
+  userList,
+} from '@/services/ant-design-pro/api';
+import { PlusOutlined } from '@ant-design/icons';
+import {
+  ActionType,
   ModalForm,
   PageContainer,
   ProDescriptions,
@@ -11,6 +17,7 @@ import {
   ProFormText,
   ProFormUploadButton,
   ProTable,
+  RequestOptionsType,
 } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Drawer, Form, Image, message, Row, Statistic } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
@@ -22,6 +29,7 @@ const UserManage: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [initData, setInitData] = useState<API.UserInfo[]>([]);
   const [tableData, setFormData] = useState<API.UserInfo[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [addModalVisible, setAddVisible] = useState<boolean>(false);
   const [editModalVisible, setEditVisible] = useState<boolean>(false);
   const [selectedRole, setSelectedRole] = useState<string>('');
@@ -222,7 +230,7 @@ const UserManage: React.FC = () => {
   const reloadData = () => {
     userList()
       .then((res) => {
-        if (res.code === 20000) {
+        if (res.code === 20000 && res.data !== undefined) {
           console.log(res);
           setInitData(res.data);
           setFormData(res.data);
@@ -296,6 +304,14 @@ const UserManage: React.FC = () => {
       initData.length -
       initData.filter((i) => i.roleName.toLowerCase().includes('student')).length -
       initData.filter((i) => i.roleName === 'staff').length,
+  };
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
   };
   return (
     <PageContainer>
@@ -474,6 +490,7 @@ const UserManage: React.FC = () => {
         onVisibleChange={setEditVisible}
         onFinish={async (value) => {
           console.log(fileList);
+          console.log(value);
 
           if (fileList.length !== 0) {
             const file = fileList[0];
@@ -482,10 +499,21 @@ const UserManage: React.FC = () => {
             const res = await updateAvatar(formData);
             if (res.code === 20000 && res.data !== null) {
               console.log(res.data);
+              message.success('更新头像成功');
             } else {
               message.error(res.message);
             }
           }
+
+          updateInfo(value).then((res) => {
+            if (res.code === 20000 && res.data === true) {
+              message.success('更新用户信息成功');
+            } else {
+              message.error(res.message);
+            }
+          });
+          reloadData();
+          setEditVisible(false);
           // value.roleId = value.roleId.value;
           // value.email = value.email + emailSuffix;
           // await handleAdd(value);

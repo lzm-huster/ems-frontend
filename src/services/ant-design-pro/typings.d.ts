@@ -56,6 +56,15 @@ declare namespace API {
     phoneNumber: string;
     userName: string;
   };
+  type UpdateUserReq = {
+    department: string;
+    email: string;
+    gender: string;
+    idnumber: string;
+    phoneNumber: string;
+    roleId: number;
+    userName: string;
+  };
 
   // type ResponseData = {
   //   avatar: string;
@@ -71,6 +80,18 @@ declare namespace API {
     roleDescription: string;
     roleID: number;
     roleName: string;
+  };
+  type RoleDetail = {
+    roleID: number;
+    roleName: string;
+    roleDescription: string;
+    permissionSimpleResListList: PermissionSimple[];
+  };
+
+  type PermissionSimple = {
+    permissionDescription: string;
+    permissionID: number;
+    permissionName: string;
   };
 
   type LoginResult = {

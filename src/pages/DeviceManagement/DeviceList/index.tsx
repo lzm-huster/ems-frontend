@@ -3,7 +3,7 @@ import { PageContainer } from '@ant-design/pro-components';
 import { Button, Form, FormInstance, Input, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'umi';
+import { Access, Link, useAccess } from 'umi';
 import GeneralTable from './generalTable/GeneralTable';
 
 interface Device {
@@ -94,7 +94,7 @@ const { Search } = Input;
 
 const DeviceList: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
-
+  const access = useAccess();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
   const [initDevice, setInitDevice] = useState([]);
@@ -149,16 +149,22 @@ const DeviceList: React.FC = () => {
   return (
     <PageContainer>
       <GeneralTable rowSelection={rowSelection} datasource={showDevice} columns={columns}>
-        <Button type="primary">
-          <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
-        </Button>
-        <Button type="primary">信息统计</Button>
+        <Access accessible={access.deviceAddBtn('device:add')}>
+          <Button type="primary">
+            <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
+          </Button>
+          <Button type="primary">信息统计</Button>
+        </Access>
+
         <Button onClick={start} disabled={!hasSelected}>
           批量借用
         </Button>
-        <Button danger onClick={start} disabled={!hasSelected}>
-          批量删除
-        </Button>
+        <Access accessible={access.deviceDeleteBtn('device:delete')}>
+          <Button danger onClick={start} disabled={!hasSelected}>
+            批量删除
+          </Button>
+        </Access>
+
         <span style={{ marginLeft: 8 }}>
           {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
         </span>

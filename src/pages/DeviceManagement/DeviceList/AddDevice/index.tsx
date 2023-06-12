@@ -178,9 +178,9 @@ const AddDevice: React.FC = () => {
                             allowClear
                             treeDefaultExpandAll
                             onChange={(value) => {
-                              const tempName = name;
-                              console.log(name);
-                              console.log(formRef?.current?.getFieldValue(tempName));
+                              // const tempName = name;
+                              // console.log(name);
+                              // console.log(formRef?.current?.getFieldValue(tempName));
                               // formRef?.current?.setFieldsValue({
                               //   tempName: { assetNumber: value },
                               // });
