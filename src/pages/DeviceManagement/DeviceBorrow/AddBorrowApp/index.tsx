@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Col,
-  DatePicker,
   Divider,
   Form,
   Input,
@@ -19,6 +18,9 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import DateTimeRangePicker from '@ant-design/pro-form/lib/components/DateTimeRangePicker';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { convertToSelectData } from '@/services/general/dataProcess';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -51,13 +53,18 @@ const now = formatDate(new Date().getTime());
 const AddDevice: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
 
+  const [selectData, setSelectData] = useState([]);
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
 
   const initial = async () => {
     const res = await getUserInfo();
+    const assets = await getAssetNumber();
     if (res.code === 20000) {
       formRef.current?.setFieldsValue({ userName: res.data.userName });
       formRef.current?.setFieldsValue({ purchaseDate: dayjs(now, dateFormat) });
+    }
+    if (assets.code === 20000) {
+      setSelectData(convertToSelectData(assets.data));
     }
   };
   useEffect(() => {
@@ -89,13 +96,18 @@ const AddDevice: React.FC = () => {
         </Divider>
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item name="userName" label="负责人" rules={[{ required: true }]}>
+            <Form.Item name="userName" label="申请人" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="purchaseDate" label="购买时间" rules={[{ required: true }]}>
-              <DatePicker format={dateFormat} />
+            <Form.Item name="borrowTime" label="借用时间" rules={[{ required: true }]}>
+              <DateTimeRangePicker />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
+              <Select placeholder="请选择导师" />
             </Form.Item>
           </Col>
         </Row>
@@ -122,8 +134,38 @@ const AddDevice: React.FC = () => {
                   >
                     <Row gutter={16}>
                       <Col span={8}>
-                        <Form.Item label="设备编号" labelCol={{ offset: 0, span: 4 }}>
-                          <Input placeholder="提交后自动生成" disabled />
+                        <Form.Item
+                          name={[name, 'deviceID']}
+                          label="设备编号"
+                          labelCol={{ offset: 0, span: 4 }}
+                        >
+                          <Select
+                            placeholder="设备编号"
+                            options={selectData}
+                            onChange={async (value) => {
+                              const did = await getDeviceDetail({ DeviceID: value });
+                              if (did.code === 20000) {
+                                formRef?.current?.setFieldValue(
+                                  'deviceName',
+                                  did.data['deviceName'],
+                                );
+                                formRef?.current?.setFieldValue(
+                                  'deviceModel',
+                                  did.data['deviceModel'],
+                                );
+                                formRef?.current?.setFieldValue(
+                                  'deviceType',
+                                  did.data['deviceType'],
+                                );
+                              }
+                            }}
+                            // onSelect={(value, node) => {
+                            //   const { devices } = formRef?.current?.getFieldsValue();
+                            //   Object.assign(devices[key], { assetNumber: value });
+                            //   deviceT.push(node['title']);
+                            //   formRef?.current?.setFieldsValue({ devices });
+                            // }}
+                          />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
@@ -134,7 +176,7 @@ const AddDevice: React.FC = () => {
                           label="设备名称"
                           labelCol={{ span: 4 }}
                         >
-                          <Input placeholder="设备名称" />
+                          <Input placeholder="根据设备编号自动填写" disabled />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
@@ -145,19 +187,9 @@ const AddDevice: React.FC = () => {
                           label="设备类型"
                           labelCol={{ span: 4 }}
                         >
-                          <Select
-                            placeholder="设备类型"
-                            options={[
-                              { value: 'jack', label: 'Jack' },
-                              { value: 'lucy', label: 'Lucy' },
-                              { value: 'Yiminghe', label: 'yiminghe' },
-                              { value: 'disabled', label: 'Disabled', disabled: true },
-                            ]}
-                          />
+                          <Select placeholder="根据设备编号自动填写" disabled />
                         </Form.Item>
                       </Col>
-                    </Row>
-                    <Row gutter={16}>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
@@ -166,7 +198,18 @@ const AddDevice: React.FC = () => {
                           label="设备参数"
                           labelCol={{ span: 4 }}
                         >
-                          <Input placeholder="设备参数" />
+                          <Input placeholder="根据设备编号自动填写" disabled />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'remark']}
+                          label="借用说明"
+                          labelCol={{ span: 4 }}
+                        >
+                          <Input placeholder="借用说明" />
                         </Form.Item>
                       </Col>
                       <Col span={4}>
@@ -174,61 +217,17 @@ const AddDevice: React.FC = () => {
                           {...restField}
                           name={[name, 'unitPrice']}
                           rules={[{ required: true, message: '设备单价未填写！' }]}
-                          label="设备单价"
+                          label="借用费用"
                           labelCol={{ span: 9 }}
                         >
                           <InputNumber<string>
                             min="0"
                             addonAfter={'￥'}
                             step="0.01"
-                            placeholder="设备单价"
+                            placeholder="预期借用费用"
                             stringMode
+                            disabled
                           />
-                        </Form.Item>
-                      </Col>
-                      <Col span={4}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'stockQuantity']}
-                          rules={[{ required: true, message: '设备数量未填写！' }]}
-                          label="设备数量"
-                          labelCol={{ span: 11 }}
-                        >
-                          <InputNumber min={1} placeholder="设备数量" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'assetNum']}
-                          rules={[{ required: true, message: '资产编号未填写！' }]}
-                          label="资产编号"
-                          labelCol={{ span: 4 }}
-                        >
-                          <Input placeholder="资产编号" />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    <Row gutter={16}>
-                      <Col span={4}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'borrowRate']}
-                          rules={[{ required: false, message: '借用费率未填写！' }]}
-                          label="借用费率"
-                          labelCol={{ span: 9 }}
-                        >
-                          <InputNumber disabled placeholder="借用费率" />
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'deviceSpecification']}
-                          label="设备说明"
-                          labelCol={{ span: 4 }}
-                        >
-                          <Input placeholder="设备说明" />
                         </Form.Item>
                       </Col>
                     </Row>

@@ -1,7 +1,11 @@
+import { convertToSelectData } from '@/services/general/dataProcess';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getUserDetail } from '@/services/swagger/user';
 import {
   PageContainer,
   ProForm,
   ProFormDateTimePicker,
+  ProFormInstance,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
@@ -9,7 +13,7 @@ import {
 } from '@ant-design/pro-components';
 import { Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -20,11 +24,25 @@ const getBase64 = (file: RcFile): Promise<string> =>
   });
 
 const AddScrap: React.FC = () => {
+  const formRef = useRef<ProFormInstance>();
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const handleCancel = () => setPreviewOpen(false);
+  const [selectData, setSelectData] = useState([]);
+
+  const initial = async () => {
+    const res = await getAssetNumber();
+    if (res.code === 20000) {
+      console.log(res.data);
+      setSelectData(convertToSelectData(res.data));
+    }
+  };
+  useEffect(() => {
+    initial();
+  }, []);
 
   const handlePreview = async (file: UploadFile) => {
     if (!file.url && !file.preview) {
@@ -43,8 +61,25 @@ const AddScrap: React.FC = () => {
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm style={{ width: 600 }}>
-            <ProFormSelect label={'设备编号'} name={'deviceId'} required />
+          <ProForm style={{ width: 600 }} formRef={formRef}>
+            <ProFormSelect
+              label={'设备编号'}
+              name={'deviceId'}
+              required
+              options={selectData}
+              fieldProps={{
+                onChange: async (value) => {
+                  const did = await getDeviceDetail({ DeviceID: value });
+                  if (did.code === 20000) {
+                    const uName = await getUserDetail({ userId: did.data['userID'] });
+                    if (uName.code === 20000) {
+                      formRef?.current?.setFieldValue('responsibleUser', uName.data['userName']);
+                    }
+                    formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
+                  }
+                },
+              }}
+            />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -68,14 +103,10 @@ const AddScrap: React.FC = () => {
               }}
               label="报废时间"
               required
+              initialValue={new Date()}
             />
 
-            <ProFormTextArea
-              name="reason"
-              label="报废原因"
-              placeholder="报废原因说明"
-              // fieldProps={inputTextAreaProps}
-            />
+            <ProFormTextArea name="reason" label="报废原因" placeholder="报废原因说明" />
             <>
               <ProFormUploadButton
                 name="upload"

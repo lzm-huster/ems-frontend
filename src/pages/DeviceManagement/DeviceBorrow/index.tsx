@@ -121,7 +121,6 @@ const rowCombination = (initData: BorrowRecord[]) => {
 const Borrow: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [loading, setLoading] = useState(false);
   const [initBorrow, setInitBorrow] = useState<BorrowRecord[]>([]);
   const [showBorrow, setShowBorrow] = useState<BorrowRecord[]>([]);
   const [borrowNum, setBorrowNum] = useState(0);
@@ -158,11 +157,9 @@ const Borrow: React.FC = () => {
   };
 
   const start = () => {
-    setLoading(true);
     // ajax request after empty completing
     setTimeout(() => {
       setSelectedRowKeys([]);
-      setLoading(false);
     }, 1000);
   };
 

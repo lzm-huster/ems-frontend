@@ -36,7 +36,7 @@ export function convertToTreeData(categories: Category[], parentId: number = 0) 
   return treeData;
 }
 
-export function convertToSelectData(assets: Asset[], parentId: number = 0) {
+export function convertToSelectData(assets: Asset[]) {
   const selectData = [];
   assets.forEach((asset) => {
     const node = {

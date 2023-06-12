@@ -2,20 +2,22 @@ import {
   PageContainer,
   ProForm,
   ProFormDateTimePicker,
-  ProFormDependency,
   ProFormInstance,
   ProFormMoney,
   ProFormSelect,
   ProFormText,
+  ProFormTextArea,
 } from '@ant-design/pro-components';
 import { Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { convertToSelectData } from '@/services/general/dataProcess';
+import { insertRepair } from '@/services/swagger/repair';
 
 const AddRepair: React.FC = () => {
   const formRef = useRef<ProFormInstance>();
   const [selectData, setSelectData] = useState([]);
+  const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
 
   const initial = async () => {
     const res = await getAssetNumber();
@@ -28,6 +30,17 @@ const AddRepair: React.FC = () => {
     initial();
   }, []);
 
+  const onFinish = async (values: any) => {
+    values.repairTime = Date.parse(values.repairTime).toLocaleString();
+    values.repairID = 0;
+    const res = await insertRepair(values);
+    if (res.code === 20000) {
+      message.success('提交成功');
+      setComponentDisabled(true);
+    }
+    console.log(values);
+  };
+
   return (
     <PageContainer>
       <Card>
@@ -35,11 +48,8 @@ const AddRepair: React.FC = () => {
           <ProForm
             style={{ width: 600 }}
             formRef={formRef}
-            onFinish={async (values: any) => {
-              message.success('提交成功');
-              // setComponentDisabled(true);
-              console.log(values);
-            }}
+            disabled={componentDisabled}
+            onFinish={onFinish}
           >
             <ProFormText
               label={'维修记录编号'}
@@ -47,7 +57,21 @@ const AddRepair: React.FC = () => {
               disabled={true}
               placeholder={'提交后自动生成'}
             />
-            <ProFormSelect label={'设备编号'} name={'deviceID'} required options={selectData} />
+
+            <ProFormSelect
+              label={'设备编号'}
+              name={'deviceID'}
+              required
+              options={selectData}
+              fieldProps={{
+                onChange: async (value) => {
+                  const did = await getDeviceDetail({ DeviceID: value });
+                  if (did.code === 20000) {
+                    formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
+                  }
+                },
+              }}
+            />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -55,42 +79,6 @@ const AddRepair: React.FC = () => {
               placeholder={'根据设备编号自动填写'}
               required
             />
-            {/* <ProFormDependency name={['deviceN']}>
-              {async ({ 'deviceN' })=>{
-                const id = formRef.current?.getFieldValue('deviceID')
-                if (id === null){
-                  return(<ProFormText
-                    label={'设备名称'}
-                    name={'deviceName'}
-                    disabled={true}
-                    placeholder={'根据设备编号自动填写'}
-                    required
-                  />)
-                } 
-                else{
-                  const res = await getDeviceDetail({DeviceID: id})
-                  if(res.code === 20000){
-                    return(<ProFormText
-                      label={'设备名称'}
-                      name={'deviceName'}
-                      disabled={true}
-                      required
-                      initialValue={res.data['deviceName']}
-                    />)
-                  }
-                  else{
-                    message.error('');
-                    return(null)
-                  }
-                }
-                
-                
-                
-                  
-              }
-              }
-            </ProFormDependency> */}
-
             <ProFormText
               label={'维修内容'}
               name={'repairContent'}
@@ -114,6 +102,7 @@ const AddRepair: React.FC = () => {
               required
               initialValue={new Date()}
             />
+            <ProFormTextArea name="remark" label="备注" placeholder="维修相关说明" />
           </ProForm>
         </div>
       </Card>

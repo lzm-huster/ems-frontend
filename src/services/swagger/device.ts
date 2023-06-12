@@ -38,19 +38,33 @@ export async function getDeviceDetail(
     params: { ...params },
   });
 }
-// export async function insertDevice(
-//   params: {
-//     // path
-//     /** name that need to be updated */
 
-//     userName: string;
-//   },
-//   options?: { [key: string]: any },
-// ) {
-//   const { username: param0 } = params;
-//   return request<any>(`/user/${param0}`, {
-//     method: 'PUT',
-//     params: { ...params },
-//     ...(options || {}),
-//   });
-// }
+export async function insertDevice(
+  body: {
+    deviceModel: string;
+    deviceName: string;
+    deviceType: string;
+    purchaseDate: string;
+    userID: number;
+    unitPrice: number;
+    stockQuantity: number;
+    isPublic: number;
+    deviceSpecification: string;
+    assetNumber: string;
+    borrowRate: number;
+    createTime: string;
+    deviceImageList: string;
+    deviceState: string;
+    expectedScrapDate: string;
+    isDeleted: number;
+    updateTime: string;
+    deviceID: number;
+  },
+  options?: { [key: string]: any },
+) {
+  return request('/api/device/insertDevice', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

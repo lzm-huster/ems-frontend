@@ -120,3 +120,11 @@ export async function getUserInfo(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+export async function getUserDetail(params: { userId: number }, options?: { [key: string]: any }) {
+  return request('/api/user/query', {
+    method: 'GET',
+    ...(options || {}),
+    params: { ...params },
+  });
+}
