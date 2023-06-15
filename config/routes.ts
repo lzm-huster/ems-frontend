@@ -34,6 +34,16 @@ export default [
         hideInMenu: true,
       },
       {
+        path: '/deviceManagement/list/detail',
+        name: '设备详情',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceList/DeviceDetail',
+        parentKeys: ['/deviceManagement/list'],
+        hideInMenu: true,
+        // access: 'repairQuery',
+        // accessCode: 'repair:query',
+      },
+      {
         path: '/deviceManagement/purchaseApply',
         name: '采购申请',
         icon: 'smile',

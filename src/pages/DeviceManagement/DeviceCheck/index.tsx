@@ -1,6 +1,6 @@
-import { getCheckList } from '@/services/swagger/check';
+import { deleteCheckRecord, getCheckList } from '@/services/swagger/check';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Row, Space, Statistic } from 'antd';
+import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
@@ -47,6 +47,16 @@ const DeviceCheck: React.FC = () => {
   };
 
   const hasSelected = selectedRowKeys.length > 0;
+
+  const handleDelete = async (checkId: number) => {
+    const delRes = await deleteCheckRecord({ checkID: checkId });
+    if (delRes.code === 20000) {
+      const res = await getCheckList();
+      if (res.code === 20000) {
+        setTableData(res.data);
+      }
+    }
+  };
 
   const columns = [
     {
@@ -121,6 +131,9 @@ const DeviceCheck: React.FC = () => {
                 编辑
               </Link>
             </a>
+            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.checkID)}>
+              <a>删除</a>
+            </Popconfirm>
           </Space>
         );
       },

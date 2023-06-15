@@ -50,3 +50,11 @@ export async function insertDevice(body, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+export async function deleteDevice(params: { DeviceID: number }, options?: { [key: string]: any }) {
+  return request('/api/device/deleteDeviceByDeviceID', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}

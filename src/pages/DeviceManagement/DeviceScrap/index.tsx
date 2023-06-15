@@ -1,9 +1,9 @@
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Row, Space, Statistic } from 'antd';
+import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
-import { getScrapList } from '@/services/swagger/scrap';
+import { deleteScrapRecord, getScrapList } from '@/services/swagger/scrap';
 
 interface ScrapRecord {
   deviceID: number;
@@ -46,6 +46,14 @@ const DeviceScrap: React.FC = () => {
   };
 
   const hasSelected = selectedRowKeys.length > 0;
+
+  const handleDelete = async (scrapId: number) => {
+    deleteScrapRecord({ scrapID: scrapId });
+    const res = await getScrapList();
+    if (res.code === 20000) {
+      setTableData(res.data);
+    }
+  };
 
   const columns = [
     {
@@ -117,7 +125,9 @@ const DeviceScrap: React.FC = () => {
                 编辑
               </Link>
             </a>
-            <a>删除</a>
+            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.scrapID)}>
+              <a>删除</a>
+            </Popconfirm>
           </Space>
         );
       },

@@ -1,6 +1,6 @@
-import { getDeviceList } from '@/services/swagger/device';
+import { deleteDevice, getDeviceList } from '@/services/swagger/device';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Form, FormInstance, Input, Space } from 'antd';
+import { Button, Form, FormInstance, Input, Popconfirm, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
@@ -16,79 +16,6 @@ interface Device {
   purchaseDate: string;
   userName: string;
 }
-
-const columns: ColumnsType<Device> = [
-  {
-    title: '设备编号',
-    dataIndex: 'assetNumber',
-  },
-  {
-    title: '设备名称',
-    dataIndex: 'deviceName',
-  },
-  {
-    title: '设备类型',
-    dataIndex: 'deviceType',
-  },
-  {
-    title: '设备参数',
-    dataIndex: 'deviceModel',
-  },
-  {
-    title: '设备状态',
-    dataIndex: 'deviceState',
-    filters: [
-      {
-        text: '正常',
-        value: '正常',
-      },
-      {
-        text: '借出中',
-        value: '借出中',
-      },
-      {
-        text: '已报废',
-        value: '已报废',
-      },
-    ],
-    onFilter: (value: string, record) => {
-      return record.deviceState == value;
-    },
-  },
-  {
-    title: '负责人',
-    dataIndex: 'userName',
-  },
-  {
-    title: '购入时间',
-    dataIndex: 'purchaseDate',
-    sorter: (a, b) => {
-      if (a.purchaseDate === null || b.purchaseDate === null) {
-        return 0;
-      } else {
-        const aDate = Date.parse(a.purchaseDate);
-        const bDate = Date.parse(b.purchaseDate);
-        return aDate - bDate;
-      }
-    },
-  },
-  {
-    title: '操作',
-    key: 'action',
-    width: 400,
-    render: () => (
-      <Space size="middle">
-        <a>详情</a>
-        <a>借用</a>
-        <a>维修</a>
-        <a>保养</a>
-        <a>报废</a>
-        <a>修改</a>
-        <a>删除</a>
-      </Space>
-    ),
-  },
-];
 
 const { Search } = Input;
 
@@ -146,6 +73,116 @@ const DeviceList: React.FC = () => {
   };
   const hasSelected = selectedRowKeys.length > 0;
 
+  const handleDelete = async (deviceId: number) => {
+    deleteDevice({ DeviceID: deviceId });
+    const res = await getDeviceList();
+    if (res.code === 20000) {
+      setShowDevice(res.data);
+    }
+  };
+
+  const columns: ColumnsType<Device> = [
+    {
+      title: '设备编号',
+      dataIndex: 'assetNumber',
+    },
+    {
+      title: '设备名称',
+      dataIndex: 'deviceName',
+    },
+    {
+      title: '设备类型',
+      dataIndex: 'deviceType',
+    },
+    {
+      title: '设备参数',
+      dataIndex: 'deviceModel',
+    },
+    {
+      title: '设备状态',
+      dataIndex: 'deviceState',
+      filters: [
+        {
+          text: '正常',
+          value: '正常',
+        },
+        {
+          text: '借出中',
+          value: '借出中',
+        },
+        {
+          text: '已报废',
+          value: '已报废',
+        },
+      ],
+      onFilter: (value: string, record) => {
+        return record.deviceState == value;
+      },
+    },
+    {
+      title: '负责人',
+      dataIndex: 'userName',
+    },
+    {
+      title: '购入时间',
+      dataIndex: 'purchaseDate',
+      sorter: (a, b) => {
+        if (a.purchaseDate === null || b.purchaseDate === null) {
+          return 0;
+        } else {
+          const aDate = Date.parse(a.purchaseDate);
+          const bDate = Date.parse(b.purchaseDate);
+          return aDate - bDate;
+        }
+      },
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 400,
+      render: (record) => (
+        <Space size="middle">
+          <a key="detail">
+            <Link
+              to={{
+                pathname: '/deviceManagement/list/detail',
+                state: { deviceID: record.deviceID, edit: false },
+              }}
+            >
+              详情
+            </Link>
+          </a>
+          <a>借用</a>
+          <a key="repair">
+            <Link
+              to={{
+                pathname: '/deviceManagement/repair/addRepair',
+                state: { deviceID: record.deviceID },
+              }}
+            >
+              维修
+            </Link>
+          </a>
+          <a key="maintenance">
+            <Link
+              to={{
+                pathname: '/deviceManagement/maintenance/addMaintenance',
+                state: { deviceID: record.deviceID },
+              }}
+            >
+              保养
+            </Link>
+          </a>
+          <a>报废</a>
+          <a>修改</a>
+          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.scrapID)}>
+            <a>删除</a>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
   return (
     <PageContainer>
       <GeneralTable rowSelection={rowSelection} datasource={showDevice} columns={columns}>
@@ -153,9 +190,10 @@ const DeviceList: React.FC = () => {
           <Button type="primary" style={{ marginRight: 10 }}>
             <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
           </Button>
+        </Access>
+        <Access accessible={access.deviceAddBtn('device:add')}>
           <Button type="primary">信息统计</Button>
         </Access>
-
         <Button onClick={start} disabled={!hasSelected}>
           批量借用
         </Button>

@@ -175,28 +175,6 @@ const Repair: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
-        <Col span={12}>
-          <Card bordered={false}>
-            <Statistic
-              title="已维修设备"
-              value={repaired}
-              precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-              suffix="台"
-            />
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card bordered={false}>
-            <Statistic
-              title="维修中设备"
-              value={repairing}
-              precision={0}
-              valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
-              suffix="台"
-            />
-          </Card>
-        </Col>
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showRepair} columns={columns}>
             <Access accessible={access.repairAddBtn('repair:add')}>

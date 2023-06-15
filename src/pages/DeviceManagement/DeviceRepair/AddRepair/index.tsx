@@ -13,17 +13,30 @@ import { useEffect, useRef, useState } from 'react';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { convertToSelectData } from '@/services/general/dataProcess';
 import { insertRepair } from '@/services/swagger/repair';
+import { useLocation } from 'umi';
+
+interface stateType {
+  deviceID: number;
+}
 
 const AddRepair: React.FC = () => {
   const formRef = useRef<ProFormInstance>();
   const [selectData, setSelectData] = useState([]);
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
+  const { state } = useLocation<stateType>();
 
   const initial = async () => {
     const res = await getAssetNumber();
     if (res.code === 20000) {
       console.log(res.data);
       setSelectData(convertToSelectData(res.data));
+    }
+    if (state != null) {
+      const device = await getDeviceDetail({ DeviceID: state.deviceID });
+      if (device.code === 20000) {
+        formRef.current?.setFieldValue('deviceID', device.data.assetNumber);
+        formRef.current?.setFieldValue('deviceName', device.data.deviceName);
+      }
     }
   };
   useEffect(() => {
