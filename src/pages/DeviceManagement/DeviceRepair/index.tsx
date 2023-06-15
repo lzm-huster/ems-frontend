@@ -1,3 +1,9 @@
+import {
+  deleteRepairRecord,
+  getRepairedNum,
+  getRepairingNum,
+  getRepairList,
+} from '@/services/swagger/repair';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
@@ -11,15 +17,9 @@ import {
   Space,
   Statistic,
 } from 'antd';
-import React, { useState, useEffect } from 'react';
-import {
-  getRepairList,
-  getRepairedNum,
-  getRepairingNum,
-  deleteRepairRecord,
-} from '@/services/swagger/repair';
 import { ColumnsType } from 'antd/lib/table';
-import { Link } from 'umi';
+import React, { useEffect, useState } from 'react';
+import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
 interface RepairRecord {
@@ -43,7 +43,7 @@ const Repair: React.FC = () => {
   const [showRepair, setShowRepair] = useState([]);
   const [repairing, setRepairing] = useState(0);
   const [repaired, setRepaired] = useState(0);
-
+  const access = useAccess();
   const initial = async () => {
     const res = await getRepairList();
     if (res.code === 20000) {
@@ -177,9 +177,12 @@ const Repair: React.FC = () => {
       <Row gutter={[16, 24]}>
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showRepair} columns={columns}>
-            <Button type="primary">
-              <Link to={'/deviceManagement/repair/addRepair'}>新增维修记录</Link>
-            </Button>
+            <Access accessible={access.repairAddBtn('repair:add')}>
+              <Button type="primary">
+                <Link to={'/deviceManagement/repair/addRepair'}>新增维修记录</Link>
+              </Button>
+            </Access>
+
             <Button danger onClick={start} disabled={!hasSelected}>
               批量删除
             </Button>

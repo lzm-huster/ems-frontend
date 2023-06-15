@@ -40,7 +40,7 @@ const NoAuthResponseInterceptors = async (response: Response, options: RequestCo
 };
 
 export const request: RequestConfig = {
-  timeout: 1000,
+  timeout: 10000,
   errorConfig: {},
   middlewares: [],
   requestInterceptors: [requestTokenInterceptor],

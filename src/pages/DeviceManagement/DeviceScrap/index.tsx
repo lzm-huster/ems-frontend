@@ -1,7 +1,7 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
-import { Link } from 'umi';
+import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 import { deleteScrapRecord, getScrapList } from '@/services/swagger/scrap';
 
@@ -19,7 +19,7 @@ const DeviceScrap: React.FC = () => {
   const [tableData, setTableData] = useState<ScrapRecord[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [currentRow, setCurrentRow] = useState<ScrapRecord>();
-
+  const access = useAccess();
   const initial = async () => {
     const res = await getScrapList();
     if (res.code === 20000) {
@@ -162,9 +162,12 @@ const DeviceScrap: React.FC = () => {
           </Col>
           <Col>
             <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
-              <Button type="primary">
-                <Link to={'/deviceManagement/scrap/addScrap'}>新增报废记录</Link>
-              </Button>
+              <Access accessible={access.scrapAddBtn('scrap:add')}>
+                <Button type="primary">
+                  <Link to={'/deviceManagement/scrap/add'}>新增报废记录</Link>
+                </Button>
+              </Access>
+
               <Button danger disabled={!hasSelected}>
                 批量删除记录
               </Button>

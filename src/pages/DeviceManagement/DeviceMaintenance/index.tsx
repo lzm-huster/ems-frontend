@@ -11,10 +11,10 @@ import {
   Space,
   Statistic,
 } from 'antd';
-import React, { useState, useEffect } from 'react';
 import { deleteMaintenanceRecord, getMaintenanceList } from '@/services/swagger/maintenance';
 import { ColumnsType } from 'antd/lib/table';
-import { Link } from 'umi';
+import React, { useEffect, useState } from 'react';
+import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
 interface MaintenanceRecord {
@@ -35,7 +35,7 @@ const Maintenance: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [initMaintenance, setInitMaintenance] = useState([]);
   const [showMaintenance, setShowMaintenance] = useState([]);
-
+  const access = useAccess();
   const initial = async () => {
     const res = await getMaintenanceList();
 
@@ -166,9 +166,11 @@ const Maintenance: React.FC = () => {
       <Row gutter={[16, 24]}>
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showMaintenance} columns={columns}>
-            <Button type="primary">
-              <Link to={'/deviceManagement/maintenance/addMaintenance'}>新增保养记录</Link>
-            </Button>
+            <Access accessible={access.maintenanceAddBtn('maintenance:add')}>
+              <Button type="primary">
+                <Link to={'/deviceManagement/maintenance/addMaintenance'}>新增保养记录</Link>
+              </Button>
+            </Access>
             <Button danger onClick={start} disabled={!hasSelected}>
               批量删除
             </Button>

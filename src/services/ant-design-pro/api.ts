@@ -55,16 +55,20 @@ export async function userList(options?: { [key: string]: any }) {
 }
 
 /**更新用户信息 */
-export async function updateInfo(body: any, options?: { [key: string]: any }) {
-  return request<API.BaseResponse<boolean>>('/api/user/updateInfo', {
+export async function updateInfoById(body: any, userId: any, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<boolean>>('/api/user/updateInfo/' + userId, {
     method: 'POST',
     data: body,
     ...(options || {}),
   });
 }
 /**更新用户头像 */
-export async function updateAvatar(body: FormData, options?: { [key: string]: any }) {
-  return request<API.BaseResponse<string>>('/api/user/updateAvatar', {
+export async function updateAvatarById(
+  body: FormData,
+  userId: any,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponse<string>>('/api/user/updateAvatar/' + userId, {
     method: 'POST',
     data: body,
     headers: {

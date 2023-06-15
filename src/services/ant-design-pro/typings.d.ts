@@ -25,20 +25,23 @@ declare namespace API {
   type CurrentUser = {
     userName: string;
     gender: string;
-
+    userID: number;
     phoneNumber: string;
     avatar: object;
     department: string;
+    roleID: number;
     email: string;
     roleList: string[];
     userPermissionList: string[];
     idnumber: string;
   };
   type UserInfo = {
+    userID: number;
     avatar: string;
     createTime: Date;
     department: string;
     email: string;
+    roleID: number;
     gender: string;
     idnumber: string;
     phoneNumber: string;

@@ -205,7 +205,7 @@ const DeviceList: React.FC = () => {
     <PageContainer>
       <GeneralTable rowSelection={rowSelection} datasource={showDevice} columns={columns}>
         <Access accessible={access.deviceAddBtn('device:add')}>
-          <Button type="primary">
+          <Button type="primary" style={{ marginRight: 10 }}>
             <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
           </Button>
         </Access>

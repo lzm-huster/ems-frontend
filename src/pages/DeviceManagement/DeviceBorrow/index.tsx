@@ -1,9 +1,9 @@
+import { getBorrowApplyRecordList, getBorrowDeviceNumber } from '@/services/swagger/borrow';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic } from 'antd';
-import React, { useState, useEffect } from 'react';
-import { getBorrowApplyRecordList, getBorrowDeviceNumber } from '@/services/swagger/borrow';
 import { ColumnsType } from 'antd/lib/table';
-import { Link } from 'umi';
+import React, { useEffect, useState } from 'react';
+import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
 interface BorrowRecord {
@@ -124,7 +124,7 @@ const Borrow: React.FC = () => {
   const [initBorrow, setInitBorrow] = useState<BorrowRecord[]>([]);
   const [showBorrow, setShowBorrow] = useState<BorrowRecord[]>([]);
   const [borrowNum, setBorrowNum] = useState(0);
-
+  const access = useAccess();
   const initial = async () => {
     const res1 = await getBorrowApplyRecordList();
     const res2 = await getBorrowDeviceNumber();
@@ -201,9 +201,12 @@ const Borrow: React.FC = () => {
         </Col>
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showBorrow} columns={columns}>
-            <Button type="primary">
-              <Link to={'/deviceManagement/borrow/addBorrowApply'}>新增借用申请</Link>
-            </Button>
+            <Access accessible={access.deviceDeleteBtn('borrow:add')}>
+              <Button type="primary">
+                <Link to={'/deviceManagement/borrow/addBorrowApply'}>新增借用申请</Link>
+              </Button>
+            </Access>
+
             <Button onClick={start} disabled={!hasSelected}>
               批量归还设备
             </Button>

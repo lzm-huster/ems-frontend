@@ -1,9 +1,9 @@
+import { getPurchaseApplySheetList } from '@/services/swagger/purchaseApp';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Col, Form, FormInstance, Input, Row, Space } from 'antd';
-import React, { useState, useEffect } from 'react';
-import { getPurchaseApplySheetList } from '@/services/swagger/purchaseApp';
 import { ColumnsType } from 'antd/lib/table';
-import { Link } from 'umi';
+import React, { useEffect, useState } from 'react';
+import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
 interface PurchaseApply {
@@ -90,7 +90,7 @@ const PurchaseApp: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [initPurchaseApply, setInitPurchaseApply] = useState([]);
   const [showPurchaseApply, setShowPurchaseApply] = useState([]);
-
+  const access = useAccess();
   const initial = async () => {
     const res = await getPurchaseApplySheetList();
     if (res.code === 20000) {
@@ -174,9 +174,12 @@ const PurchaseApp: React.FC = () => {
             datasource={showPurchaseApply}
             columns={columns}
           >
-            <Button type="primary">
-              <Link to={'/deviceManagement/purchaseApply/addPurchaseApply'}>新增采购申请</Link>
-            </Button>
+            <Access accessible={access.purchaseAddBtn('purchase:add')}>
+              <Button type="primary">
+                <Link to={'/deviceManagement/purchaseApply/addPurchaseApply'}>新增采购申请</Link>
+              </Button>
+            </Access>
+
             <Button onClick={start} disabled={!hasSelected}>
               设备采购入库
             </Button>
