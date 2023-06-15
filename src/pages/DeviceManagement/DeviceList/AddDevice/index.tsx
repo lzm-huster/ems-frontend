@@ -1,4 +1,4 @@
-import { convertToTreeData } from '@/services/general/dataProcess';
+import { convertToTreeData, formatDate } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
 import { insertDevice } from '@/services/swagger/device';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
@@ -68,12 +68,6 @@ const AddDevice: React.FC = () => {
     formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
     formRef.current?.setFieldsValue({ purchaseDate: new Date() });
     setUId(initialState?.currentUser?.userID);
-    // const res = await getUserInfo();
-    // if (res.code === 20000) {
-    //   formRef.current?.setFieldsValue({ userName: res.data.userName });
-    //   formRef.current?.setFieldsValue({ purchaseDate: new Date() });
-    //   setUId(res.data.userID);
-    // }
     const category = await getDeviceCategoryList();
     if (category.code === 20000) {
       setTree(convertToTreeData(category.data));
@@ -82,15 +76,7 @@ const AddDevice: React.FC = () => {
   useEffect(() => {
     initial();
   }, []);
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = ('0' + (date.getMonth() + 1)).slice(-2);
-    const day = ('0' + date.getDate()).slice(-2);
-    const hours = ('0' + date.getHours()).slice(-2);
-    const minutes = ('0' + date.getMinutes()).slice(-2);
-    const seconds = ('0' + date.getSeconds()).slice(-2);
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  };
+
   const onFinish = (values: any) => {
     const pDate = formatDate(values.purchaseDate);
     const devices = values.devices;
@@ -114,7 +100,7 @@ const AddDevice: React.FC = () => {
       const res = await insertDevice(formData);
       if (res.code === 20000 && res.data !== undefined) {
         message.success('添加成功');
-        // setComponentDisabled(true);
+        setComponentDisabled(true);
         history.push('/deviceManagement/list');
       } else {
         message.error(res.message);
@@ -297,7 +283,7 @@ const AddDevice: React.FC = () => {
                         <Form.Item
                           {...restField}
                           name={[name, 'deviceImage']}
-                          rules={[{ required: false, message: '设备图片未上传！' }]}
+                          rules={[{ required: true, message: '设备图片未上传！' }]}
                           label="设备图片"
                           labelCol={{ span: 4 }}
                         >

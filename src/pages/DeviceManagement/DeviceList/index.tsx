@@ -193,7 +193,7 @@ const DeviceList: React.FC = () => {
               修改
             </Link>
           </a>
-          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.scrapID)}>
+          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.deviceID)}>
             <a>删除</a>
           </Popconfirm>
         </Space>

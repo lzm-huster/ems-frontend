@@ -164,7 +164,7 @@ const DeviceScrap: React.FC = () => {
             <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
               <Access accessible={access.scrapAddBtn('scrap:add')}>
                 <Button type="primary">
-                  <Link to={'/deviceManagement/scrap/add'}>新增报废记录</Link>
+                  <Link to={'/deviceManagement/scrap/addScrap'}>新增报废记录</Link>
                 </Button>
               </Access>
 

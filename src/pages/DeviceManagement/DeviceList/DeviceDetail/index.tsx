@@ -30,7 +30,7 @@ const getBase64 = (file: RcFile): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 
-const RepairDetail: React.FC = () => {
+const DeviceDetail: React.FC = () => {
   const formRef = useRef<ProFormInstance>();
   const [deviceDetail, setDeviceDetail] = useState();
   const [isUneditable, setUneditable] = useState(true);
@@ -189,4 +189,4 @@ const RepairDetail: React.FC = () => {
     </PageContainer>
   );
 };
-export default RepairDetail;
+export default DeviceDetail;
