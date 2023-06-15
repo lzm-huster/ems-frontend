@@ -108,7 +108,7 @@ const DeviceScrap: React.FC = () => {
             <a key="editable">
               <Link
                 to={{
-                  pathname: '/deviceManagement/scrap/detail',
+                  pathname: '/deviceManagement/scrap/scrapDetail',
                   state: { scrapID: record.scrapID, deviceName: record.deviceName, edit: false },
                 }}
               >
@@ -118,7 +118,7 @@ const DeviceScrap: React.FC = () => {
             <a key="view">
               <Link
                 to={{
-                  pathname: '/deviceManagement/scrap/detail',
+                  pathname: '/deviceManagement/scrap/scrapDetail',
                   state: { scrapID: record.scrapID, deviceName: record.deviceName, edit: true },
                 }}
               >
@@ -163,7 +163,7 @@ const DeviceScrap: React.FC = () => {
           <Col>
             <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
               <Button type="primary">
-                <Link to={'/deviceManagement/scrap/add'}>新增报废记录</Link>
+                <Link to={'/deviceManagement/scrap/addScrap'}>新增报废记录</Link>
               </Button>
               <Button danger disabled={!hasSelected}>
                 批量删除记录

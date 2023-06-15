@@ -30,7 +30,6 @@ const RepairDetail: React.FC = () => {
   const initial = async () => {
     const res = await getRepairDetail({ repairID: state.repairID });
     if (res.code === 20000) {
-      //res.data.repairTime = new Date(res.data.repairTime).toLocaleString();
       res.data.deviceName = state.deviceName;
       setRepairRecord(res.data);
       setUneditable(!state.edit);

@@ -172,7 +172,7 @@ export default [
         accessCode: 'scrap:list',
       },
       {
-        path: '/deviceManagement/scrap/add',
+        path: '/deviceManagement/scrap/addScrap',
         name: '新增报废记录',
         icon: 'smile',
         component: './DeviceManagement/DeviceScrap/AddScrap',
@@ -182,7 +182,7 @@ export default [
         accessCode: 'scrap:add',
       },
       {
-        path: '/deviceManagement/scrap/detail',
+        path: '/deviceManagement/scrap/scrapDetail',
         name: '报废记录详情',
         icon: 'smile',
         component: './DeviceManagement/DeviceScrap/ScrapDetail',

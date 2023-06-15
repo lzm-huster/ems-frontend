@@ -29,9 +29,8 @@ const RepairDetail: React.FC = () => {
   const initial = async () => {
     const res = await getMaintenanceDetail({ maintenanceId: state.maintenanceID });
     if (res.code === 20000) {
-      //res.data.maintenanceTime = new Date(res.data.maintenanceTime).toLocaleString();
-      res.data.deviceName = state.deviceName;
-      setMaintenanceRecord(res.data);
+      res.data[0].deviceName = state.deviceName;
+      setMaintenanceRecord(res.data[0]);
       setUneditable(!state.edit);
     }
     const assets = await getAssetNumber();
@@ -77,7 +76,6 @@ const RepairDetail: React.FC = () => {
             formRef={formRef}
             disabled={isUneditable}
             submitter={{ render: isUneditable ? submitterEdit : submitterSubmit }}
-            //resetter={{ render: resetterRender }}
             params={maintenanceRecord}
             request={(params) => {
               return Promise.resolve({
@@ -86,15 +84,10 @@ const RepairDetail: React.FC = () => {
               });
             }}
           >
-            <ProFormText
-              label={'保养记录编号'}
-              name={'maintenanceID'}
-              disabled={true}
-              placeholder={'提交后自动生成'}
-            />
+            <ProFormText label={'保养记录编号'} name="maintenanceID" disabled={true} />
             <ProFormSelect
               label={'设备编号'}
-              name={'assetNumber'}
+              name="assetNumber"
               required
               options={selectData}
               fieldProps={{
@@ -116,7 +109,7 @@ const RepairDetail: React.FC = () => {
             <ProFormText
               label={'保养内容'}
               name={'maintenanceContent'}
-              placeholder={'维修内容'}
+              placeholder={'保养内容'}
               required
             />
             <ProFormDateTimePicker

@@ -13,7 +13,13 @@ import {
 } from '@ant-design/pro-components';
 import { Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
+import { values } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'umi';
+
+interface stateType {
+  deviceID: number;
+}
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -30,14 +36,27 @@ const AddScrap: React.FC = () => {
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const handleCancel = () => setPreviewOpen(false);
   const [selectData, setSelectData] = useState([]);
+  const { state } = useLocation<stateType>();
+
+  const handleCancel = () => setPreviewOpen(false);
 
   const initial = async () => {
     const res = await getAssetNumber();
     if (res.code === 20000) {
       console.log(res.data);
       setSelectData(convertToSelectData(res.data));
+    }
+    if (state != null) {
+      const device = await getDeviceDetail({ DeviceID: state.deviceID });
+      if (device.code === 20000) {
+        formRef.current?.setFieldValue('deviceId', device.data.deviceID);
+        formRef.current?.setFieldValue('deviceName', device.data.deviceName);
+        const uName = await getUserDetail({ userId: device.data.userID });
+        if (uName.code === 20000) {
+          formRef?.current?.setFieldValue('scrapPerson', uName.data['userName']);
+        }
+      }
     }
   };
   useEffect(() => {
@@ -61,7 +80,15 @@ const AddScrap: React.FC = () => {
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm style={{ width: 600 }} formRef={formRef}>
+          <ProForm
+            style={{ width: 600 }}
+            formRef={formRef}
+            submitter={{
+              onSubmit: () => {
+                console.log(formRef.current?.getFieldsValue());
+              },
+            }}
+          >
             <ProFormSelect
               label={'设备编号'}
               name={'deviceId'}
@@ -73,7 +100,7 @@ const AddScrap: React.FC = () => {
                   if (did.code === 20000) {
                     const uName = await getUserDetail({ userId: did.data['userID'] });
                     if (uName.code === 20000) {
-                      formRef?.current?.setFieldValue('responsibleUser', uName.data['userName']);
+                      formRef?.current?.setFieldValue('scrapPerson', uName.data['userName']);
                     }
                     formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
                   }
@@ -88,8 +115,8 @@ const AddScrap: React.FC = () => {
               required
             />
             <ProFormText
-              label={'设备负责人'}
-              name={'responsibleUser'}
+              label={'报废负责人'}
+              name={'scrapPerson'}
               disabled={true}
               placeholder={'根据设备编号自动填写'}
               required

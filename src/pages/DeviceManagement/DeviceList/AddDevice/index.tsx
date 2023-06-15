@@ -287,7 +287,7 @@ const AddDevice: React.FC = () => {
                         <Form.Item
                           {...restField}
                           name={[name, 'deviceImage']}
-                          rules={[{ required: true, message: '设备图片未上传！' }]}
+                          rules={[{ required: false, message: '设备图片未上传！' }]}
                           label="设备图片"
                           labelCol={{ span: 4 }}
                         >

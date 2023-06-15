@@ -173,8 +173,26 @@ const DeviceList: React.FC = () => {
               保养
             </Link>
           </a>
-          <a>报废</a>
-          <a>修改</a>
+          <a key="maintenance">
+            <Link
+              to={{
+                pathname: '/deviceManagement/scrap/addScrap',
+                state: { deviceID: record.deviceID },
+              }}
+            >
+              报废
+            </Link>
+          </a>
+          <a key="update">
+            <Link
+              to={{
+                pathname: '/deviceManagement/list/detail',
+                state: { deviceID: record.deviceID, edit: true },
+              }}
+            >
+              修改
+            </Link>
+          </a>
           <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.scrapID)}>
             <a>删除</a>
           </Popconfirm>
