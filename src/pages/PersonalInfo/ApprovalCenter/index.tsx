@@ -1,38 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  AppstoreOutlined,
-  MailOutlined,
-  PlusOutlined,
-  SettingOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+import { AppstoreOutlined, MailOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
   Col,
   DatePicker,
-  Divider,
   Form,
   Input,
-  Layout,
   MenuProps,
-  Popconfirm,
   Row,
   Select,
   Space,
   Table,
-  Tabs,
-  Upload,
 } from 'antd';
 import { Menu } from 'antd';
 import './index.less';
-import { ActionType, PageContainer } from '@ant-design/pro-components';
-import { useHistory } from 'umi';
+import { ActionType, PageContainer, ProTable } from '@ant-design/pro-components';
+import { useHistory, useModel } from 'umi';
 import {
   purchaseApprovalList,
-  repairApprovalList,
+  borrowApprovalList,
   scrapApprovalList,
 } from '@/services/swagger/approval';
+import moment from 'moment';
 
 const tailLayout = {
   wrapperCol: { offset: 21, span: 16 },
@@ -45,8 +35,8 @@ const items: MenuProps['items'] = [
     icon: <MailOutlined />,
   },
   {
-    label: '维修审核',
-    key: 'repair',
+    label: '借用审核',
+    key: 'borrow',
     icon: <AppstoreOutlined />,
   },
   {
@@ -61,10 +51,15 @@ const ApprovalCenter: React.FC = () => {
   const [initDevice, setInitDevice] = useState([]);
   const [searchDevice, setSerachDevice] = useState([]);
   const [ApprovalList, setApprovalList] = useState([]);
+  const [SelectedApprovalList, setSeletedApprovalList] = useState([]);
   const hasSelected = selectedRowKeys.length > 0;
   const [current, setCurrent] = useState('purchase');
   const actionRef = useRef<ActionType>();
   const history = useHistory();
+  const [form] = Form.useForm();
+  const { initialState } = useModel('@@initialState');
+  const { currentUser } = initialState;
+
   const handleClick = () => {
     history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
   };
@@ -78,78 +73,139 @@ const ApprovalCenter: React.FC = () => {
             dataIndex: 'purchaseApplySheetID',
             valueType: 'index',
             width: 100,
+            align: 'center',
           },
           {
             title: '申请内容',
-            dataIndex: 'deviceName',
+            dataIndex: 'deviceList',
+            align: 'center',
           },
           {
             title: '申请时间',
             dataIndex: 'purchaseApplyDate',
             valueType: 'date',
+            align: 'center',
+          },
+          {
+            title: '预算',
+            dataIndex: 'purchaseBudget',
+            align: 'center',
           },
           {
             title: '申请人',
-            dataIndex: 'applicant',
+            dataIndex: 'userName',
+            align: 'center',
           },
           {
-            title: '备注',
+            disable: true,
+            title: '申请人角色',
+            dataIndex: 'roleName',
+            filters: true,
+            onFilter: true,
+            ellipsis: true,
+            align: 'center',
+            valueType: 'select',
+            valueEnum: {
+              sysAdmin: {
+                text: '系统管理员',
+              },
+              deviceAdmin: {
+                text: '设备管理员',
+              },
+              staff: {
+                text: '教职工',
+              },
+              internalStudent: {
+                text: '院内学生',
+              },
+              externalStudent: {
+                text: '院外学生',
+              },
+            },
+          },
+          {
+            title: '审核状态',
             dataIndex: 'purchaseApplyState',
+            align: 'center',
           },
           {
             title: '操作',
+            align: 'center',
             key: 'action',
-            width: 400,
+            width: 200,
             render: () => (
               <Space size="middle">
-                <a>详情</a>
-                <a>借用</a>
-                <a>维修</a>
-                <a>保养</a>
-                <a>报废</a>
-                <a>修改</a>
-                <a>删除</a>
+                <a>同意</a>
+                <a>驳回</a>
               </Space>
             ),
           },
         ];
-      case 'repair':
+      case 'borrow':
         return [
           {
             title: '审批编号',
-            dataIndex: 'repairApplySheetID',
+            dataIndex: 'borrowApplyID',
             valueType: 'index',
             width: 100,
+            align: 'center',
           },
           {
             title: '申请内容',
-            dataIndex: 'deviceName',
+            dataIndex: 'deviceList',
+            align: 'center',
           },
           {
             title: '申请时间',
-            dataIndex: 'repairApplyDate',
+            dataIndex: 'borrowApplyDate',
+            align: 'center',
           },
           {
             title: '申请人',
-            dataIndex: 'applicant',
+            dataIndex: 'userName',
+            align: 'center',
           },
           {
-            title: '备注',
-            dataIndex: 'repairApplyState',
+            disable: true,
+            title: '申请人角色',
+            dataIndex: 'roleName',
+            filters: true,
+            onFilter: true,
+            ellipsis: true,
+            align: 'center',
+            valueType: 'select',
+            valueEnum: {
+              sysAdmin: {
+                text: '系统管理员',
+              },
+              deviceAdmin: {
+                text: '设备管理员',
+              },
+              staff: {
+                text: '教职工',
+              },
+              internalStudent: {
+                text: '院内学生',
+              },
+              externalStudent: {
+                text: '院外学生',
+              },
+            },
+          },
+          {
+            title: '审批状态',
+            dataIndex: 'borrowApplyState',
+            align: 'center',
           },
           {
             title: '操作',
             key: 'action',
-            width: 400,
+            align: 'center',
+            width: 200,
             render: () => (
               <Space size="middle">
-                <a>详情</a>
-                <a>借用</a>
-                <a>维修</a>
-                <a>保养</a>
-                <a>报废</a>
-                <a>修改</a>
-                <a>删除</a>
+                <a>同意</a>
+                <a>驳回</a>
               </Space>
             ),
           },
@@ -161,39 +217,71 @@ const ApprovalCenter: React.FC = () => {
             dataIndex: 'scrapID',
             valueType: 'index',
             width: 100,
+            align: 'center',
           },
           {
             title: '报废设备',
             dataIndex: 'deviceName',
+            align: 'center',
           },
           {
             title: '报废时间',
             dataIndex: 'scrapTime',
             valueType: 'date',
+            align: 'center',
           },
           {
             title: '设备负责人',
             dataIndex: 'scrapPerson',
+            align: 'center',
           },
           {
             title: '报废原因',
             dataIndex: 'scrapReason',
             width: 150,
+            align: 'center',
+          },
+          {
+            disable: true,
+            title: '申请人角色',
+            dataIndex: 'roleName',
+            filters: true,
+            onFilter: true,
+            ellipsis: true,
+            align: 'center',
+            valueType: 'select',
+            valueEnum: {
+              sysAdmin: {
+                text: '系统管理员',
+              },
+              deviceAdmin: {
+                text: '设备管理员',
+              },
+              staff: {
+                text: '教职工',
+              },
+              internalStudent: {
+                text: '院内学生',
+              },
+              externalStudent: {
+                text: '院外学生',
+              },
+            },
           },
           {
             title: '设备状态',
             dataIndex: 'scrapState',
+            align: 'center',
           },
           {
             title: '操作',
             key: 'action',
+            align: 'center',
             width: 200,
             render: () => (
               <Space size="middle">
-                <a>详情</a>
-                <a>报废</a>
-                <a>修改</a>
-                <a>删除</a>
+                <a>同意</a>
+                <a>驳回</a>
               </Space>
             ),
           },
@@ -203,17 +291,37 @@ const ApprovalCenter: React.FC = () => {
     }
   };
 
+  const onReset = () => {
+    form.resetFields();
+  };
+
   //获取数据
   const initial = async () => {
     const res = await purchaseApprovalList('未审批');
     if (res.code === 20000) {
       setInitDevice(res.data);
       setApprovalList(res.data);
+      setSeletedApprovalList(res.data);
     }
   };
   useEffect(() => {
     initial();
   }, []);
+
+  // 数据筛选函数
+  // const select = (values) => {
+  //   let select = [];
+  //   select = ApprovalList.filter((index) => {
+  //     return (
+  //       (values.time_from === undefined ||
+  //         values.time_from.unix() <= moment(index.ordertime).unix()) &&
+  //       (values.time_to === undefined || values.time_to.unix() >= moment(index.overtime).unix()) &&
+  //       (values.approvalState === index.name || values.name === 'all') &&
+  //       (values.userType === index.operation || values.report_state === 'all')
+  //     );
+  //   });
+  //   setSeletedApprovalList(select);
+  // };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
@@ -223,7 +331,7 @@ const ApprovalCenter: React.FC = () => {
   function processData(data: any) {
     return data.map((item: any) => {
       item.purchaseApplyDate = new Date(item.purchaseApplyDate).toLocaleString();
-      item.repairApplyDate = new Date(item.repairApplyDate).toLocaleString();
+      item.borrowApplyDate = new Date(item.borrowApplyDate).toLocaleString();
       item.scrapTime = new Date(item.scrapTime).toLocaleString();
       return item;
     });
@@ -235,15 +343,14 @@ const ApprovalCenter: React.FC = () => {
   };
 
   const onClick: MenuProps['onClick'] = async (e) => {
-    console.log('click ', e);
     let res;
     setCurrent(e.key);
     switch (e.key) {
       case 'purchase':
         res = await purchaseApprovalList('未审批');
         break;
-      case 'repair':
-        res = await repairApprovalList('未审批');
+      case 'borrow':
+        res = await borrowApprovalList('已归还');
         break;
       case 'scrap':
         res = await scrapApprovalList('已完成');
@@ -257,18 +364,16 @@ const ApprovalCenter: React.FC = () => {
     } else setApprovalList([]);
   };
 
-  const onChange = (key: string) => {
-    console.log(key);
-  };
-
-  function setAddVisible(arg0: boolean) {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <PageContainer>
       <Card title="筛选" size="small">
-        <form style={{ margin: '10px' }}>
+        <Form
+          form={form}
+          style={{ margin: '10px' }}
+          initialValues={{
+            ...currentUser,
+          }}
+        >
           <Row>
             <Col span={12}>
               <Form.Item label="是否审批">
@@ -333,12 +438,14 @@ const ApprovalCenter: React.FC = () => {
                   <Button type="primary" htmlType="submit">
                     提交
                   </Button>
-                  <Button htmlType="button">重置</Button>
+                  <Button htmlType="button" onClick={onReset}>
+                    重置
+                  </Button>
                 </Space>
               </Form.Item>
             </Col>
           </Row>
-        </form>
+        </Form>
       </Card>
       <Card size="small">
         <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
@@ -355,11 +462,24 @@ const ApprovalCenter: React.FC = () => {
               </Button>
             </Col>
           </Row>
-          <Table
+          <ProTable
+            rowSelection={rowSelection}
+            columns={getColumns(current)}
+            // actionRef={actionRef}
+            rowKey="id"
+            search={false}
+            dataSource={processData(ApprovalList)}
+            pagination={{
+              pageSize: 5,
+              onChange: (page) => console.log(page),
+            }}
+            dateFormatter="string"
+          />
+          {/* <Table
             rowSelection={rowSelection}
             columns={getColumns(current)}
             dataSource={processData(ApprovalList)}
-          />
+          /> */}
         </Space>
       </Card>
     </PageContainer>

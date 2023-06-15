@@ -59,7 +59,7 @@ const PersonalInfo: React.FC = () => {
   const [searchDevice, setSearchDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
   //added
-  const { initialState } = useModel('@@initialState'); //???
+  const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState;
   const [currentDeviceId, setCurrentDeviceId] = useState(Number); // 当前id，如果为空表示新增
   const [currentRow, setCurrentRow] = useState<API.Device>();
@@ -256,7 +256,6 @@ const PersonalInfo: React.FC = () => {
                       onClick={async () => {
                         setIsShow(true); //显示Modal
                         setCurrentDeviceId(r.deviceID);
-                        // setCurrentRow(r);
                         detail();
                         await form.setFieldsValue(r);
                       }}
