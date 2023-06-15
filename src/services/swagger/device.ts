@@ -39,32 +39,14 @@ export async function getDeviceDetail(
   });
 }
 
-export async function insertDevice(
-  body: {
-    deviceModel: string;
-    deviceName: string;
-    deviceType: string;
-    purchaseDate: string;
-    userID: number;
-    unitPrice: number;
-    stockQuantity: number;
-    isPublic: number;
-    deviceSpecification: string;
-    assetNumber: string;
-    borrowRate: number;
-    createTime: string;
-    deviceImageList: string;
-    deviceState: string;
-    expectedScrapDate: string;
-    isDeleted: number;
-    updateTime: string;
-    deviceID: number;
-  },
-  options?: { [key: string]: any },
-) {
+export async function insertDevice(body, options?: { [key: string]: any }) {
   return request('/api/device/insertDevice', {
     method: 'POST',
     data: body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requestType: 'form',
     ...(options || {}),
   });
 }

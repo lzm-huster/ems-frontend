@@ -1,10 +1,9 @@
+import { getCheckList } from '@/services/swagger/check';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Row, Space, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
-import { Link } from 'umi';
+import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
-import { getCheckList } from '@/services/swagger/check';
-import { ColumnsType } from 'antd/es/table';
 
 interface CheckRecord {
   key: React.Key;
@@ -21,7 +20,7 @@ const DeviceCheck: React.FC = () => {
   const [tableData, setTableData] = useState<CheckRecord[]>([]);
   const [currentRow, setCurrentRow] = useState<CheckRecord>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
+  const access = useAccess();
   const initial = async () => {
     const res = await getCheckList();
     if (res.code === 20000) {
@@ -156,9 +155,11 @@ const DeviceCheck: React.FC = () => {
           </Col>
           <Col span={24}>
             <GeneralTable rowSelection={rowSelection} datasource={tableData} columns={columns}>
-              <Button type="primary">
-                <Link to={'/deviceManagement/check/add'}>新增核查记录</Link>
-              </Button>
+              <Access accessible={access.inventoryAddBtn('inventory:add')}>
+                <Button type="primary">
+                  <Link to={'/deviceManagement/check/add'}>新增核查记录</Link>
+                </Button>
+              </Access>
               <Button danger disabled={!hasSelected}>
                 批量删除记录
               </Button>

@@ -2,8 +2,8 @@
 import {
   addUser,
   roleList,
-  updateAvatar,
-  updateInfo,
+  updateAvatarById,
+  updateInfoById,
   userList,
 } from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
@@ -21,7 +21,6 @@ import {
 } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Drawer, Form, Image, message, Row, Statistic } from 'antd';
 import type { UploadFile } from 'antd/es/upload/interface';
-import { RcFile } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
 
 const UserManage: React.FC = () => {
@@ -37,7 +36,48 @@ const UserManage: React.FC = () => {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [currentRow, setCurrentRow] = useState<API.UserInfo>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [roleListData, setRoleListData] = useState({});
   const [form] = Form.useForm();
+  const reloadData = async () => {
+    const res = await userList();
+    if (res.code === 20000 && res.data !== undefined) {
+      console.log(res);
+      setInitData(res.data);
+      setFormData(res.data);
+    } else {
+      message.error(res.message);
+    }
+  };
+  const changeRoleData = (value: API.RoleSimple[]) => {
+    const newObj = {};
+    value.map((role) => {
+      const temp = { text: role.roleDescription };
+      newObj[role.roleName] = temp;
+    });
+    setRoleListData(newObj);
+  };
+
+  const reloadRoleList = async () => {
+    roleList()
+      .then((res) => {
+        if (res.code === 20000 && res.data !== undefined) {
+          changeRoleData(res.data);
+          // setRoleListData(res)
+        } else {
+          message.error(res.message);
+        }
+      })
+      .catch((e) => {
+        message.error(e);
+      });
+  };
+  useEffect(() => {
+    reloadData();
+    reloadRoleList();
+  }, []);
+  useEffect(() => {
+    form.setFieldsValue({ email: emailData });
+  }, [emailData]);
   const columns = [
     {
       title: '序号',
@@ -72,23 +112,7 @@ const UserManage: React.FC = () => {
       onFilter: true,
       ellipsis: true,
       valueType: 'select',
-      valueEnum: {
-        sysAdmin: {
-          text: '系统管理员',
-        },
-        deviceAdmin: {
-          text: '设备管理员',
-        },
-        staff: {
-          text: '教职工',
-        },
-        internalStudent: {
-          text: '院内学生',
-        },
-        externalStudent: {
-          text: '院外学生',
-        },
-      },
+      valueEnum: roleListData,
     },
     {
       title: '联系方式',
@@ -128,7 +152,7 @@ const UserManage: React.FC = () => {
           key="editable"
           onClick={() => {
             setCurrentRow(record);
-            console.log(record);
+            // console.log(record);
             setEditVisible(true);
             // action?.startEditable?.(record.id);
           }}
@@ -227,25 +251,7 @@ const UserManage: React.FC = () => {
     }
     return promise.resolve();
   };
-  const reloadData = () => {
-    userList()
-      .then((res) => {
-        if (res.code === 20000 && res.data !== undefined) {
-          console.log(res);
-          setInitData(res.data);
-          setFormData(res.data);
-        } else {
-          message.error(res.message);
-        }
-      })
-      .catch((err) => message.error(err));
-  };
-  useEffect(() => {
-    reloadData();
-  }, []);
-  useEffect(() => {
-    form.setFieldsValue({ email: emailData });
-  }, [emailData]);
+
   const onEmailChange = (value) => {
     setEmailData(value.target.value);
   };
@@ -290,6 +296,8 @@ const UserManage: React.FC = () => {
     const res = await addUser(values);
     if (res.code === 20000 && res.data !== null) {
       setAddVisible(false);
+      form.resetFields();
+      setEmailData('');
       reloadData();
       message.success('用户添加成功');
     } else {
@@ -401,7 +409,9 @@ const UserManage: React.FC = () => {
         form={form}
         onFinish={async (value) => {
           value.roleId = value.roleId.value;
-          value.email = value.email + emailSuffix;
+          if (value.email) {
+            value.email = value.email + emailSuffix;
+          }
           await handleAdd(value);
         }}
       >
@@ -489,14 +499,16 @@ const UserManage: React.FC = () => {
         visible={editModalVisible}
         onVisibleChange={setEditVisible}
         onFinish={async (value) => {
-          console.log(fileList);
           console.log(value);
 
+          // console.log(fileList);
+          // console.log('current', currentRow);
+          value.roleId = value.roleId.value;
           if (fileList.length !== 0) {
             const file = fileList[0];
             const formData = new FormData();
             formData.append('file', file as RcFile);
-            const res = await updateAvatar(formData);
+            const res = await updateAvatarById(formData, currentRow?.userID);
             if (res.code === 20000 && res.data !== null) {
               console.log(res.data);
               message.success('更新头像成功');
@@ -504,8 +516,7 @@ const UserManage: React.FC = () => {
               message.error(res.message);
             }
           }
-
-          updateInfo(value).then((res) => {
+          updateInfoById(value, currentRow?.userID).then((res) => {
             if (res.code === 20000 && res.data === true) {
               message.success('更新用户信息成功');
             } else {
@@ -514,6 +525,7 @@ const UserManage: React.FC = () => {
           });
           reloadData();
           setEditVisible(false);
+          setCurrentRow(undefined);
           // value.roleId = value.roleId.value;
           // value.email = value.email + emailSuffix;
           // await handleAdd(value);
@@ -542,12 +554,18 @@ const UserManage: React.FC = () => {
           label="角色"
           name="roleId"
           request={getRoleData}
-          initialValue={currentRow?.roleDescription}
+          initialValue={{
+            label: currentRow?.roleDescription,
+            value: currentRow?.roleID,
+            title: currentRow?.roleName,
+          }}
           required={true}
           fieldProps={{
             showArrow: false,
             showSearch: true,
-            // onChange: onRoleChange,
+            onChange: (value) => {
+              console.log(value);
+            },
             dropdownMatchSelectWidth: false,
             labelInValue: true,
             autoClearSearchValue: true,
@@ -556,7 +574,8 @@ const UserManage: React.FC = () => {
         <ProFormRadio.Group
           name="gender"
           label="性别"
-          fieldProps={{ defaultValue: '男' }}
+          // fieldProps={{ defaultValue: '男' }}
+          initialValue={'男'}
           options={[
             {
               label: '男',

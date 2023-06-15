@@ -1,8 +1,9 @@
 import { convertToTreeData } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
-import { getUserInfo } from '@/services/swagger/user';
+import { insertDevice } from '@/services/swagger/device';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
+import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
 import {
   Button,
   Card,
@@ -23,8 +24,7 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { insertDevice } from '@/services/swagger/device';
-import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
+import { useHistory, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -41,13 +41,13 @@ const tailLayout = {
 
 //上传照片
 const props: UploadProps = {
-  beforeUpload: (file) => {
-    const isPNG = file.type === 'image/png';
-    if (!isPNG) {
-      message.error(`${file.name} is not a png file`);
-    }
-    return isPNG || Upload.LIST_IGNORE;
-  },
+  // beforeUpload: (file) => {
+  //   const isPNG = file.type === 'image/png';
+  //   if (!isPNG) {
+  //     message.error(`${file.name} is not a png file`);
+  //   }
+  //   return isPNG || Upload.LIST_IGNORE;
+  // },
   onChange: (info) => {
     console.log(info.fileList);
   },
@@ -56,19 +56,24 @@ const props: UploadProps = {
 //main
 const AddDevice: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
-
+  const history = useHistory();
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
-  const [uId, setUId] = useState(0);
+  const [uId, setUId] = useState<number>(0);
+  const { initialState, setInitialState } = useModel('@@initialState');
   const deviceT: string[] = [];
 
   const initial = async () => {
-    const res = await getUserInfo();
-    if (res.code === 20000) {
-      formRef.current?.setFieldsValue({ userName: res.data.userName });
-      formRef.current?.setFieldsValue({ purchaseDate: new Date() });
-      setUId(res.data.userID);
-    }
+    // console.log(initialState);
+    formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
+    formRef.current?.setFieldsValue({ purchaseDate: new Date() });
+    setUId(initialState?.currentUser?.userID);
+    // const res = await getUserInfo();
+    // if (res.code === 20000) {
+    //   formRef.current?.setFieldsValue({ userName: res.data.userName });
+    //   formRef.current?.setFieldsValue({ purchaseDate: new Date() });
+    //   setUId(res.data.userID);
+    // }
     const category = await getDeviceCategoryList();
     if (category.code === 20000) {
       setTree(convertToTreeData(category.data));
@@ -77,38 +82,43 @@ const AddDevice: React.FC = () => {
   useEffect(() => {
     initial();
   }, []);
-
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = ('0' + (date.getMonth() + 1)).slice(-2);
+    const day = ('0' + date.getDate()).slice(-2);
+    const hours = ('0' + date.getHours()).slice(-2);
+    const minutes = ('0' + date.getMinutes()).slice(-2);
+    const seconds = ('0' + date.getSeconds()).slice(-2);
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
   const onFinish = (values: any) => {
-    const pDate = Date.parse(values.purchaseDate).toLocaleString();
+    const pDate = formatDate(values.purchaseDate);
+    const devices = values.devices;
     values.devices.forEach(async (device, ind: number) => {
       device.deviceType = deviceT[ind];
-      device['purchaseDate'] = pDate;
-      console.log(device);
-      const res = await insertDevice({
-        deviceModel: device['deviceModel'],
-        deviceName: device['deviceName'],
-        deviceType: device['deviceType'],
-        purchaseDate: device['purchaseDate'],
-        userID: uId,
-        unitPrice: device['unitPrice'],
-        stockQuantity: device['stockQuantity'],
-        isPublic: device['isPublic'],
-        deviceSpecification: device['deviceSpecification'],
-        assetNumber: device['assetNumber'],
-        borrowRate: 0.01,
-        createTime: 'string',
-        deviceImageList: 'String',
-        deviceState: '正常',
-        expectedScrapDate: 'string',
-        isDeleted: 0,
-        updateTime: 'string',
-        deviceID: 0,
+      device.purchaseDate = pDate;
+      device.userID = uId;
+      const { deviceImage, ...deviceData } = device;
+      const fileList = deviceImage.fileList;
+      console.log(deviceData);
+
+      const formData = new FormData();
+      // formData.append('file', fileList);
+      fileList.forEach((file) => {
+        formData.append('files', file.originFileObj);
       });
-      if (res.code === 20000) {
-        message.success('提交成功');
-        setComponentDisabled(true);
+      // formData.append('device', JSON.stringify(deviceData));
+      for (let key in deviceData) {
+        formData.append(key, deviceData[key] == undefined ? '' : deviceData[key]);
       }
-      console.log(values);
+      const res = await insertDevice(formData);
+      if (res.code === 20000 && res.data !== undefined) {
+        message.success('添加成功');
+        // setComponentDisabled(true);
+        history.push('/deviceManagement/list');
+      } else {
+        message.error(res.message);
+      }
     });
   };
 
