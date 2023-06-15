@@ -2,14 +2,17 @@ import {
   PageContainer,
   ProForm,
   ProFormDateTimePicker,
+  ProFormInstance,
   ProFormMoney,
   ProFormSelect,
   ProFormText,
 } from '@ant-design/pro-components';
 import { Button, Card } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'umi';
 import { getRepairDetail } from '@/services/swagger/repair';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { convertToSelectData } from '@/services/general/dataProcess';
 
 interface stateType {
   repairID: number;
@@ -18,17 +21,23 @@ interface stateType {
 }
 
 const RepairDetail: React.FC = () => {
+  const formRef = useRef<ProFormInstance>();
   const [repairRecord, setRepairRecord] = useState();
   const [isUneditable, setUneditable] = useState(true);
+  const [selectData, setSelectData] = useState([]);
   const { state } = useLocation<stateType>();
 
   const initial = async () => {
     const res = await getRepairDetail({ repairID: state.repairID });
     if (res.code === 20000) {
-      res.data.repairTime = new Date(res.data.repairTime).toLocaleString();
+      //res.data.repairTime = new Date(res.data.repairTime).toLocaleString();
       res.data.deviceName = state.deviceName;
       setRepairRecord(res.data);
       setUneditable(!state.edit);
+    }
+    const assets = await getAssetNumber();
+    if (res.code === 20000) {
+      setSelectData(convertToSelectData(assets.data));
     }
   };
 
@@ -66,6 +75,7 @@ const RepairDetail: React.FC = () => {
           <ProForm
             style={{ width: 600 }}
             initialValues={repairRecord}
+            formRef={formRef}
             disabled={isUneditable}
             submitter={{ render: isUneditable ? submitterEdit : submitterSubmit }}
             //resetter={{ render: resetterRender }}
@@ -83,7 +93,20 @@ const RepairDetail: React.FC = () => {
               disabled={true}
               placeholder={'提交后自动生成'}
             />
-            <ProFormSelect label={'设备编号'} name={'deviceId'} required />
+            <ProFormSelect
+              label={'设备编号'}
+              name={'assetNumber'}
+              required
+              options={selectData}
+              fieldProps={{
+                onChange: async (value) => {
+                  const did = await getDeviceDetail({ DeviceID: value });
+                  if (did.code === 20000) {
+                    formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
+                  }
+                },
+              }}
+            />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -106,7 +129,7 @@ const RepairDetail: React.FC = () => {
             />
             <ProFormDateTimePicker
               width={300}
-              name="date"
+              name="repairTime"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}

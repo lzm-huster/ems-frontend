@@ -35,3 +35,14 @@ export async function insertMaintenance(
     ...(options || {}),
   });
 }
+
+export async function deleteMaintenanceRecord(
+  params: { maintenanceID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/maintenance/deleteDeviceMaintenanceRecordByMaintenenceID', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}

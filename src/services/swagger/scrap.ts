@@ -17,3 +17,14 @@ export async function getScrapDetail(
     params: { ...params },
   });
 }
+
+export async function deleteScrapRecord(
+  params: { scrapID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/scrap/deleteScrapRecord', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}

@@ -1,8 +1,12 @@
+import { convertToSelectData } from '@/services/general/dataProcess';
 import { getCheckDetail } from '@/services/swagger/check';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getUserDetail } from '@/services/swagger/user';
 import {
   PageContainer,
   ProForm,
   ProFormDateTimePicker,
+  ProFormInstance,
   ProFormSelect,
   ProFormText,
   ProFormTextArea,
@@ -10,7 +14,7 @@ import {
 } from '@ant-design/pro-components';
 import { Button, Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'umi';
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -28,21 +32,29 @@ interface stateType {
 //使用钩子获取state
 
 const DetailCheck: React.FC = () => {
+  const formRef = useRef<ProFormInstance>();
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [checkRecord, setCheckRecord] = useState();
   const [isUneditable, setUneditable] = useState(true);
+  const [selectData, setSelectData] = useState([]);
   const { state } = useLocation<stateType>();
 
   const initial = async () => {
     const res = await getCheckDetail({ checkID: state.checkID });
     if (res.code === 20000) {
-      res.data.scrapTime = new Date(res.data.scrapTime).toLocaleString();
+      //res.data.scrapTime = new Date(res.data.scrapTime).toLocaleString();
       res.data.deviceName = state.deviceName;
       setCheckRecord(res.data);
       setUneditable(!state.edit);
+    }
+    const assets = await getAssetNumber();
+    if (res.code === 20000) {
+      console.log(assets.data);
+      setSelectData(convertToSelectData(assets.data));
     }
   };
 
@@ -95,6 +107,7 @@ const DetailCheck: React.FC = () => {
           <ProForm
             style={{ width: 600 }}
             initialValues={checkRecord}
+            formRef={formRef}
             disabled={isUneditable}
             submitter={{ render: isUneditable ? submitterEdit : submitterSubmit }}
             params={checkRecord}
@@ -105,7 +118,24 @@ const DetailCheck: React.FC = () => {
               });
             }}
           >
-            <ProFormSelect label={'设备编号'} name={'deviceID'} required />
+            <ProFormSelect
+              label={'设备编号'}
+              name={'assetNumber'}
+              required
+              options={selectData}
+              fieldProps={{
+                onChange: async (value) => {
+                  const did = await getDeviceDetail({ DeviceID: value });
+                  if (did.code === 20000) {
+                    // const uName = await getUserDetail({ userId: did.data['userID'] });
+                    // if (uName.code === 20000) {
+                    //   formRef?.current?.setFieldValue('checker', uName.data['userName']);
+                    // }
+                    formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
+                  }
+                },
+              }}
+            />
             <ProFormText
               label={'设备名称'}
               name={'deviceName'}
@@ -114,10 +144,9 @@ const DetailCheck: React.FC = () => {
               required
             />
             <ProFormText
-              label={'设备负责人'}
+              label={'设备核查人'}
               name={'checker'}
-              disabled={true}
-              placeholder={'根据设备编号自动填写'}
+              placeholder={'设备核查人姓名'}
               required
             />
 

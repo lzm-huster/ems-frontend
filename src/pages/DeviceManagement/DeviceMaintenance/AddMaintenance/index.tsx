@@ -11,17 +11,30 @@ import {
 } from '@ant-design/pro-components';
 import { Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'umi';
+
+interface stateType {
+  deviceID: number;
+}
 
 const AddMaintenance: React.FC = () => {
   const formRef = useRef<ProFormInstance>();
   const [selectData, setSelectData] = useState([]);
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
+  const { state } = useLocation<stateType>();
 
   const initial = async () => {
     const res = await getAssetNumber();
     if (res.code === 20000) {
       console.log(res.data);
       setSelectData(convertToSelectData(res.data));
+    }
+    if (state != null) {
+      const device = await getDeviceDetail({ DeviceID: state.deviceID });
+      if (device.code === 20000) {
+        formRef.current?.setFieldValue('deviceId', device.data.assetNumber);
+        formRef.current?.setFieldValue('deviceName', device.data.deviceName);
+      }
     }
   };
   useEffect(() => {
@@ -74,7 +87,7 @@ const AddMaintenance: React.FC = () => {
             <ProFormText
               label={'保养内容'}
               name={'maintenanceContent'}
-              placeholder={'维修内容'}
+              placeholder={'保养内容'}
               required
             />
             <ProFormDateTimePicker

@@ -17,3 +17,14 @@ export async function getCheckDetail(
     params: { ...params },
   });
 }
+
+export async function deleteCheckRecord(
+  params: { checkID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/check/deleteDeviceCheckRecord', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}

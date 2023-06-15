@@ -68,3 +68,11 @@ export async function insertDevice(
     ...(options || {}),
   });
 }
+
+export async function deleteDevice(params: { DeviceID: number }, options?: { [key: string]: any }) {
+  return request('/api/device/deleteDeviceByDeviceID', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}
