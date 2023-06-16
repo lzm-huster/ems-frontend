@@ -1,3 +1,6 @@
+import { convertToSelectData } from '@/services/general/dataProcess';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getMaintenanceDetail } from '@/services/swagger/maintenance';
 import {
   PageContainer,
   ProForm,
@@ -9,9 +12,6 @@ import {
 import { Button, Card } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'umi';
-import { getMaintenanceDetail } from '@/services/swagger/maintenance';
-import { convertToSelectData } from '@/services/general/dataProcess';
-import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 
 interface stateType {
   maintenanceID: number;
@@ -58,6 +58,8 @@ const RepairDetail: React.FC = () => {
         type="primary"
         onClick={() => {
           props.form?.submit();
+          console.log(props);
+
           setUneditable(true);
         }}
       >
