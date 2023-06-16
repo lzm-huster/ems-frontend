@@ -235,7 +235,7 @@ const Maintenance: React.FC = () => {
               修改
             </Link>
           </a>
-          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.repairID)}>
+          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.maintenanceID)}>
             <a>删除</a>
           </Popconfirm>
         </Space>

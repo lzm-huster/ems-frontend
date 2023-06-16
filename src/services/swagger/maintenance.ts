@@ -33,11 +33,19 @@ export async function insertMaintenance(body: any, options?: { [key: string]: an
   });
 }
 
+export async function updateMaintenance(params: any, options?: { [key: string]: any }) {
+  return request('/api/maintenance/deviceMaintenanceListUpdate', {
+    method: 'POST',
+    params: params,
+    ...(options || {}),
+  });
+}
+
 export async function deleteMaintenanceRecord(
   params: { maintenanceID: number },
   options?: { [key: string]: any },
 ) {
-  return request('/api/maintenance/deleteDeviceMaintenanceRecordByMaintenenceID', {
+  return request('/api/maintenance/deleteDeviceMaintenanceRecordByMaintenanceID', {
     method: 'POST',
     ...(options || {}),
     params: { ...params },
