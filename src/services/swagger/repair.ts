@@ -43,21 +43,10 @@ export async function deleteRepairRecord(
   });
 }
 
-export async function insertRepair(
-  params: {
-    deviceID: number;
-    deviceName: string;
-    remark: string;
-    repairContent: string;
-    repairFee: number;
-    repairTime: string;
-    repairID: number;
-  },
-  options?: { [key: string]: any },
-) {
+export async function insertRepair(params: any, options?: { [key: string]: any }) {
   return request('/api/repair/insertDeviceRepairRecord', {
     method: 'POST',
-    params: { ...params },
+    data: params,
     ...(options || {}),
   });
 }

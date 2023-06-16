@@ -18,20 +18,10 @@ export async function getMaintenanceDetail(
   });
 }
 
-export async function insertMaintenance(
-  params: {
-    deviceID: number;
-    deviceName: string;
-    remark: string;
-    maintenanceContent: string;
-    maintenanceTime: string;
-    maintenanceID: number;
-  },
-  options?: { [key: string]: any },
-) {
-  return request('/api/maintenance/insertDeviceMaintenanceRecord', {
+export async function insertMaintenance(body: any, options?: { [key: string]: any }) {
+  return request('/api/maintenance/deviceMaintenanceListInsert', {
     method: 'POST',
-    params: { ...params },
+    data: body,
     ...(options || {}),
   });
 }

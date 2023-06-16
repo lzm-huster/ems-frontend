@@ -1,3 +1,7 @@
+import { convertToSelectData } from '@/services/general/dataProcess';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { insertRepair } from '@/services/swagger/repair';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -10,9 +14,6 @@ import {
 } from '@ant-design/pro-components';
 import { Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
-import { convertToSelectData } from '@/services/general/dataProcess';
-import { insertRepair } from '@/services/swagger/repair';
 import { useLocation } from 'umi';
 
 interface stateType {
@@ -44,12 +45,15 @@ const AddRepair: React.FC = () => {
   }, []);
 
   const onFinish = async (values: any) => {
-    values.repairTime = Date.parse(values.repairTime).toLocaleString();
-    values.repairID = 0;
+    console.log(values);
+
+    values.repairTime = formatDate(values.repairTime);
     const res = await insertRepair(values);
-    if (res.code === 20000) {
+    if (res.code === 20000 && res.data === true) {
       message.success('提交成功');
       setComponentDisabled(true);
+    } else {
+      message.error(res.message);
     }
     console.log(values);
   };

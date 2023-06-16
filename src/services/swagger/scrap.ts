@@ -1,5 +1,17 @@
 import { request } from 'umi';
 
+export async function insertScrap(body: FormData, options?: { [key: string]: any }) {
+  return request('/api/scrap/insertDeviceScarpRecord', {
+    method: 'POST',
+    data: body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requestType: 'form',
+    ...(options || {}),
+  });
+}
+
 export async function getScrapList(options?: { [key: string]: any }) {
   return request('/api/scrap/getScrapList', {
     method: 'GET',

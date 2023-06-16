@@ -1,6 +1,8 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { insertScrap } from '@/services/swagger/scrap';
 import { getUserDetail } from '@/services/swagger/user';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -11,7 +13,7 @@ import {
   ProFormTextArea,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Card, Modal } from 'antd';
+import { Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
 
@@ -61,21 +63,43 @@ const AddScrap: React.FC = () => {
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm style={{ width: 600 }} formRef={formRef}>
+          <ProForm
+            style={{ width: 600 }}
+            formRef={formRef}
+            onFinish={async (value) => {
+              console.log(value);
+              value.scrapTime = formatDate(value.scrapTime);
+              const { upload, ...scrapData } = value;
+              const formData = new FormData();
+              upload.forEach((file: { originFileObj: string | Blob }) => {
+                formData.append('files', file.originFileObj);
+              });
+              // formData.append('device', JSON.stringify(deviceData));
+              for (const key in scrapData) {
+                formData.append(key, scrapData[key] == undefined ? '' : scrapData[key]);
+              }
+              const res = await insertScrap(formData);
+              if (res.code === 20000 && res.data === true) {
+                message.success('添加报废记录成功');
+              } else {
+                message.error(res.message);
+              }
+            }}
+          >
             <ProFormSelect
               label={'设备编号'}
-              name={'deviceId'}
+              name={'deviceID'}
               required
               options={selectData}
               fieldProps={{
                 onChange: async (value) => {
                   const did = await getDeviceDetail({ DeviceID: value });
                   if (did.code === 20000) {
-                    const uName = await getUserDetail({ userId: did.data['userID'] });
+                    const uName = await getUserDetail({ userId: did.data.userID });
                     if (uName.code === 20000) {
-                      formRef?.current?.setFieldValue('responsibleUser', uName.data['userName']);
+                      formRef?.current?.setFieldValue('scrapPerson', uName.data.userName);
                     }
-                    formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
+                    formRef?.current?.setFieldValue('deviceName', did.data.deviceName);
                   }
                 },
               }}
@@ -89,7 +113,7 @@ const AddScrap: React.FC = () => {
             />
             <ProFormText
               label={'设备负责人'}
-              name={'responsibleUser'}
+              name={'scrapPerson'}
               disabled={true}
               placeholder={'根据设备编号自动填写'}
               required
@@ -97,7 +121,7 @@ const AddScrap: React.FC = () => {
 
             <ProFormDateTimePicker
               width={300}
-              name="date"
+              name="scrapTime"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}
@@ -106,7 +130,7 @@ const AddScrap: React.FC = () => {
               initialValue={new Date()}
             />
 
-            <ProFormTextArea name="reason" label="报废原因" placeholder="报废原因说明" />
+            <ProFormTextArea name="scrapReason" label="报废原因" placeholder="报废原因说明" />
             <>
               <ProFormUploadButton
                 name="upload"

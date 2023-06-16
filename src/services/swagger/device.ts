@@ -39,7 +39,7 @@ export async function getDeviceDetail(
   });
 }
 
-export async function insertDevice(body, options?: { [key: string]: any }) {
+export async function insertDevice(body: FormData, options?: { [key: string]: any }) {
   return request('/api/device/insertDevice', {
     method: 'POST',
     data: body,

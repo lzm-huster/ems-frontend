@@ -1,6 +1,7 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { insertMaintenance } from '@/services/swagger/maintenance';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -8,6 +9,7 @@ import {
   ProFormInstance,
   ProFormSelect,
   ProFormText,
+  ProFormTextArea,
 } from '@ant-design/pro-components';
 import { Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -42,12 +44,15 @@ const AddMaintenance: React.FC = () => {
   }, []);
 
   const onFinish = async (values: any) => {
-    values.repairTime = Date.parse(values.repairTime).toLocaleString();
-    values.repairID = 0;
+    console.log(values);
+
+    values.maintenanceTime = formatDate(values.maintenanceTime);
     const res = await insertMaintenance(values);
-    if (res.code === 20000) {
+    if (res.code === 20000 && res.data === true) {
       message.success('提交成功');
       setComponentDisabled(true);
+    } else {
+      message.error(res.message);
     }
     console.log(values);
   };
@@ -65,7 +70,7 @@ const AddMaintenance: React.FC = () => {
             />
             <ProFormSelect
               label={'设备编号'}
-              name={'deviceId'}
+              name={'deviceID'}
               required
               options={selectData}
               fieldProps={{
@@ -84,7 +89,7 @@ const AddMaintenance: React.FC = () => {
               placeholder={'根据设备编号自动填写'}
               required
             />
-            <ProFormText
+            <ProFormTextArea
               label={'保养内容'}
               name={'maintenanceContent'}
               placeholder={'保养内容'}
@@ -92,7 +97,7 @@ const AddMaintenance: React.FC = () => {
             />
             <ProFormDateTimePicker
               width={300}
-              name="date"
+              name={'maintenanceTime'}
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
               }}

@@ -1,5 +1,17 @@
 import { request } from 'umi';
 
+export async function insertCheck(body: FormData, options?: { [key: string]: any }) {
+  return request('/api/check/insertDeviceCheckRecord', {
+    method: 'POST',
+    data: body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requestType: 'form',
+    ...(options || {}),
+  });
+}
+
 export async function getCheckList(options?: { [key: string]: any }) {
   return request('/api/check/getCheckList', {
     method: 'GET',

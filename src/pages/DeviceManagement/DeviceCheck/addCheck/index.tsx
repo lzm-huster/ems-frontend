@@ -1,6 +1,8 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
+import { insertCheck } from '@/services/swagger/check';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { getUserDetail } from '@/services/swagger/user';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -11,7 +13,7 @@ import {
   ProFormTextArea,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Card, Modal } from 'antd';
+import { Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
 const getBase64 = (file: RcFile): Promise<string> =>
@@ -59,10 +61,31 @@ const AddCheck: React.FC = () => {
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm style={{ width: 600 }} formRef={formRef}>
+          <ProForm
+            style={{ width: 600 }}
+            formRef={formRef}
+            onFinish={async (values) => {
+              values.checkTime = formatDate(values.checkTime);
+              const { checkImage, ...checkData } = values;
+              const formData = new FormData();
+              checkImage.forEach((file: { originFileObj: string | Blob }) => {
+                formData.append('files', file.originFileObj);
+              });
+              // formData.append('device', JSON.stringify(deviceData));
+              for (const key in checkData) {
+                formData.append(key, checkData[key] == undefined ? '' : checkData[key]);
+              }
+              const res = await insertCheck(formData);
+              if (res.code === 20000 && res.data === true) {
+                message.success('添加核查记录成功');
+              } else {
+                message.error(res.message);
+              }
+            }}
+          >
             <ProFormSelect
               label={'设备编号'}
-              name={'assetNumber'}
+              name={'deviceID'}
               required
               options={selectData}
               fieldProps={{
