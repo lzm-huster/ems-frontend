@@ -7,6 +7,13 @@ export async function getMaintenanceList(options?: { [key: string]: any }) {
   });
 }
 
+export async function getMaintenanceNum(options?: { [key: string]: any }) {
+  return request('/api/maintenance/getMaintenanceDeviceNumber', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 export async function getMaintenanceDetail(
   params: { maintenanceId: number },
   options?: { [key: string]: any },

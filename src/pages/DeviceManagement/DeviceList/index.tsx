@@ -209,9 +209,6 @@ const DeviceList: React.FC = () => {
             <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
           </Button>
         </Access>
-        <Access accessible={access.deviceAddBtn('device:add')}>
-          <Button type="primary">信息统计</Button>
-        </Access>
         <Button onClick={start} disabled={!hasSelected}>
           批量借用
         </Button>

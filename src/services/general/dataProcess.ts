@@ -58,3 +58,20 @@ export function formatDate(date: Date) {
   const seconds = ('0' + date.getSeconds()).slice(-2);
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
+
+export function getMonth1st(monthNum: number) {
+  let data = new Date();
+  const li = [];
+  data.setDate(1);
+  data.setHours(0);
+  data.setSeconds(0);
+  data.setMinutes(0);
+  data.setMilliseconds(0);
+  li.unshift(data.getTime());
+  for (let i = 0; i < monthNum - 1; i++) {
+    data.setDate(0);
+    li.unshift(li[0] - data.getDate() * 24 * 3600 * 1000);
+    data = new Date(li[0]);
+  }
+  return li;
+}

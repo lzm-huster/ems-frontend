@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Col,
+  Divider,
   Form,
   FormInstance,
   Input,
@@ -11,11 +12,17 @@ import {
   Space,
   Statistic,
 } from 'antd';
-import { deleteMaintenanceRecord, getMaintenanceList } from '@/services/swagger/maintenance';
+import {
+  deleteMaintenanceRecord,
+  getMaintenanceList,
+  getMaintenanceNum,
+} from '@/services/swagger/maintenance';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { Line } from '@ant-design/charts';
+import { getMonth1st } from '@/services/general/dataProcess';
 
 interface MaintenanceRecord {
   key: React.Key;
@@ -35,10 +42,47 @@ const Maintenance: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [initMaintenance, setInitMaintenance] = useState([]);
   const [showMaintenance, setShowMaintenance] = useState([]);
+  const [lineData, setLineData] = useState<{}>([]);
+  const [maintenanceNum, setMaintenanceNum] = useState(0);
+  const [maintenanceTMonth, setMaintenanceMonth] = useState(0);
   const access = useAccess();
+
+  //折线图数据
+  const plotData = (repairs: MaintenanceRecord[]) => {
+    const month1st = getMonth1st(5);
+    const data = [];
+    for (let i = 0; i < 4; i++) {
+      const date = new Date(month1st[i]);
+      const node = {
+        month: date.getFullYear() + '/' + (date.getMonth() + 1),
+        maintenanceNum: repairs.filter((x: MaintenanceRecord) => {
+          const t = Date.parse(x.maintenanceTime);
+          return t >= month1st[i] && t < month1st[i + 1];
+        }).length,
+      };
+      data.push(node);
+    }
+    const date = new Date(month1st[4]);
+    const node = {
+      month: date.getFullYear() + '/' + (date.getMonth() + 1),
+      maintenanceNum: repairs.filter((x: MaintenanceRecord) => {
+        const t = Date.parse(x.maintenanceTime);
+        return t >= month1st[4];
+      }).length,
+    };
+    data.push(node);
+    setMaintenanceMonth(
+      repairs.filter((x: MaintenanceRecord) => {
+        const t = Date.parse(x.maintenanceTime);
+        return t >= month1st[4];
+      }).length,
+    );
+    return data;
+  };
+
   const initial = async () => {
     const res = await getMaintenanceList();
-
+    const num = await getMaintenanceNum();
     if (res.code === 20000) {
       for (let i = 0; i < res.data.length; i++) {
         res.data[i].maintenanceTime = new Date(res.data[i].maintenanceTime).toLocaleString();
@@ -46,11 +90,49 @@ const Maintenance: React.FC = () => {
       }
       setInitMaintenance(res.data);
       setShowMaintenance(res.data);
+      setLineData(plotData(res.data));
+    }
+    if (num.code === 20000) {
+      setMaintenanceNum(num.data);
     }
   };
   useEffect(() => {
     initial();
   }, []);
+
+  //折线图配置
+  const config = {
+    data: lineData,
+    xField: 'month',
+    yField: 'maintenanceNum',
+    label: {},
+    point: {
+      size: 5,
+      shape: 'diamond',
+      style: {
+        fill: 'white',
+        stroke: '#5B8FF9',
+        lineWidth: 2,
+      },
+    },
+    tooltip: {
+      showMarkers: false,
+    },
+    state: {
+      active: {
+        style: {
+          shadowBlur: 4,
+          stroke: '#000',
+          fill: 'red',
+        },
+      },
+    },
+    interactions: [
+      {
+        type: 'marker-active',
+      },
+    ],
+  };
 
   const onSearch = (value: string) => {
     setShowMaintenance(
@@ -164,6 +246,30 @@ const Maintenance: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
+        <Col span={6}>
+          <Card bordered={false} hoverable={true} title="维修记录">
+            <Statistic
+              value={maintenanceNum}
+              title="保养次数"
+              precision={0}
+              valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
+              suffix="次"
+            />
+            <Divider />
+            <Statistic
+              value={maintenanceTMonth}
+              title="本月保养次数"
+              precision={0}
+              valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
+              suffix="次"
+            />
+          </Card>
+        </Col>
+        <Col span={18}>
+          <Card bordered={false} title={'近五个月保养次数'} hoverable>
+            <Line height={213} {...config} />
+          </Card>
+        </Col>
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showMaintenance} columns={columns}>
             <Access accessible={access.maintenanceAddBtn('maintenance:add')}>
