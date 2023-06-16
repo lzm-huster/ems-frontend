@@ -17,6 +17,7 @@ import {
   Space,
   Statistic,
   Divider,
+  message,
 } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
@@ -146,10 +147,17 @@ const Repair: React.FC = () => {
   };
 
   const handleDelete = async (repairId: number) => {
-    deleteRepairRecord({ repairID: repairId });
-    const res = await getRepairList();
-    if (res.code === 20000) {
-      setShowRepair(res.data);
+    const del = await deleteRepairRecord({ repairID: repairId });
+    if (del.code === 20000) {
+      const res = await getRepairList();
+      if (res.code === 20000 && res.data !== undefined) {
+        for (let i = 0; i < res.data.length; i++) {
+          res.data[i].repairTime = new Date(res.data[i].repairTime).toLocaleString();
+        }
+        setShowRepair(res.data);
+      } else {
+        message.error(res.message);
+      }
     }
   };
 

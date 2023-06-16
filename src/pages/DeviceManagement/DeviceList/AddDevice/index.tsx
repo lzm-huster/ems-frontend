@@ -1,4 +1,4 @@
-import { convertToTreeData, formatDate } from '@/services/general/dataProcess';
+import { convertToTreeData } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
 import { insertDevice } from '@/services/swagger/device';
 import { formatDate } from '@/utils/utils';

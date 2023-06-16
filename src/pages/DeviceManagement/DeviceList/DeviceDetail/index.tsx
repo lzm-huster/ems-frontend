@@ -10,12 +10,13 @@ import {
   ProFormTreeSelect,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Button, Card, Modal } from 'antd';
+import { Button, Card, Modal, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'umi';
-import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getAssetNumber, getDeviceDetail, updateDevice } from '@/services/swagger/device';
 import { convertToSelectData } from '@/services/general/dataProcess';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
+import { formatDate } from '@/utils/utils';
 
 interface stateType {
   deviceID: number;
@@ -70,9 +71,31 @@ const DeviceDetail: React.FC = () => {
       <Button
         key="submit"
         type="primary"
-        onClick={() => {
-          props.form?.submit();
-          setUneditable(true);
+        onClick={async () => {
+          const values = props.form?.getFieldsValue();
+          console.log(values);
+          const pDate = formatDate(values.purchaseDate);
+          values.purchaseDate = pDate;
+          const { deviceImage, ...deviceData } = values;
+          const fileList1 = deviceImage.fileList;
+          console.log(deviceData);
+
+          const formData = new FormData();
+          // formData.append('file', fileList);
+          fileList1.forEach((file) => {
+            formData.append('files', file.originFileObj);
+          });
+          // formData.append('device', JSON.stringify(deviceData));
+          for (const key in deviceData) {
+            formData.append(key, deviceData[key] == undefined ? '' : deviceData[key]);
+          }
+          const res = await updateDevice(formData);
+          if (res.code === 20000 && res.data !== undefined) {
+            message.success('修改成功');
+            setUneditable(true);
+          } else {
+            message.error(res.message);
+          }
         }}
       >
         提交
@@ -139,6 +162,8 @@ const DeviceDetail: React.FC = () => {
               disabled
             />
             <ProFormText name="deviceModel" label="设备参数" placeholder="设备参数" />
+            <ProFormText name="userName" label="设备负责人" placeholder="设备负责人" />
+            <ProFormDateTimePicker name="purchaseDate" label="购买时间" placeholder="购买时间" />
             <ProFormMoney
               min="0"
               name="unitPrice"

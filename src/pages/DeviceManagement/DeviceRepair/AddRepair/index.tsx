@@ -14,7 +14,7 @@ import {
 } from '@ant-design/pro-components';
 import { Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
+import { useHistory, useLocation } from 'umi';
 
 interface stateType {
   deviceID: number;
@@ -23,8 +23,8 @@ interface stateType {
 const AddRepair: React.FC = () => {
   const formRef = useRef<ProFormInstance>();
   const [selectData, setSelectData] = useState([]);
-  const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const { state } = useLocation<stateType>();
+  const history = useHistory();
 
   const initial = async () => {
     const res = await getAssetNumber();
@@ -51,7 +51,7 @@ const AddRepair: React.FC = () => {
     const res = await insertRepair(values);
     if (res.code === 20000 && res.data === true) {
       message.success('提交成功');
-      setComponentDisabled(true);
+      history.push('/deviceManagement/repair');
     } else {
       message.error(res.message);
     }
@@ -62,12 +62,7 @@ const AddRepair: React.FC = () => {
     <PageContainer>
       <Card>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <ProForm
-            style={{ width: 600 }}
-            formRef={formRef}
-            disabled={componentDisabled}
-            onFinish={onFinish}
-          >
+          <ProForm style={{ width: 600 }} formRef={formRef} onFinish={onFinish}>
             <ProFormText
               label={'维修记录编号'}
               name={'repairID'}

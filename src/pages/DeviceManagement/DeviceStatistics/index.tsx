@@ -132,6 +132,7 @@ const Home: React.FC = () => {
                 valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
                 suffix="台"
               />
+              <Bar height={50} width={100} {...barConfig} />
             </Card>
           </Link>
         </Col>

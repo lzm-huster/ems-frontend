@@ -13,7 +13,7 @@ import {
 } from '@ant-design/pro-components';
 import { Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
+import { useHistory, useLocation } from 'umi';
 
 interface stateType {
   deviceID: number;
@@ -22,8 +22,8 @@ interface stateType {
 const AddMaintenance: React.FC = () => {
   const formRef = useRef<ProFormInstance>();
   const [selectData, setSelectData] = useState([]);
-  const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const { state } = useLocation<stateType>();
+  const history = useHistory();
 
   const initial = async () => {
     const res = await getAssetNumber();
@@ -34,7 +34,7 @@ const AddMaintenance: React.FC = () => {
     if (state != null) {
       const device = await getDeviceDetail({ DeviceID: state.deviceID });
       if (device.code === 20000) {
-        formRef.current?.setFieldValue('deviceId', device.data.deviceID);
+        formRef.current?.setFieldValue('deviceID', device.data.deviceID);
         formRef.current?.setFieldValue('deviceName', device.data.deviceName);
       }
     }
@@ -50,11 +50,10 @@ const AddMaintenance: React.FC = () => {
     const res = await insertMaintenance(values);
     if (res.code === 20000 && res.data === true) {
       message.success('提交成功');
-      setComponentDisabled(true);
+      history.push('/deviceManagement/maintenance');
     } else {
       message.error(res.message);
     }
-    console.log(values);
   };
 
   return (

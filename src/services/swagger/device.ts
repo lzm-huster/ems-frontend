@@ -21,9 +21,14 @@ export async function getPublicAssetNumber(options?: { [key: string]: any }) {
   });
 }
 
-export async function UpdateDevice(options?: { [key: string]: any }) {
+export async function updateDevice(body: FormData, options?: { [key: string]: any }) {
   return request<any>('/api/device/UpdateDevice', {
     method: 'POST',
+    data: body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requestType: 'form',
     ...(options || {}),
   });
 }
