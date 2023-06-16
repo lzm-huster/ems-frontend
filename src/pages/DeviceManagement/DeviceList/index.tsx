@@ -173,9 +173,27 @@ const DeviceList: React.FC = () => {
               保养
             </Link>
           </a>
-          <a>报废</a>
-          <a>修改</a>
-          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.scrapID)}>
+          <a key="maintenance">
+            <Link
+              to={{
+                pathname: '/deviceManagement/scrap/addScrap',
+                state: { deviceID: record.deviceID },
+              }}
+            >
+              报废
+            </Link>
+          </a>
+          <a key="update">
+            <Link
+              to={{
+                pathname: '/deviceManagement/list/detail',
+                state: { deviceID: record.deviceID, edit: true },
+              }}
+            >
+              修改
+            </Link>
+          </a>
+          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.deviceID)}>
             <a>删除</a>
           </Popconfirm>
         </Space>
@@ -190,9 +208,6 @@ const DeviceList: React.FC = () => {
           <Button type="primary" style={{ marginRight: 10 }}>
             <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
           </Button>
-        </Access>
-        <Access accessible={access.deviceAddBtn('device:add')}>
-          <Button type="primary">信息统计</Button>
         </Access>
         <Button onClick={start} disabled={!hasSelected}>
           批量借用

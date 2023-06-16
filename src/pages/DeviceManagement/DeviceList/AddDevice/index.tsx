@@ -1,4 +1,4 @@
-import { convertToTreeData } from '@/services/general/dataProcess';
+import { convertToTreeData, formatDate } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
 import { insertDevice } from '@/services/swagger/device';
 import { formatDate } from '@/utils/utils';
@@ -69,12 +69,6 @@ const AddDevice: React.FC = () => {
     formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
     formRef.current?.setFieldsValue({ purchaseDate: new Date() });
     setUId(initialState?.currentUser?.userID);
-    // const res = await getUserInfo();
-    // if (res.code === 20000) {
-    //   formRef.current?.setFieldsValue({ userName: res.data.userName });
-    //   formRef.current?.setFieldsValue({ purchaseDate: new Date() });
-    //   setUId(res.data.userID);
-    // }
     const category = await getDeviceCategoryList();
     if (category.code === 20000) {
       setTree(convertToTreeData(category.data));
@@ -101,13 +95,13 @@ const AddDevice: React.FC = () => {
         formData.append('files', file.originFileObj);
       });
       // formData.append('device', JSON.stringify(deviceData));
-      for (let key in deviceData) {
+      for (const key in deviceData) {
         formData.append(key, deviceData[key] == undefined ? '' : deviceData[key]);
       }
       const res = await insertDevice(formData);
       if (res.code === 20000 && res.data !== undefined) {
         message.success('添加成功');
-        // setComponentDisabled(true);
+        setComponentDisabled(true);
         history.push('/deviceManagement/list');
       } else {
         message.error(res.message);

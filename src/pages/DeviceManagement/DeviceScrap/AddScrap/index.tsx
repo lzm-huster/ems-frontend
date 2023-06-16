@@ -16,6 +16,11 @@ import {
 import { Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'umi';
+
+interface stateType {
+  deviceID: number;
+}
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -32,14 +37,27 @@ const AddScrap: React.FC = () => {
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const handleCancel = () => setPreviewOpen(false);
   const [selectData, setSelectData] = useState([]);
+  const { state } = useLocation<stateType>();
+
+  const handleCancel = () => setPreviewOpen(false);
 
   const initial = async () => {
     const res = await getAssetNumber();
     if (res.code === 20000) {
       console.log(res.data);
       setSelectData(convertToSelectData(res.data));
+    }
+    if (state != null) {
+      const device = await getDeviceDetail({ DeviceID: state.deviceID });
+      if (device.code === 20000) {
+        formRef.current?.setFieldValue('deviceId', device.data.deviceID);
+        formRef.current?.setFieldValue('deviceName', device.data.deviceName);
+        const uName = await getUserDetail({ userId: device.data.userID });
+        if (uName.code === 20000) {
+          formRef?.current?.setFieldValue('scrapPerson', uName.data['userName']);
+        }
+      }
     }
   };
   useEffect(() => {
@@ -66,6 +84,11 @@ const AddScrap: React.FC = () => {
           <ProForm
             style={{ width: 600 }}
             formRef={formRef}
+            submitter={{
+              onSubmit: () => {
+                console.log(formRef.current?.getFieldsValue());
+              },
+            }}
             onFinish={async (value) => {
               console.log(value);
               value.scrapTime = formatDate(value.scrapTime);

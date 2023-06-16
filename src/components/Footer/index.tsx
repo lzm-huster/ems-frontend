@@ -1,6 +1,6 @@
 import { DefaultFooter } from '@ant-design/pro-components';
 const Footer: React.FC = () => {
-  const defaultMessage = '实验室设备管理系统';
+  const defaultMessage = '管理学院设备管理系统';
   const currentYear = new Date().getFullYear();
   return (
     <DefaultFooter

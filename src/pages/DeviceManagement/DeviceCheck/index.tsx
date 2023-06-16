@@ -1,4 +1,9 @@
-import { deleteCheckRecord, getCheckList } from '@/services/swagger/check';
+import {
+  deleteCheckRecord,
+  getCheckList,
+  getCheckedNum,
+  getCheckingNum,
+} from '@/services/swagger/check';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
@@ -20,6 +25,8 @@ const DeviceCheck: React.FC = () => {
   const [tableData, setTableData] = useState<CheckRecord[]>([]);
   const [currentRow, setCurrentRow] = useState<CheckRecord>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [checked, setChecked] = useState(0);
+  const [checking, setChecking] = useState(0);
   const access = useAccess();
   const initial = async () => {
     const res = await getCheckList();
@@ -29,6 +36,14 @@ const DeviceCheck: React.FC = () => {
         res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
       }
       setTableData(res.data);
+    }
+    const checkedRes = await getCheckedNum();
+    if (checkedRes.code === 20000) {
+      setChecked(checkedRes.data);
+    }
+    const checkingRes = await getCheckingNum();
+    if (checkingRes.code === 20000) {
+      setChecking(checkingRes.data);
     }
   };
 
@@ -59,12 +74,12 @@ const DeviceCheck: React.FC = () => {
   };
 
   const columns = [
-    {
-      title: '序号',
-      dataIndex: 'index',
-      valueType: 'index',
-      width: 60,
-    },
+    // {
+    //   title: '序号',
+    //   dataIndex: 'index',
+    //   valueType: 'index',
+    //   width: 60,
+    // },
     {
       title: '核查编号',
       dataIndex: 'checkID',
@@ -148,10 +163,10 @@ const DeviceCheck: React.FC = () => {
             <Card bordered={false}>
               <Statistic
                 title="已核查设备"
-                value={5}
+                value={checked}
                 precision={0}
-                valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-                suffix="件"
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 40 }}
+                suffix="台"
               />
             </Card>
           </Col>
@@ -159,10 +174,10 @@ const DeviceCheck: React.FC = () => {
             <Card bordered={false}>
               <Statistic
                 title="待核查设备"
-                value={12}
+                value={checking}
                 precision={0}
-                valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
-                suffix="个"
+                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 40 }}
+                suffix="台"
               />
             </Card>
           </Col>

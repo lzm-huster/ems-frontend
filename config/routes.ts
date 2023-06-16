@@ -172,7 +172,7 @@ export default [
         accessCode: 'scrap:list',
       },
       {
-        path: '/deviceManagement/scrap/add',
+        path: '/deviceManagement/scrap/addScrap',
         name: '新增报废记录',
         icon: 'smile',
         component: './DeviceManagement/DeviceScrap/AddScrap',
@@ -182,7 +182,7 @@ export default [
         accessCode: 'scrap:add',
       },
       {
-        path: '/deviceManagement/scrap/detail',
+        path: '/deviceManagement/scrap/scrapDetail',
         name: '报废记录详情',
         icon: 'smile',
         component: './DeviceManagement/DeviceScrap/ScrapDetail',
@@ -190,6 +190,14 @@ export default [
         hideInMenu: true,
         access: 'scrapQuery',
         accessCode: 'scrap:query',
+      },
+      {
+        path: '/deviceManagement/statistics',
+        name: '信息统计',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceStatistics',
+        // access: 'scrapList',
+        // accessCode: 'scrap:list',
       },
       { component: './404' },
     ],
@@ -269,16 +277,16 @@ export default [
     ],
   },
 
-  {
-    path: '/admin',
-    name: '管理页',
-    icon: 'crown',
-    access: 'canAdmin',
-    routes: [
-      { path: '/admin/sub-page', name: '二级管理页', icon: 'smile', component: './Home' },
-      { component: './404' },
-    ],
-  },
+  // {
+  //   path: '/admin',
+  //   name: '管理页',
+  //   icon: 'crown',
+  //   access: 'canAdmin',
+  //   routes: [
+  //     { path: '/admin/sub-page', name: '二级管理页', icon: 'smile', component: './Home' },
+  //     { component: './404' },
+  //   ],
+  // },
   { path: '/', redirect: '/home' },
   { component: './404' },
 ];

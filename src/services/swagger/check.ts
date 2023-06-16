@@ -19,6 +19,20 @@ export async function getCheckList(options?: { [key: string]: any }) {
   });
 }
 
+export async function getCheckedNum(options?: { [key: string]: any }) {
+  return request('/api/check/getNumChecked', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+export async function getCheckingNum(options?: { [key: string]: any }) {
+  return request('/api/check/getNumChecking', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 export async function getCheckDetail(
   params: { checkID: number },
   options?: { [key: string]: any },

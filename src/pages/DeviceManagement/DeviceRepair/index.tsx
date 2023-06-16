@@ -16,11 +16,14 @@ import {
   Row,
   Space,
   Statistic,
+  Divider,
 } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { getMonth1st } from '@/services/general/dataProcess';
+import { Line } from '@ant-design/charts';
 
 interface RepairRecord {
   key: React.Key;
@@ -43,7 +46,47 @@ const Repair: React.FC = () => {
   const [showRepair, setShowRepair] = useState([]);
   const [repairing, setRepairing] = useState(0);
   const [repaired, setRepaired] = useState(0);
+  const [lineData, setLineData] = useState<{}>([]);
+  const [repairFeeNow, setRepairFee] = useState(0);
   const access = useAccess();
+
+  //折线图数据
+  const plotData = (repairs: RepairRecord[]) => {
+    const month1st = getMonth1st(5);
+    const data = [];
+    for (let i = 0; i < 4; i++) {
+      const date = new Date(month1st[i]);
+      const node = {
+        month: date.getFullYear() + '/' + (date.getMonth() + 1),
+        repairNum: repairs.filter((x: RepairRecord) => {
+          const t = Date.parse(x.repairTime);
+          return t >= month1st[i] && t < month1st[i + 1];
+        }).length,
+      };
+      data.push(node);
+    }
+    const date = new Date(month1st[4]);
+    const node = {
+      month: date.getFullYear() + '/' + (date.getMonth() + 1),
+      repairNum: repairs.filter((x: RepairRecord) => {
+        const t = Date.parse(x.repairTime);
+        return t >= month1st[4];
+      }).length,
+    };
+    data.push(node);
+    let fee = 0;
+    repairs
+      .filter((x: RepairRecord) => {
+        const t = Date.parse(x.repairTime);
+        return t >= month1st[4];
+      })
+      .forEach((r) => {
+        fee += r.repairFee;
+      });
+    setRepairFee(fee);
+    return data;
+  };
+
   const initial = async () => {
     const res = await getRepairList();
     if (res.code === 20000) {
@@ -53,6 +96,7 @@ const Repair: React.FC = () => {
       }
       setInitRepair(res.data);
       setShowRepair(res.data);
+      setLineData(plotData(res.data));
     }
     const repairingNum = await getRepairingNum();
     const repairedNum = await getRepairedNum();
@@ -66,6 +110,40 @@ const Repair: React.FC = () => {
   useEffect(() => {
     initial();
   }, []);
+
+  //折线图配置
+  const config = {
+    data: lineData,
+    xField: 'month',
+    yField: 'repairNum',
+    label: {},
+    point: {
+      size: 5,
+      shape: 'diamond',
+      style: {
+        fill: 'white',
+        stroke: '#5B8FF9',
+        lineWidth: 2,
+      },
+    },
+    tooltip: {
+      showMarkers: false,
+    },
+    state: {
+      active: {
+        style: {
+          shadowBlur: 4,
+          stroke: '#000',
+          fill: 'red',
+        },
+      },
+    },
+    interactions: [
+      {
+        type: 'marker-active',
+      },
+    ],
+  };
 
   const handleDelete = async (repairId: number) => {
     deleteRepairRecord({ repairID: repairId });
@@ -175,6 +253,32 @@ const Repair: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
+        <Col span={6}>
+          <Link to={'/deviceManagement/repair/addRecord'}>
+            <Card bordered={false} hoverable={true} title="维修记录">
+              <Statistic
+                value={repaired}
+                title="维修次数"
+                precision={0}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
+                suffix="次"
+              />
+              <Divider />
+              <Statistic
+                value={repairFeeNow}
+                title="本月维修费用"
+                precision={0}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
+                prefix="￥"
+              />
+            </Card>
+          </Link>
+        </Col>
+        <Col span={18}>
+          <Card bordered={false} title={'近五个月维修次数'} hoverable>
+            <Line height={213} {...config} />
+          </Card>
+        </Col>
         <Col span={24}>
           <GeneralTable rowSelection={rowSelection} datasource={showRepair} columns={columns}>
             <Access accessible={access.repairAddBtn('repair:add')}>

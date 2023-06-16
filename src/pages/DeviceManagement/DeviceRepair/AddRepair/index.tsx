@@ -35,7 +35,7 @@ const AddRepair: React.FC = () => {
     if (state != null) {
       const device = await getDeviceDetail({ DeviceID: state.deviceID });
       if (device.code === 20000) {
-        formRef.current?.setFieldValue('deviceID', device.data.assetNumber);
+        formRef.current?.setFieldValue('deviceID', device.data.deviceID);
         formRef.current?.setFieldValue('deviceName', device.data.deviceName);
       }
     }
