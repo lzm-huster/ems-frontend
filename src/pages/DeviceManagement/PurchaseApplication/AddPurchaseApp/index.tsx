@@ -1,5 +1,14 @@
-import { getUserInfo } from '@/services/swagger/user';
+import { convertToTreeData } from '@/services/general/dataProcess';
+import { getDeviceCategoryList } from '@/services/swagger/category';
+import {
+  getLatestPurchaseApplyRecordID,
+  insertPurchaseApply,
+  insertPurchaseApplySheet,
+} from '@/services/swagger/purchaseApp';
+import { formatDate } from '@/utils/utils';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
+import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
 import {
   Button,
   Card,
@@ -10,7 +19,6 @@ import {
   InputNumber,
   message,
   Row,
-  Select,
   Space,
   TreeSelect,
 } from 'antd';
@@ -18,15 +26,10 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
-import { getDeviceCategoryList } from '@/services/swagger/category';
-import { convertToTreeData } from '@/services/general/dataProcess';
+import { useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
-
-const dateFormat = 'YYYY/MM/DD';
 
 //样式
 const layout = {
@@ -38,31 +41,19 @@ const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
 };
 
-const formatDate = (time: any) => {
-  // 格式化日期，获取今天的日期
-  const Dates = new Date(time);
-  const year: number = Dates.getFullYear();
-  const month: any =
-    Dates.getMonth() + 1 < 10 ? '0' + (Dates.getMonth() + 1) : Dates.getMonth() + 1;
-  const day: any = Dates.getDate() < 10 ? '0' + Dates.getDate() : Dates.getDate();
-  return year + '/' + month + '/' + day;
-};
-
-const now = formatDate(new Date().getTime());
-
 //main
 const AddPurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
 
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
-
+  const [uId, setUId] = useState<number>(0);
+  const { initialState, setInitialState } = useModel('@@initialState');
+  const deviceT: string[] = [];
   const initial = async () => {
-    const res = await getUserInfo();
-    if (res.code === 20000) {
-      formRef.current?.setFieldsValue({ userName: res.data.userName });
-      formRef.current?.setFieldsValue({ purchaseApplyDate: dayjs(now) });
-    }
+    formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
+    formRef.current?.setFieldsValue({ purchaseApplyDate: formatDate(new Date()) });
+    setUId(initialState?.currentUser?.userID);
     const category = await getDeviceCategoryList();
     if (category.code === 20000) {
       setTree(convertToTreeData(category.data));
@@ -72,10 +63,46 @@ const AddPurchaseApp: React.FC = () => {
     initial();
   }, []);
 
-  const onFinish = (values: any) => {
-    message.success('提交成功');
-    setComponentDisabled(true);
+  const onFinish = async (values: any) => {
     console.log(values);
+    if (!values.devices) {
+      message.error('请添加设备');
+    } else {
+      const { devices } = values;
+      const applyRecord = {
+        purchaseApplicantID: uId,
+        purchaseApplyDescription: values.remark,
+        purchaseApplyDate: values.purchaseApplyDate,
+      };
+      const res = await insertPurchaseApplySheet(applyRecord);
+      if (res.code === 20000 && res.data !== undefined) {
+        const recordRes = await getLatestPurchaseApplyRecordID();
+        let flag = true;
+        if (recordRes.code === 20000 && recordRes.data !== undefined) {
+          const recordID = recordRes.data;
+          console.log(recordID);
+
+          devices.map((device: any, ind: number) => {
+            device.purchaseApplySheetID = recordID;
+            // device.expectedReturnTime = lDate;
+            device.deviceType = deviceT[ind];
+            insertPurchaseApply(device).then((sheetRes) => {
+              if (sheetRes.code !== 20000 || sheetRes.data === undefined) {
+                flag = false;
+              }
+            });
+            if (flag) {
+              message.success('添加借用申请成功');
+              setComponentDisabled(true);
+            } else {
+              message.error('添加借用申请失败');
+            }
+          });
+        }
+      }
+    }
+
+    // console.log(values);
   };
 
   const onReset = () => {
@@ -89,13 +116,13 @@ const AddPurchaseApp: React.FC = () => {
         ref={formRef}
         name="control-ref"
         onFinish={onFinish}
-        style={{ maxWidth: 1400 }}
+        style={{ width: '100%' }}
         disabled={componentDisabled}
       >
         <Divider orientation="left" orientationMargin={5}>
           基本信息
         </Divider>
-        <Row gutter={16}>
+        <Row gutter={[16, 24]}>
           <Col span={8}>
             <Form.Item name="purchaseApplyID" label="申请单编号">
               <Input placeholder="提交后自动生成" disabled />
@@ -106,11 +133,11 @@ const AddPurchaseApp: React.FC = () => {
               <Input placeholder="申请人姓名" />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          {/* <Col span={8}>
             <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
               <Select placeholder="请选择导师" />
             </Form.Item>
-          </Col>
+          </Col> */}
           <Col span={8}>
             <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
               <DateTimePicker />
@@ -137,20 +164,19 @@ const AddPurchaseApp: React.FC = () => {
                 >
                   <Card
                     id="deviceCard"
-                    style={{ width: 1400 }}
+                    style={{ width: '100%' }}
                     title={[
                       <MinusCircleOutlined style={{ color: 'red' }} onClick={() => remove(name)} />,
                       `  设备${key + 1}`,
                     ]}
                   >
-                    <Row gutter={[16, 12]}>
+                    <Row gutter={[16, 24]}>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'deviceName']}
                           rules={[{ required: true, message: '设备名称未填写' }]}
                           label="设备名称"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="设备名称" />
                         </Form.Item>
@@ -161,7 +187,6 @@ const AddPurchaseApp: React.FC = () => {
                           name={[name, 'deviceType']}
                           rules={[{ required: true, message: '设备类型未填写' }]}
                           label="设备类型"
-                          labelCol={{ span: 4 }}
                         >
                           <TreeSelect
                             showSearch
@@ -170,6 +195,14 @@ const AddPurchaseApp: React.FC = () => {
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                             allowClear
                             treeDefaultExpandAll
+                            onSelect={(value, node) => {
+                              const { devices } = formRef?.current?.getFieldsValue();
+                              console.log(devices);
+                              Object.assign(devices[key], { assetNumber: value });
+                              console.log(devices);
+                              deviceT.push(node['title']);
+                              formRef?.current?.setFieldsValue({ devices });
+                            }}
                           />
                         </Form.Item>
                       </Col>
@@ -179,18 +212,16 @@ const AddPurchaseApp: React.FC = () => {
                           name={[name, 'deviceModel']}
                           rules={[{ required: true, message: '设备参数未填写！' }]}
                           label="设备参数"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="设备参数" />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'unitPrice']}
+                          name={[name, 'purchaseBudget']}
                           rules={[{ required: true, message: '采购预算未填写！' }]}
                           label="采购预算"
-                          labelCol={{ span: 9 }}
                         >
                           <InputNumber<string>
                             min="0"
@@ -201,13 +232,12 @@ const AddPurchaseApp: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'stockQuantity']}
                           rules={[{ required: true, message: '设备数量未填写！' }]}
                           label="设备数量"
-                          labelCol={{ span: 11 }}
                         >
                           <InputNumber min={1} placeholder="设备数量" />
                         </Form.Item>

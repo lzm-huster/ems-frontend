@@ -1,3 +1,6 @@
+import { convertToSelectData } from '@/services/general/dataProcess';
+import { getAssetNumber, getDeviceDetail, updateDevice } from '@/services/swagger/device';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -10,16 +13,14 @@ import {
   ProFormTreeSelect,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Button, Card, Modal, message } from 'antd';
+import { Button, Card, message, Modal } from 'antd';
+import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'umi';
-import { getAssetNumber, getDeviceDetail, updateDevice } from '@/services/swagger/device';
-import { convertToSelectData } from '@/services/general/dataProcess';
-import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
-import { formatDate } from '@/utils/utils';
 
 interface stateType {
   deviceID: number;
+  userName: string;
   edit: boolean;
 }
 
@@ -45,6 +46,24 @@ const DeviceDetail: React.FC = () => {
   const initial = async () => {
     const res = await getDeviceDetail({ DeviceID: state.deviceID });
     if (res.code === 20000) {
+      res.data.userName = state.userName;
+      console.log(res);
+      const images = [];
+      if (res.data.deviceImageList) {
+        const imageList = JSON.parse(res.data.deviceImageList);
+        console.log(imageList);
+
+        imageList.forEach((image: any, ind: number) => {
+          const node: any = {
+            url: image,
+            name: res.data.deviceName + ind,
+            status: 'done',
+            uid: ind,
+          };
+          images.push(node);
+        });
+      }
+      setFileList(images);
       setDeviceDetail(res.data);
       setUneditable(!state.edit);
     }

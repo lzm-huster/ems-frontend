@@ -146,56 +146,68 @@ const DeviceList: React.FC = () => {
             <Link
               to={{
                 pathname: '/deviceManagement/list/detail',
-                state: { deviceID: record.deviceID, edit: false },
+                state: { deviceID: record.deviceID, userName: record.userName, edit: false },
               }}
             >
               详情
             </Link>
           </a>
-          <a>借用</a>
-          <a key="repair">
-            <Link
-              to={{
-                pathname: '/deviceManagement/repair/addRepair',
-                state: { deviceID: record.deviceID },
-              }}
-            >
-              维修
-            </Link>
-          </a>
-          <a key="maintenance">
-            <Link
-              to={{
-                pathname: '/deviceManagement/maintenance/addMaintenance',
-                state: { deviceID: record.deviceID },
-              }}
-            >
-              保养
-            </Link>
-          </a>
-          <a key="maintenance">
-            <Link
-              to={{
-                pathname: '/deviceManagement/scrap/addScrap',
-                state: { deviceID: record.deviceID },
-              }}
-            >
-              报废
-            </Link>
-          </a>
-          <a key="update">
-            <Link
-              to={{
-                pathname: '/deviceManagement/list/detail',
-                state: { deviceID: record.deviceID, edit: true },
-              }}
-            >
-              修改
-            </Link>
-          </a>
-          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.deviceID)}>
-            <a>删除</a>
-          </Popconfirm>
+          <Access accessible={access.borrowAddBtn('borrow:add')}>
+            <a>借用</a>
+          </Access>
+          <Access accessible={access.repairAddBtn('repair:add')}>
+            <a key="repair">
+              <Link
+                to={{
+                  pathname: '/deviceManagement/repair/addRepair',
+                  state: { deviceID: record.deviceID },
+                }}
+              >
+                维修
+              </Link>
+            </a>
+          </Access>
+          <Access accessible={access.maintenanceAddBtn('maintenance:add')}>
+            <a key="maintenance">
+              <Link
+                to={{
+                  pathname: '/deviceManagement/maintenance/addMaintenance',
+                  state: { deviceID: record.deviceID },
+                }}
+              >
+                保养
+              </Link>
+            </a>
+          </Access>
+          <Access accessible={access.scrapAddBtn('scrap:add')}>
+            <a key="scrap">
+              <Link
+                to={{
+                  pathname: '/deviceManagement/scrap/addScrap',
+                  state: { deviceID: record.deviceID },
+                }}
+              >
+                报废
+              </Link>
+            </a>
+          </Access>
+          <Access accessible={access.deviceUpdateBtn('device:update')}>
+            <a key="update">
+              <Link
+                to={{
+                  pathname: '/deviceManagement/list/detail',
+                  state: { deviceID: record.deviceID, userName: record.userName, edit: true },
+                }}
+              >
+                修改
+              </Link>
+            </a>
+          </Access>
+          <Access accessible={access.deviceDeleteBtn('device:delete')}>
+            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.deviceID)}>
+              <a>删除</a>
+            </Popconfirm>
+          </Access>
         </Space>
       ),
     },
@@ -209,9 +221,11 @@ const DeviceList: React.FC = () => {
             <Link to={'/deviceManagement/list/addDevice'}>新增设备</Link>
           </Button>
         </Access>
-        <Button onClick={start} disabled={!hasSelected}>
-          批量借用
-        </Button>
+        <Access accessible={access.borrowAddBtn('borrow:add')}>
+          <Button onClick={start} disabled={!hasSelected}>
+            批量借用
+          </Button>
+        </Access>
         <Access accessible={access.deviceDeleteBtn('device:delete')}>
           <Button danger onClick={start} disabled={!hasSelected}>
             批量删除
