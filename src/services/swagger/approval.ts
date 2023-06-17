@@ -28,49 +28,38 @@ export async function scrapApprovalList(state: string, options?: { [key: string]
   });
 }
 
-// export async function purchaseApprovalRecord(body: any) {
-//   return request('/api/approval/purchaseApprovalRecord', {
-//     method: 'POST',
-//     data: body,
-//   });
-// }
-
 export async function purchaseApprovalRecord(
-  purchaseApplySheet: API.ApprovalRecord,
-  state: string,
+  purchaseApplySheetID: any,
+  state: any,
   options?: { [key: string]: any },
 ) {
   return request('/api/approval/purchaseApprovalRecord', {
     method: 'POST',
-    params: { purchaseApplySheet, state },
+    params: { purchaseApplySheetID, state },
     ...(options || {}),
   });
 }
 
-export async function updatePassword(
-  body: {
-    oldPass: string;
-    newPass: string;
-    confirm: string;
-  },
+export async function borrowApprovalRecord(
+  borrowApplyID: any,
+  state: any,
   options?: { [key: string]: any },
 ) {
-  return request(`/api/user/updatePassword`, {
+  return request('/api/approval/borrowApprovalRecord', {
     method: 'POST',
-    data: body,
+    params: { borrowApplyID, state },
+    ...(options || {}),
   });
 }
 
-export async function borrowApprovalRecord(body: any) {
-  return request('​/api​/approval​/borrowApprovalRecord', {
-    method: 'POST',
-    data: body,
-  });
-}
-
-export async function scrapApprovalRecord(body: any) {
+export async function scrapApprovalRecord(
+  scrapID: number,
+  state: any,
+  options?: { [key: string]: any },
+) {
   return request('/api/approval/scrapApprovalRecord', {
     method: 'POST',
-    data: body,
+    params: { scrapID, state },
+    ...(options || {}),
   });
 }

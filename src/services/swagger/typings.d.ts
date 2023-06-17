@@ -59,4 +59,19 @@ declare namespace API {
   //   purchaseDate: string;
   //   userName: string;
   // }
+  
+
+    type ApprovalRecord = {
+    purchaseApplySheetID?: number;
+    state?: string;
+    purchaseApplicantID?: number;
+    purchaseApplyDate?: string;
+    purchaseApplyDescription?: string;
+    approveTutorID?: number;
+    isDeleted?: boolean;
+    createTime?: string;
+    updateTime?: string;
+  };
+
+
 }
