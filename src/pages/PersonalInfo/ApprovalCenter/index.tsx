@@ -36,30 +36,8 @@ import {
 } from '@/services/swagger/approval';
 import moment from 'moment';
 import { keys, valuesIn } from 'lodash';
-//import e from 'express';
+import e from 'express';
 import { roleList } from '@/services/ant-design-pro/api';
-
-const tailLayout = {
-  wrapperCol: { offset: 21, span: 16 },
-};
-
-const items: MenuProps['items'] = [
-  {
-    label: '采购申请审核',
-    key: 'purchase',
-    icon: <MailOutlined />,
-  },
-  {
-    label: '借用审核',
-    key: 'borrow',
-    icon: <AppstoreOutlined />,
-  },
-  {
-    label: '报废审核',
-    key: 'scrap',
-    icon: <SettingOutlined />,
-  },
-];
 
 const ApprovalCenter: React.FC = () => {
   interface ActionType {
@@ -75,7 +53,7 @@ const ApprovalCenter: React.FC = () => {
   const [initDevice, setInitDevice] = useState([]);
   const [searchDevice, setSerachDevice] = useState([]);
   const [ApprovalList, setApprovalList] = useState([]);
-  const [SelectedApprovalList, setSeletedApprovalList] = useState([]);
+  const [SelectedApprovalList, setSelectedApprovalList] = useState([]);
   const [current, setCurrent] = useState('purchase');
 
   const actionRef = useRef<ActionType>();
@@ -90,58 +68,183 @@ const ApprovalCenter: React.FC = () => {
   const [dateto_string, setDateto_string] = useState('2024-01-01');
   const [date_moment, setDate_moment] = useState(0);
   const [approval_state, setApproval_state] = useState('');
-  const [updateApply, setUpdateApply] = useState<API.ApprovalRecord>();
 
   const handleClick = () => {
     history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
   };
 
+  const stateMap = {
+    //审批映射
+    staff: '待管理员审批',
+    deviceAdmin: '待领导审批',
+    leader: '已审批',
+  };
+  const purchaseMap = {
+    //请求映射
+    staff: '未审批',
+    deviceAdmin: '待管理员审批',
+    leader: '待领导审批',
+  };
+  const borrow_scrapMap = {
+    //请求映射
+    deviceAdmin: '待管理员审批',
+  };
+
+  //合并行
+  // const rowCombination = (approvalData: any) => {
+  //   let sameN = 0;
+  //   for (let i = 0, j = 0; i < approvalData.length; i++) {
+  //     if (i > 0 && i < approvalData.length - 1) {
+  //       if (approvalData[i].borrowApplyID - approvalData[i - 1].borrowApplyID == 0) {
+  //         approvalData[i].key = j;
+  //         approvalData[i].r = 0;
+  //         sameN++;
+  //       } else {
+  //         j++;
+  //         approvalData[i].key = j;
+  //         approvalData[i - sameN - 1].r = sameN + 1;
+  //         sameN = 0;
+  //       }
+  //     } else if (i == 0) {
+  //       approvalData[i].key = 0;
+  //     } else {
+  //       if (approvalData[i].borrowApplyID - approvalData[i - 1].borrowApplyID == 0) {
+  //         approvalData[i].key = j;
+  //         approvalData[i].r = 0;
+  //         sameN++;
+  //         approvalData[i - sameN].r = sameN + 1;
+  //       } else {
+  //         j++;
+  //         approvalData[i].key = j;
+  //         approvalData[i].r = 1;
+  //         approvalData[i - sameN - 1].r = sameN + 1;
+  //       }
+  //     }
+  //   }
+  //   console.log(approvalData);
+  //   return approvalData;
+  // };
+
+  const getMenuItems = () => {
+    if (currentUser.roleList == 'deviceAdmin') {
+      return [
+        {
+          label: '采购申请审核',
+          key: 'purchase',
+          icon: <MailOutlined />,
+        },
+        {
+          label: '借用审核',
+          key: 'borrow',
+          icon: <AppstoreOutlined />,
+        },
+        {
+          label: '报废审核',
+          key: 'scrap',
+          icon: <SettingOutlined />,
+        },
+      ];
+    } else {
+      return [
+        {
+          label: '采购申请审核',
+          key: 'purchase',
+          icon: <MailOutlined />,
+        },
+      ];
+    }
+  };
+
+  const refreshTable = async () => {
+    let res;
+    switch (current) {
+      case 'purchase':
+        res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
+        break;
+      case 'borrow':
+        res = await borrowApprovalList(borrow_scrapMap[currentUser.roleList]);
+        break;
+      case 'scrap':
+        res = await scrapApprovalList(borrow_scrapMap[currentUser.roleList]);
+        break;
+      default:
+        res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
+        break;
+    }
+    if (res.code === 20000) {
+      // 给ApprovalList数组添加递增的键值
+      let id = 0;
+      const approvalListWithKey = res.data.map((item: any) => ({
+        ...item,
+        key: ++id,
+        r: 1,
+      }));
+      setApprovalList(approvalListWithKey);
+      setSelectedApprovalList(ApprovalList);
+    } else {
+      setApprovalList([]);
+    }
+  };
+
+  const handleApprovalRecord = async (id: number, isAbort: boolean) => {
+    switch (current) {
+      case 'purchase':
+        const res1 = await purchaseApprovalRecord(
+          id,
+          isAbort ? '驳回审批' : stateMap[currentUser.roleList],
+        );
+        if (res1.code === 20000 || res1.code === 40400) {
+          ///40400时修改也成功
+          message.success('审批成功！');
+          refreshTable();
+        } else {
+          message.error(res1.message);
+          console.log(current);
+        }
+        break;
+      case 'borrow':
+        const res2 = await borrowApprovalRecord(
+          id,
+          isAbort ? '驳回审批' : stateMap[currentUser.roleList],
+        );
+        if (res2.code === 20000 || res2.code === 40400) {
+          message.success('审批成功！');
+          refreshTable();
+        } else {
+          message.error(res2.message);
+        }
+        break;
+      case 'borrow':
+        const res3 = await scrapApprovalRecord(
+          id,
+          isAbort ? '驳回审批' : stateMap[currentUser.roleList],
+        );
+        if (res3.code === 20000 || res3.code === 40400) {
+          message.success('审批成功！');
+          refreshTable();
+        } else {
+          message.error(res3.message);
+        }
+        break;
+      default:
+        message.error('内部错误！');
+        break;
+    }
+  };
+
   const getColumns = (currentKey: any) => {
     switch (currentKey) {
       case 'purchase':
-        // const handlePurchaseApproval = async (v: any) => {
-        //   if (currentUser.roleList === 'staff') {
-        //     const res = await purchaseApprovalRecord({
-        //       purchaseApplyState: '待管理员审批',
-        //       ...v,
-        //     });
-        //     if (res.code === 20000 && res.data === true) {
-        //       message.success('审批同意！');
-        //     } else {
-        //       message.error(res.message);
-        //     }
-        //   }
-        //   if (currentUser.roleList === 'deviceAdmin') {
-        //     const res = await purchaseApprovalRecord({
-        //       purchaseApplyState: '待院领导审批',
-        //       ...v,
-        //     });
-        //     if (res.code === 20000 && res.data === true) {
-        //       message.success('审批同意！');
-        //     } else {
-        //       message.error(res.message);
-        //     }
-        //   }
-
-        //   if (currentUser.roleList === 'leader') {
-        //     const res = await purchaseApprovalRecord({
-        //       purchaseApplyState: '申请通过',
-        //       ...v,
-        //     });
-        //     if (res.code === 20000 && res.data === true) {
-        //       message.success('审批同意！');
-        //     } else {
-        //       message.error(res.message);
-        //     }
-        //   }
-        // };
         return [
           {
             title: '审批编号',
-            dataIndex: 'purchaseApplySheetID' as 'purchaseApplySheetID',
+            dataIndex: 'purchaseApplySheetID',
             valueType: 'index',
             width: 100,
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '申请内容',
@@ -153,22 +256,31 @@ const ApprovalCenter: React.FC = () => {
             dataIndex: 'purchaseApplyDate',
             valueType: 'date',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '预算',
             dataIndex: 'purchaseBudget',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '申请人',
             dataIndex: 'userName',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             disable: true,
             title: '申请人角色',
             dataIndex: 'roleName',
-            filters: true,
+            // filters: true,
             onFilter: true,
             ellipsis: true,
             align: 'center',
@@ -190,65 +302,44 @@ const ApprovalCenter: React.FC = () => {
                 text: '院外学生',
               },
             },
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '审核状态',
             dataIndex: 'purchaseApplyState',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '操作',
             align: 'center',
             key: 'action',
             width: 200,
-            render: () => (
+            render: (record: any) => (
               <Space size="middle">
                 <a
                   onClick={async () => {
-                    const res = await purchaseApprovalRecord(1, '待管理员审批');
-                    if (res.code === 20000 && res.data === true) {
-                      message.success('同意审批！');
-                    } else {
-                      message.error(res.message);
-                    }
+                    handleApprovalRecord(record.purchaseApplySheetID, false);
                   }}
                 >
                   同意
                 </a>
-                <a>驳回</a>
-                {/* // if (currentUser.roleList === 'staff') {
-                  //   const res = await purchaseApprovalRecord({
-                  //     purchaseApplyState: '待管理员审批',
-                  //   });
-                  //   if (res.code === 20000 && res.data === true) {
-                  //     message.success('审批同意！');
-                  //   } else {
-                  //     message.error(res.message);
-                  //   }
-                  // }
-                  // if (currentUser.roleList === 'deviceAdmin') {
-                  //   const res = await purchaseApprovalRecord({
-                  //     purchaseApplyState: '待院领导审批',
-                  //   });
-                  //   if (res.code === 20000 && res.data === true) {
-                  //     message.success('审批同意！');
-                  //   } else {
-                  //     message.error(res.message);
-                  //   }
-                  // }
-                  // if (currentUser.roleList === 'leader') {
-                  //   const res = await purchaseApprovalRecord({
-                  //     purchaseApplyState: '申请通过',
-                  //   });
-                  //   if (res.code === 20000 && res.data === true) {
-                  //     message.success('审批同意！');
-                  //   } else {
-                  //     message.error(res.message);
-                  //   }
-                  // }
-                  // }} */}
+                <a
+                  onClick={async () => {
+                    handleApprovalRecord(record.purchaseApplySheetID, true);
+                  }}
+                >
+                  驳回
+                </a>
               </Space>
             ),
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
         ];
       case 'borrow':
@@ -258,6 +349,9 @@ const ApprovalCenter: React.FC = () => {
             dataIndex: 'borrowApplyID',
             width: 100,
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '申请内容',
@@ -268,17 +362,23 @@ const ApprovalCenter: React.FC = () => {
             title: '申请时间',
             dataIndex: 'borrowApplyDate',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '申请人',
             dataIndex: 'userName',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             disable: true,
             title: '申请人角色',
             dataIndex: 'roleName',
-            filters: true,
+            // filters: true,
             onFilter: true,
             ellipsis: true,
             align: 'center',
@@ -300,23 +400,44 @@ const ApprovalCenter: React.FC = () => {
                 text: '院外学生',
               },
             },
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '审批状态',
             dataIndex: 'borrowApplyState',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '操作',
             key: 'action',
             align: 'center',
             width: 200,
-            render: () => (
+            render: (record: any) => (
               <Space size="middle">
-                <a>同意</a>
-                <a>驳回</a>
+                <a
+                  onClick={async () => {
+                    handleApprovalRecord(record.borrowApplyID, false); //这里无法获取borrowApplyID
+                  }}
+                >
+                  同意
+                </a>
+                <a
+                  onClick={async () => {
+                    handleApprovalRecord(record.borrowApplyID, true);
+                  }}
+                >
+                  驳回
+                </a>
               </Space>
             ),
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
         ];
       case 'scrap':
@@ -327,6 +448,9 @@ const ApprovalCenter: React.FC = () => {
             valueType: 'index',
             width: 100,
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '报废设备',
@@ -338,23 +462,32 @@ const ApprovalCenter: React.FC = () => {
             dataIndex: 'scrapTime',
             valueType: 'date',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '设备负责人',
             dataIndex: 'scrapPerson',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '报废原因',
             dataIndex: 'scrapReason',
             width: 150,
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             disable: true,
             title: '申请人角色',
             dataIndex: 'roleName',
-            filters: true,
+            // filters: true,
             onFilter: true,
             ellipsis: true,
             align: 'center',
@@ -376,23 +509,44 @@ const ApprovalCenter: React.FC = () => {
                 text: '院外学生',
               },
             },
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '设备状态',
             dataIndex: 'scrapState',
             align: 'center',
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
           {
             title: '操作',
             key: 'action',
             align: 'center',
             width: 200,
-            render: () => (
+            render: (record: any) => (
               <Space size="middle">
-                <a>同意</a>
-                <a>驳回</a>
+                <a
+                  onClick={async () => {
+                    handleApprovalRecord(record.scrapID, false);
+                  }}
+                >
+                  同意
+                </a>
+                <a
+                  onClick={async () => {
+                    handleApprovalRecord(record.scrapID, true);
+                  }}
+                >
+                  驳回
+                </a>
               </Space>
             ),
+            // onCell: (data) => {
+            //   return { rowSpan: data.r };
+            // },
           },
         ];
       default:
@@ -405,21 +559,23 @@ const ApprovalCenter: React.FC = () => {
    */
 
   const onReset = () => {
+    setSelectedApprovalList(ApprovalList);
     form.resetFields();
   };
 
   //获取数据
   const initial = async () => {
-    const res = await purchaseApprovalList('未审批');
+    const res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
     if (res.code === 20000) {
       setInitDevice(res.data);
       let id = 0;
       const approvalListWithKey = res.data.map((item: any) => ({
         ...item,
         key: ++id,
+        r: 1,
       }));
       setApprovalList(approvalListWithKey);
-      setSeletedApprovalList(res.data);
+      setSelectedApprovalList(approvalListWithKey);
     }
   };
   useEffect(() => {
@@ -450,7 +606,9 @@ const ApprovalCenter: React.FC = () => {
             values.time_from.unix() <= moment(item.purchaseApplyDate).unix()) &&
           (values.time_to === undefined ||
             values.time_to.unix() >= moment(item.purchaseApplyDate).unix()) &&
-          (values.roleName === item.name || values.roleName === 'all')
+          (values.roleName === item.roleName ||
+            values.roleName === 'all' ||
+            values.roleName === undefined)
         );
       });
     }
@@ -462,7 +620,9 @@ const ApprovalCenter: React.FC = () => {
             values.time_from.unix() <= moment(item.borrowApplyDate).unix()) &&
           (values.time_to === undefined ||
             values.time_to.unix() >= moment(item.borrowApplyDate).unix()) &&
-          values.roleName === item.roleName
+          (values.roleName === item.roleName ||
+            values.roleName === 'all' ||
+            values.roleName === undefined)
         );
       });
     } else {
@@ -472,12 +632,14 @@ const ApprovalCenter: React.FC = () => {
             values.time_from.unix() <= moment(item.scrapTime).unix()) &&
           (values.time_to === undefined ||
             values.time_to.unix() >= moment(item.scrapTime).unix()) &&
-          values.roleName === item.roleName
+          (values.roleName === item.roleName ||
+            values.roleName === 'all' ||
+            values.roleName === undefined)
         );
       });
     }
     console.log('筛选后的内容为', select);
-    setApprovalList(select);
+    setSelectedApprovalList(select);
   };
 
   // -----------------------------计算时间之前---------------------------------------
@@ -521,16 +683,16 @@ const ApprovalCenter: React.FC = () => {
     setCurrent(e.key);
     switch (e.key) {
       case 'purchase':
-        res = await purchaseApprovalList('未审批');
+        res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
         break;
       case 'borrow':
-        res = await borrowApprovalList('已归还');
+        res = await borrowApprovalList(purchaseMap[currentUser.roleList]);
         break;
       case 'scrap':
-        res = await scrapApprovalList('已完成');
+        res = await scrapApprovalList(purchaseMap[currentUser.roleList]);
         break;
       default:
-        res = await purchaseApprovalList('未审批');
+        res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
         break;
     }
     if (res.code === 20000) {
@@ -539,8 +701,10 @@ const ApprovalCenter: React.FC = () => {
       const approvalListWithKey = res.data.map((item: any) => ({
         ...item,
         key: ++id,
+        r: 1,
       }));
       setApprovalList(approvalListWithKey);
+      setSelectedApprovalList(approvalListWithKey);
       console.log('当前用户：', currentUser);
     } else {
       setApprovalList([]);
@@ -553,85 +717,6 @@ const ApprovalCenter: React.FC = () => {
   };
 
   //同意审批
-  const approvalYes = async (v: any) => {
-    switch (current) {
-      case 'purchase':
-        if (currentUser.roleList == 'staff') {
-          const res = await purchaseApprovalRecord({
-            purchaseApplyState: '待管理员审批',
-            ...v,
-          }); // 新增
-          if (res.code === 20000 && res.data === true) {
-            message.success('审批同意！');
-          } else {
-            message.error(res.message);
-          }
-        }
-        if (currentUser.roleList == 'deviceAdmin') {
-          const res = await purchaseApprovalRecord({
-            purchaseApplyState: '待院领导审批',
-            ...v,
-          }); // 新增
-          if (res.code === 20000 && res.data === true) {
-            message.success('审批同意！');
-          } else {
-            message.error(res.message);
-          }
-        }
-        if (currentUser.roleList == 'leader') {
-          const res = await purchaseApprovalRecord({
-            purchaseApplyState: '申请通过',
-            ...v,
-          }); // 新增
-          if (res.code === 20000 && res.data === true) {
-            message.success('审批同意！');
-          } else {
-            message.error(res.message);
-          }
-        }
-        break;
-      case 'borrow':
-        if (currentUser.roleList == 'staff') {
-          const res = await borrowApprovalRecord({
-            borrowApplyState: '待管理员审批',
-            ...v,
-          }); // 新增
-          if (res.code === 20000 && res.data === true) {
-            message.success('审批同意！');
-          } else {
-            message.error(res.message);
-          }
-        }
-        if (currentUser.roleList == 'deviceAdmin') {
-          const res = await borrowApprovalRecord({
-            borrowApplyState: '申请通过',
-            ...v,
-          }); // 新增
-          if (res.code === 20000 && res.data === true) {
-            message.success('审批同意！');
-          } else {
-            message.error(res.message);
-          }
-        }
-        break;
-      case 'scrap':
-        if (currentUser.roleList == 'deviceAdmin') {
-          const res = await scrapApprovalRecord({
-            scrapState: '申请通过',
-            ...v,
-          }); // 新增
-          if (res.code === 20000 && res.data === true) {
-            message.success('审批同意！');
-          } else {
-            message.error(res.message);
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  };
-
   //驳回审批
   const approvalNo = () => {
     setLoading(true);
@@ -648,7 +733,12 @@ const ApprovalCenter: React.FC = () => {
         <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
           <Row>
             <Col span={10}>
-              <Menu onClick={onClick} selectedKeys={[current]} mode="horizontal" items={items} />
+              <Menu
+                onClick={onClick}
+                selectedKeys={[current]}
+                mode="horizontal"
+                items={getMenuItems()}
+              />
             </Col>
             <Col span={10}>
               <></>
@@ -712,22 +802,18 @@ const ApprovalCenter: React.FC = () => {
             </Row>
           </Form>
           <ProTable
+            bordered={true}
             rowSelection={rowSelection}
             columns={getColumns(current)}
             actionRef={actionRef}
             rowKey="key"
             search={false}
-            dataSource={processData(ApprovalList)}
-            pagination={{
-              pageSize: 5,
-              onChange: (page) => console.log(page),
-            }}
+            dataSource={processData(SelectedApprovalList)}
+            // pagination={{
+            //   pageSize: 6,
+            //   onChange: (page) => console.log(page),
+            // }}
             dateFormatter="string"
-            toolBarRender={() => [
-              <Button key="button" icon={<CloudUploadOutlined />} onClick={() => {}} type="primary">
-                批量审批
-              </Button>,
-            ]}
           />
         </Space>
       </Card>
