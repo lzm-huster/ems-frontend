@@ -250,6 +250,7 @@ const PersonalInfo: React.FC = () => {
               {
                 title: '操作',
                 key: 'action',
+                align: 'center',
                 render: (v: any, r: any) => (
                   <Space size="middle">
                     <a

@@ -1,8 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { AppstoreOutlined, MailOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
+import React, { Key, useEffect, useRef, useState } from 'react';
+import {
+  AppstoreOutlined,
+  CloudUploadOutlined,
+  EditOutlined,
+  MailOutlined,
+  PlusOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   Card,
+  Checkbox,
   Col,
   DatePicker,
   Form,
@@ -12,6 +20,7 @@ import {
   Select,
   Space,
   Table,
+  message,
 } from 'antd';
 import { Menu } from 'antd';
 import './index.less';
@@ -21,8 +30,14 @@ import {
   purchaseApprovalList,
   borrowApprovalList,
   scrapApprovalList,
+  purchaseApprovalRecord,
+  borrowApprovalRecord,
+  scrapApprovalRecord,
 } from '@/services/swagger/approval';
 import moment from 'moment';
+import { keys, valuesIn } from 'lodash';
+import e from 'express';
+import { roleList } from '@/services/ant-design-pro/api';
 
 const tailLayout = {
   wrapperCol: { offset: 21, span: 16 },
@@ -47,18 +62,35 @@ const items: MenuProps['items'] = [
 ];
 
 const ApprovalCenter: React.FC = () => {
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>(['purchase']);
+  interface ActionType {
+    reload: (resetPageIndex?: boolean) => void;
+    reloadAndRest: () => void;
+    reset: () => void;
+    clearSelected?: () => void;
+    startEditable: (rowKey: Key) => boolean;
+    cancelEditable: (rowKey: Key) => boolean;
+  }
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [initDevice, setInitDevice] = useState([]);
   const [searchDevice, setSerachDevice] = useState([]);
   const [ApprovalList, setApprovalList] = useState([]);
   const [SelectedApprovalList, setSeletedApprovalList] = useState([]);
-  const hasSelected = selectedRowKeys.length > 0;
   const [current, setCurrent] = useState('purchase');
+
   const actionRef = useRef<ActionType>();
   const history = useHistory();
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState;
+  const [filteredApprovalList, setFilteredApprovalList] = useState(ApprovalList);
+  const [rowkeys, setRowkeys] = useState('');
+  const [datefrom_string, setDatefrom_string] = useState('1999-01-01');
+  const [dateto_string, setDateto_string] = useState('2024-01-01');
+  const [date_moment, setDate_moment] = useState(0);
+  const [approval_state, setApproval_state] = useState('');
+  const [updateApply, setUpdateApply] = useState<API.ApprovalRecord>();
 
   const handleClick = () => {
     history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
@@ -67,10 +99,46 @@ const ApprovalCenter: React.FC = () => {
   const getColumns = (currentKey: any) => {
     switch (currentKey) {
       case 'purchase':
+        // const handlePurchaseApproval = async (v: any) => {
+        //   if (currentUser.roleList === 'staff') {
+        //     const res = await purchaseApprovalRecord({
+        //       purchaseApplyState: '待管理员审批',
+        //       ...v,
+        //     });
+        //     if (res.code === 20000 && res.data === true) {
+        //       message.success('审批同意！');
+        //     } else {
+        //       message.error(res.message);
+        //     }
+        //   }
+        //   if (currentUser.roleList === 'deviceAdmin') {
+        //     const res = await purchaseApprovalRecord({
+        //       purchaseApplyState: '待院领导审批',
+        //       ...v,
+        //     });
+        //     if (res.code === 20000 && res.data === true) {
+        //       message.success('审批同意！');
+        //     } else {
+        //       message.error(res.message);
+        //     }
+        //   }
+
+        //   if (currentUser.roleList === 'leader') {
+        //     const res = await purchaseApprovalRecord({
+        //       purchaseApplyState: '申请通过',
+        //       ...v,
+        //     });
+        //     if (res.code === 20000 && res.data === true) {
+        //       message.success('审批同意！');
+        //     } else {
+        //       message.error(res.message);
+        //     }
+        //   }
+        // };
         return [
           {
             title: '审批编号',
-            dataIndex: 'purchaseApplySheetID',
+            dataIndex: 'purchaseApplySheetID' as 'purchaseApplySheetID',
             valueType: 'index',
             width: 100,
             align: 'center',
@@ -135,8 +203,50 @@ const ApprovalCenter: React.FC = () => {
             width: 200,
             render: () => (
               <Space size="middle">
-                <a>同意</a>
+                <a
+                  onClick={async () => {
+                    const res = await purchaseApprovalRecord(1, '待管理员审批');
+                    if (res.code === 20000 && res.data === true) {
+                      message.success('同意审批！');
+                    } else {
+                      message.error(res.message);
+                    }
+                  }}
+                >
+                  同意
+                </a>
                 <a>驳回</a>
+                {/* // if (currentUser.roleList === 'staff') {
+                  //   const res = await purchaseApprovalRecord({
+                  //     purchaseApplyState: '待管理员审批',
+                  //   });
+                  //   if (res.code === 20000 && res.data === true) {
+                  //     message.success('审批同意！');
+                  //   } else {
+                  //     message.error(res.message);
+                  //   }
+                  // }
+                  // if (currentUser.roleList === 'deviceAdmin') {
+                  //   const res = await purchaseApprovalRecord({
+                  //     purchaseApplyState: '待院领导审批',
+                  //   });
+                  //   if (res.code === 20000 && res.data === true) {
+                  //     message.success('审批同意！');
+                  //   } else {
+                  //     message.error(res.message);
+                  //   }
+                  // }
+                  // if (currentUser.roleList === 'leader') {
+                  //   const res = await purchaseApprovalRecord({
+                  //     purchaseApplyState: '申请通过',
+                  //   });
+                  //   if (res.code === 20000 && res.data === true) {
+                  //     message.success('审批同意！');
+                  //   } else {
+                  //     message.error(res.message);
+                  //   }
+                  // }
+                  // }} */}
               </Space>
             ),
           },
@@ -146,7 +256,6 @@ const ApprovalCenter: React.FC = () => {
           {
             title: '审批编号',
             dataIndex: 'borrowApplyID',
-            valueType: 'index',
             width: 100,
             align: 'center',
           },
@@ -290,6 +399,10 @@ const ApprovalCenter: React.FC = () => {
         return [];
     }
   };
+  /**
+   * 筛选函数
+   * @param values
+   */
 
   const onReset = () => {
     form.resetFields();
@@ -300,33 +413,18 @@ const ApprovalCenter: React.FC = () => {
     const res = await purchaseApprovalList('未审批');
     if (res.code === 20000) {
       setInitDevice(res.data);
-      setApprovalList(res.data);
+      let id = 0;
+      const approvalListWithKey = res.data.map((item: any) => ({
+        ...item,
+        key: ++id,
+      }));
+      setApprovalList(approvalListWithKey);
       setSeletedApprovalList(res.data);
     }
   };
   useEffect(() => {
     initial();
   }, []);
-
-  // 数据筛选函数
-  // const select = (values) => {
-  //   let select = [];
-  //   select = ApprovalList.filter((index) => {
-  //     return (
-  //       (values.time_from === undefined ||
-  //         values.time_from.unix() <= moment(index.ordertime).unix()) &&
-  //       (values.time_to === undefined || values.time_to.unix() >= moment(index.overtime).unix()) &&
-  //       (values.approvalState === index.name || values.name === 'all') &&
-  //       (values.userType === index.operation || values.report_state === 'all')
-  //     );
-  //   });
-  //   setSeletedApprovalList(select);
-  // };
-
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
 
   function processData(data: any) {
     return data.map((item: any) => {
@@ -337,8 +435,84 @@ const ApprovalCenter: React.FC = () => {
     });
   }
 
+  // -----------------------------数据筛选函数-----------------------------------
+  const selectFunction = (values: {
+    roleName: string;
+    time_from: { unix: () => number } | undefined;
+    time_to: { unix: () => number } | undefined;
+  }) => {
+    let select = [];
+    if (current == 'purchase') {
+      // 根据用户类型和时间筛选数据
+      select = ApprovalList.filter((item: any) => {
+        return (
+          (values.time_from === undefined ||
+            values.time_from.unix() <= moment(item.purchaseApplyDate).unix()) &&
+          (values.time_to === undefined ||
+            values.time_to.unix() >= moment(item.purchaseApplyDate).unix()) &&
+          (values.roleName === item.name || values.roleName === 'all')
+        );
+      });
+    }
+    if (current == 'borrow') {
+      // 根据用户类型和时间筛选数据
+      select = ApprovalList.filter((item: any) => {
+        return (
+          (values.time_from === undefined ||
+            values.time_from.unix() <= moment(item.borrowApplyDate).unix()) &&
+          (values.time_to === undefined ||
+            values.time_to.unix() >= moment(item.borrowApplyDate).unix()) &&
+          values.roleName === item.roleName
+        );
+      });
+    } else {
+      select = ApprovalList.filter((item: any) => {
+        return (
+          (values.time_from === undefined ||
+            values.time_from.unix() <= moment(item.scrapTime).unix()) &&
+          (values.time_to === undefined ||
+            values.time_to.unix() >= moment(item.scrapTime).unix()) &&
+          values.roleName === item.roleName
+        );
+      });
+    }
+    console.log('筛选后的内容为', select);
+    setApprovalList(select);
+  };
+
+  // -----------------------------计算时间之前---------------------------------------
+  //处理日期选择器的禁用日期和日期范围限制
+  const disabledDatefrom = (currenttime: any) => {
+    return currenttime && currenttime < moment('20201108', 'YYYYMMDD');
+  };
+
+  const ontimechange = (time_moment: any) => {
+    setDate_moment(time_moment);
+  };
+
+  const disabledDateto = (currenttime: any) => {
+    if (date_moment === 0) {
+      return currenttime && currenttime < moment('20201108', 'YYYYMMDD');
+    }
+    return currenttime && currenttime < date_moment;
+  };
+
+  const start = () => {
+    setLoading(true);
+    // ajax request after empty completing
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
+  };
+
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
   const rowSelection = {
-    selectedRowKeys,
+    // selectedRowKeys,
     onChange: onSelectChange,
   };
 
@@ -360,93 +534,116 @@ const ApprovalCenter: React.FC = () => {
         break;
     }
     if (res.code === 20000) {
-      setApprovalList(res.data);
-    } else setApprovalList([]);
+      // 给ApprovalList数组添加递增的键值
+      let id = 0;
+      const approvalListWithKey = res.data.map((item: any) => ({
+        ...item,
+        key: ++id,
+      }));
+      setApprovalList(approvalListWithKey);
+      console.log('当前用户：', currentUser);
+    } else {
+      setApprovalList([]);
+    }
+  };
+
+  const onFinish = (values: any) => {
+    selectFunction(values);
+    console.log('Success:', values);
+  };
+
+  //同意审批
+  const approvalYes = async (v: any) => {
+    switch (current) {
+      case 'purchase':
+        if (currentUser.roleList == 'staff') {
+          const res = await purchaseApprovalRecord({
+            purchaseApplyState: '待管理员审批',
+            ...v,
+          }); // 新增
+          if (res.code === 20000 && res.data === true) {
+            message.success('审批同意！');
+          } else {
+            message.error(res.message);
+          }
+        }
+        if (currentUser.roleList == 'deviceAdmin') {
+          const res = await purchaseApprovalRecord({
+            purchaseApplyState: '待院领导审批',
+            ...v,
+          }); // 新增
+          if (res.code === 20000 && res.data === true) {
+            message.success('审批同意！');
+          } else {
+            message.error(res.message);
+          }
+        }
+        if (currentUser.roleList == 'leader') {
+          const res = await purchaseApprovalRecord({
+            purchaseApplyState: '申请通过',
+            ...v,
+          }); // 新增
+          if (res.code === 20000 && res.data === true) {
+            message.success('审批同意！');
+          } else {
+            message.error(res.message);
+          }
+        }
+        break;
+      case 'borrow':
+        if (currentUser.roleList == 'staff') {
+          const res = await borrowApprovalRecord({
+            borrowApplyState: '待管理员审批',
+            ...v,
+          }); // 新增
+          if (res.code === 20000 && res.data === true) {
+            message.success('审批同意！');
+          } else {
+            message.error(res.message);
+          }
+        }
+        if (currentUser.roleList == 'deviceAdmin') {
+          const res = await borrowApprovalRecord({
+            borrowApplyState: '申请通过',
+            ...v,
+          }); // 新增
+          if (res.code === 20000 && res.data === true) {
+            message.success('审批同意！');
+          } else {
+            message.error(res.message);
+          }
+        }
+        break;
+      case 'scrap':
+        if (currentUser.roleList == 'deviceAdmin') {
+          const res = await scrapApprovalRecord({
+            scrapState: '申请通过',
+            ...v,
+          }); // 新增
+          if (res.code === 20000 && res.data === true) {
+            message.success('审批同意！');
+          } else {
+            message.error(res.message);
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  //驳回审批
+  const approvalNo = () => {
+    setLoading(true);
+    // ajax request after empty completing
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   return (
     <PageContainer>
-      <Card title="筛选" size="small">
-        <Form
-          form={form}
-          style={{ margin: '10px' }}
-          initialValues={{
-            ...currentUser,
-          }}
-        >
-          <Row>
-            <Col span={12}>
-              <Form.Item label="是否审批">
-                <Select style={{ width: 200 }} placeholder="审批">
-                  <Select.Option value="wait">待审批</Select.Option>
-                  <Select.Option value="already">已审批</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="价格区间">
-                <Space.Compact block>
-                  <Input style={{ width: 100, textAlign: 'center' }} placeholder="Minimum" />
-                  <Input
-                    className="site-input-split"
-                    style={{
-                      width: 30,
-                      borderLeft: 0,
-                      borderRight: 0,
-                      pointerEvents: 'none',
-                    }}
-                    placeholder="~"
-                    disabled
-                  />
-                  <Input
-                    className="site-input-right"
-                    style={{
-                      width: 100,
-                      textAlign: 'center',
-                    }}
-                    placeholder="Maximum"
-                  />
-                </Space.Compact>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={12}>
-              <Form.Item label="用户类型">
-                <Select style={{ width: 200 }} placeholder="用户类型">
-                  <Select.Option value="teacher">教职工</Select.Option>
-                  <Select.Option value="student">学生</Select.Option>
-                  <Select.Option value="outAcademy">院外人员</Select.Option>
-                  <Select.Option value="outSchool">校外人员</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={6}>
-              <Form.Item label="时间">
-                <DatePicker />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row>
-            {/* 启用下面将提交和重置按钮放置在右边 */}
-            {/* <Col span={16}>
-              <></>
-            </Col> */}
-            <Col span={8}>
-              <Form.Item>
-                <Space>
-                  <Button type="primary" htmlType="submit">
-                    提交
-                  </Button>
-                  <Button htmlType="button" onClick={onReset}>
-                    重置
-                  </Button>
-                </Space>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Card>
       <Card size="small">
         <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
           <Row>
@@ -456,17 +653,69 @@ const ApprovalCenter: React.FC = () => {
             <Col span={10}>
               <></>
             </Col>
-            <Col span={2}>
-              <Button type="primary" style={{ margin: '10px' }}>
-                批量审批
-              </Button>
-            </Col>
           </Row>
+          <Form
+            form={form}
+            style={{ margin: '10px' }}
+            initialValues={{
+              ...currentUser,
+            }}
+            onFinish={onFinish}
+          >
+            <Row>
+              <Col span={12}>
+                <Form.Item label="用户类型" name="roleName" initialValue="all">
+                  <Select style={{ width: 200 }} placeholder="用户类型">
+                    <Select.Option value="all">全部</Select.Option>
+                    <Select.Option value="sysAdmin">系统管理员</Select.Option>
+                    <Select.Option value="deviceAdmin">设备管理员</Select.Option>
+                    <Select.Option value="staff">教职工</Select.Option>
+                    <Select.Option value="internalStudent">院内学生</Select.Option>
+                    <Select.Option value="externalStudent">院外学生</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col>
+                <Space>
+                  <Form.Item label="申请时间" name="time_from">
+                    <DatePicker
+                      disabledDate={disabledDatefrom}
+                      onChange={ontimechange}
+                      defaultPickerValue={moment('20201108', 'YYYYMMDD')}
+                    />
+                  </Form.Item>
+                  <Form.Item>
+                    <div>至</div>
+                  </Form.Item>
+                  <Form.Item name="time_to">
+                    <DatePicker
+                      disabledDate={disabledDateto}
+                      defaultPickerValue={moment('20201108', 'YYYYMMDD')}
+                    />
+                  </Form.Item>
+                </Space>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={8}>
+                <Form.Item>
+                  <Space>
+                    <Button type="primary" htmlType="submit">
+                      提交
+                    </Button>
+                    <Button htmlType="button" onClick={onReset}>
+                      重置
+                    </Button>
+                  </Space>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
           <ProTable
             rowSelection={rowSelection}
             columns={getColumns(current)}
-            // actionRef={actionRef}
-            rowKey="id"
+            actionRef={actionRef}
+            rowKey="key"
             search={false}
             dataSource={processData(ApprovalList)}
             pagination={{
@@ -474,12 +723,12 @@ const ApprovalCenter: React.FC = () => {
               onChange: (page) => console.log(page),
             }}
             dateFormatter="string"
+            toolBarRender={() => [
+              <Button key="button" icon={<CloudUploadOutlined />} onClick={() => {}} type="primary">
+                批量审批
+              </Button>,
+            ]}
           />
-          {/* <Table
-            rowSelection={rowSelection}
-            columns={getColumns(current)}
-            dataSource={processData(ApprovalList)}
-          /> */}
         </Space>
       </Card>
     </PageContainer>
