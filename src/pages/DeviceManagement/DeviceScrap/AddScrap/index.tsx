@@ -84,11 +84,11 @@ const AddScrap: React.FC = () => {
           <ProForm
             style={{ width: 600 }}
             formRef={formRef}
-            submitter={{
-              onSubmit: () => {
-                console.log(formRef.current?.getFieldsValue());
-              },
-            }}
+            // submitter={{
+            //   onSubmit: () => {
+            //     console.log(formRef.current?.getFieldsValue());
+            //   },
+            // }}
             onFinish={async (value) => {
               console.log(value);
               const formData = new FormData();

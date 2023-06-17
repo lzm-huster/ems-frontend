@@ -1,40 +1,27 @@
-import React from 'react';
-import { UploadOutlined } from '@ant-design/icons';
-import { Button, Input, Upload, message } from 'antd';
-import ProForm, {
-  ProFormDependency,
-  ProFormFieldSet,
-  ProFormRadio,
-  ProFormSelect,
-  ProFormText,
-  ProFormTextArea,
-} from '@ant-design/pro-form';
-import { useModel, useRequest } from 'umi';
+import React, { useState } from 'react';
+import { message } from 'antd';
+import ProForm, { ProFormRadio, ProFormText } from '@ant-design/pro-form';
+import { ProFormUploadButton } from '@ant-design/pro-components';
+import { useModel } from 'umi';
 
 import styles from './BaseView.less';
 import { updateInfo } from '@/services/swagger/person';
+import { UploadFile } from 'antd/es/upload/interface';
+import { updateAvatar } from '@/services/ant-design-pro/api';
+import { RcFile } from 'antd/lib/upload';
 
-// 头像组件 方便以后独立，增加裁剪之类的功能
-const AvatarView = ({ avatar }: { avatar: string }) => (
-  <>
-    <div className={styles.avatar_title}>头像</div>
-    <div className={styles.avatar}>
-      <img src={avatar} alt="avatar" />
-    </div>
-    <Upload showUploadList={false}>
-      <div className={styles.button_view}>
-        <Button>
-          <UploadOutlined />
-          更换头像
-        </Button>
-      </div>
-    </Upload>
-  </>
-);
+const roleMap = {
+  sysAdmin: 1,
+  deviceAdmin: 2,
+  staff: 3,
+  internalStudent: 4,
+  externalStudent: 5,
+};
 
 const BaseView: React.FC = () => {
-  const { initialState } = useModel('@@initialState');
+  const { initialState, setInitialState } = useModel('@@initialState');
   const { currentUser, loading } = initialState;
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   const getAvatarURL = () => {
     if (currentUser) {
@@ -47,6 +34,16 @@ const BaseView: React.FC = () => {
     return '';
   };
 
+  const reloadDetail = async () => {
+    const userInfo = await initialState?.fetchUserInfo?.();
+    if (userInfo) {
+      await setInitialState((s: any) => ({
+        ...s,
+        currentUser: userInfo,
+      }));
+    }
+  };
+
   return (
     <div className={styles.baseView}>
       {loading ? null : (
@@ -55,12 +52,33 @@ const BaseView: React.FC = () => {
             <ProForm
               layout="vertical"
               onFinish={async (v) => {
-                const roleId = 2;
-                await updateInfo({
+                if (fileList.length !== 0) {
+                  const file = fileList[0];
+                  const formData = new FormData();
+                  formData.append('file', file as RcFile);
+                  const res1 = await updateAvatar(formData);
+                  if (res1.code === 20000 && res1.data !== null) {
+                    console.log(res1.data);
+                    message.success('更新头像成功');
+                    const index = fileList.indexOf(file);
+                    const newFileList = fileList.slice();
+                    newFileList.splice(index, 1);
+                    setFileList(newFileList);
+                  } else {
+                    message.error(res1.message);
+                  }
+                }
+                const roleId = currentUser.roleList ? roleMap[currentUser.roleList] : 6;
+                const res2 = await updateInfo({
                   roleId: roleId,
                   ...v,
                 }); // 新增
-                message.success('修改成功');
+                if (res2.code === 20000 && res2.data === true) {
+                  message.success('更新用户信息成功');
+                } else {
+                  message.error(res2.message);
+                }
+                reloadDetail();
               }}
               submitter={{
                 resetButtonProps: {
@@ -150,7 +168,28 @@ const BaseView: React.FC = () => {
             </ProForm>
           </div>
           <div className={styles.right}>
-            <AvatarView avatar={getAvatarURL()} />
+            <div className={styles.avatar_title}>头像</div>
+            <div className={styles.avatar}>
+              <img src={getAvatarURL()} alt="avatar" />
+            </div>
+            <ProFormUploadButton
+              name="avatar"
+              title="更换头像"
+              max={1}
+              fieldProps={{
+                fileList: fileList,
+                beforeUpload: (file) => {
+                  setFileList([...fileList, file]);
+                  return false;
+                },
+                onRemove: (file) => {
+                  const index = fileList.indexOf(file);
+                  const newFileList = fileList.slice();
+                  newFileList.splice(index, 1);
+                  setFileList(newFileList);
+                },
+              }}
+            />
           </div>
         </>
       )}

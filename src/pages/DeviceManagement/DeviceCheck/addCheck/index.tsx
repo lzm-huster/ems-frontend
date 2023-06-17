@@ -16,6 +16,7 @@ import {
 import { Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
+import { useHistory } from 'umi';
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -31,6 +32,7 @@ const AddCheck: React.FC = () => {
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [selectData, setSelectData] = useState([]);
+  const history = useHistory();
   const handleCancel = () => setPreviewOpen(false);
 
   const initial = async () => {
@@ -88,6 +90,7 @@ const AddCheck: React.FC = () => {
               const res = await insertCheck(formData);
               if (res.code === 20000 && res.data === true) {
                 message.success('添加核查记录成功');
+                history.push('/deviceManagement/check');
               } else {
                 message.error(res.message);
               }

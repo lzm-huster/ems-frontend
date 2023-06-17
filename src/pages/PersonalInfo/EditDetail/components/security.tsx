@@ -93,19 +93,7 @@ const SecurityView: React.FC = () => {
         <Form.Item
           name="oldPassword"
           label="原密码"
-          rules={[
-            { required: true, message: '请输入原密码' },
-            // {
-            //   validator: (_, value) => {
-            //     if (value === currentPassword) {
-            //       return Promise.resolve();
-            //     } else {
-            //       console.log('当前用户密码:', currentPassword); // 输出当前用户密码
-            //       return Promise.reject('输入的原密码不正确');
-            //     }
-            //   },
-            // },
-          ]}
+          rules={[{ required: true, message: '请输入原密码' }]}
         >
           <Input.Password />
         </Form.Item>
