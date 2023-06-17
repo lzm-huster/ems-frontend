@@ -36,7 +36,7 @@ export async function insertMaintenance(body: any, options?: { [key: string]: an
 export async function updateMaintenance(params: any, options?: { [key: string]: any }) {
   return request('/api/maintenance/deviceMaintenanceListUpdate', {
     method: 'POST',
-    params: params,
+    data: params,
     ...(options || {}),
   });
 }

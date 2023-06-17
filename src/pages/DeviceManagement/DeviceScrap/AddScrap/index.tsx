@@ -86,16 +86,27 @@ const AddScrap: React.FC = () => {
             formRef={formRef}
             onFinish={async (value) => {
               console.log(value);
-              value.scrapTime = formatDate(value.scrapTime);
-              const { upload, ...scrapData } = value;
               const formData = new FormData();
-              upload.forEach((file: { originFileObj: string | Blob }) => {
-                formData.append('files', file.originFileObj);
-              });
-              // formData.append('device', JSON.stringify(deviceData));
-              for (const key in scrapData) {
-                formData.append(key, scrapData[key] == undefined ? '' : scrapData[key]);
+              value.scrapTime = formatDate(value.scrapTime);
+              if (value.upload) {
+                const { upload, ...scrapData } = value;
+
+                upload.forEach((file: { originFileObj: string | Blob }) => {
+                  formData.append('files', file.originFileObj);
+                });
+                // formData.append('device', JSON.stringify(deviceData));
+                for (const key in scrapData) {
+                  formData.append(key, scrapData[key] == undefined ? '' : scrapData[key]);
+                }
+              } else {
+                // formData.append('device', JSON.stringify(deviceData));
+                for (const key in value) {
+                  if (value[key]) {
+                    formData.append(key, value[key]);
+                  }
+                }
               }
+
               const res = await insertScrap(formData);
               if (res.code === 20000 && res.data === true) {
                 message.success('添加报废记录成功');

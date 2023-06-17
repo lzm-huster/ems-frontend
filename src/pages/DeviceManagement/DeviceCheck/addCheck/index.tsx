@@ -68,15 +68,25 @@ const AddCheck: React.FC = () => {
             formRef={formRef}
             onFinish={async (values) => {
               values.checkTime = formatDate(values.checkTime);
-              const { checkImage, ...checkData } = values;
+
               const formData = new FormData();
-              checkImage.forEach((file: { originFileObj: string | Blob }) => {
-                formData.append('files', file.originFileObj);
-              });
-              // formData.append('device', JSON.stringify(deviceData));
-              for (const key in checkData) {
-                formData.append(key, checkData[key] == undefined ? '' : checkData[key]);
+              if (values.checkImage) {
+                const { checkImage, ...checkData } = values;
+                console.log('Not Null', values);
+                checkImage.forEach((file: { originFileObj: string | Blob }) => {
+                  formData.append('files', file.originFileObj);
+                });
+                // formData.append('device', JSON.stringify(deviceData));
+                for (const key in checkData) {
+                  formData.append(key, checkData[key] == undefined ? '' : checkData[key]);
+                }
+              } else {
+                console.log('Null', values);
+                for (const key in values) {
+                  formData.append(key, values[key] == undefined ? '' : values[key]);
+                }
               }
+
               const res = await insertCheck(formData);
               if (res.code === 20000 && res.data === true) {
                 message.success('添加核查记录成功');

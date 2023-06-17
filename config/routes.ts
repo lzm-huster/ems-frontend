@@ -240,14 +240,7 @@ export default [
         path: '/personalCenter/personalInfo',
         name: '个人信息',
         icon: 'smile',
-        component: './PersonalInfo',
-      },
-      {
-        path: '/personalCenter/personalInfo/edit',
-        name: '编辑个人信息',
-        component: './PersonalInfo/Edit',
-        parentKeys: ['/personalCenter/personalInfo'],
-        hideInMenu: true,
+        component: './PersonalInfo/PersonCenter',
       },
       {
         //added
@@ -262,8 +255,6 @@ export default [
         name: '审批中心',
         // icon: 'smile',
         component: './PersonalInfo/ApprovalCenter',
-        access: 'approvalUpdate',
-        accessCode: 'approval:update',
       },
       {
         path: '/personalCenter/systemNotification',
