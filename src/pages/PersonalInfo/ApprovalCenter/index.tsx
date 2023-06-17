@@ -69,10 +69,6 @@ const ApprovalCenter: React.FC = () => {
   const [date_moment, setDate_moment] = useState(0);
   const [approval_state, setApproval_state] = useState('');
 
-  const handleClick = () => {
-    history.push('/personalCenter/personalInfo/edit'); // 将路由定向到/my-page
-  };
-
   const stateMap = {
     //审批映射
     staff: '待管理员审批',
