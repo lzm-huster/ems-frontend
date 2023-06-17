@@ -76,9 +76,6 @@ const Home: React.FC = () => {
     xField: 'num',
     yField: 'state',
     seriesField: 'state',
-    legend: {
-      //position: 'top-left',
-    },
   };
   const pieData = [
     {

@@ -23,7 +23,6 @@ export async function updateInfo(body: any) {
   });
 }
 
-
 export async function updatePassword(
   body: {
     oldPass: string;
@@ -37,4 +36,3 @@ export async function updatePassword(
     data: body,
   });
 }
-
