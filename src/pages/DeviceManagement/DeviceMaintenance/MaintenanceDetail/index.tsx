@@ -1,6 +1,7 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
-import { getMaintenanceDetail } from '@/services/swagger/maintenance';
+import { getMaintenanceDetail, updateMaintenance } from '@/services/swagger/maintenance';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -9,9 +10,9 @@ import {
   ProFormSelect,
   ProFormText,
 } from '@ant-design/pro-components';
-import { Button, Card, message } from 'antd';
+import { Button, Card } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
+import { useHistory, useLocation } from 'umi';
 
 interface stateType {
   maintenanceID: number;
@@ -74,20 +75,27 @@ const RepairDetail: React.FC = () => {
         type="primary"
         onClick={async () => {
           const values = props.form?.getFieldsValue();
-          values.maintenanceTime = formatDate(values.maintenanceTime);
-          const res = await updateMaintenance(values);
-          if (res.code === 20000 && res.data === true) {
-            message.success('修改成功');
-            console.log(props);
+          values.maintenanceTime = formatDate(new Date(values.maintenanceTime));
+          // console.log(values);
+          values.deviceID = props.form?.getFieldValue('deviceID');
+          console.log(values);
 
-            setUneditable(true);
-          } else {
-            message.error(res.message);
-          }
+          const res = await updateMaintenance(values);
+          console.log(res);
+
+          // if (res.code === 20000 && res.data === true) {
+          //   message.success('修改成功');
+          //   console.log(props);
+
+          //   setUneditable(true);
+          // } else {
+          //   message.error(res.message);
+          // }
         }}
       >
         提交
       </Button>,
+      // eslint-disable-next-line react/jsx-key
       <Button
         onClick={() => {
           props.form?.resetFields();
@@ -95,6 +103,7 @@ const RepairDetail: React.FC = () => {
       >
         重置
       </Button>,
+      // eslint-disable-next-line react/jsx-key
       <Button
         onClick={() => {
           history.push('/deviceManagement/maintenance');
@@ -126,14 +135,14 @@ const RepairDetail: React.FC = () => {
             <ProFormText label={'保养记录编号'} name="maintenanceID" disabled={true} />
             <ProFormSelect
               label={'设备编号'}
-              name="assetNumber"
+              name="deviceID"
               required
               options={selectData}
               fieldProps={{
                 onChange: async (value) => {
                   const did = await getDeviceDetail({ DeviceID: value });
                   if (did.code === 20000) {
-                    formRef?.current?.setFieldValue('deviceName', did.data['deviceName']);
+                    formRef?.current?.setFieldValue('deviceName', did.data.deviceName);
                   }
                 },
               }}
