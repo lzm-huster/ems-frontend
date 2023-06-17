@@ -59,4 +59,37 @@ declare namespace API {
   //   purchaseDate: string;
   //   userName: string;
   // }
+
+  type ApprovalRecord = {
+    purchaseApplySheetID?: number;
+    state?: string;
+    purchaseApplicantID?: number;
+    purchaseApplyDate?: string;
+    purchaseApplyDescription?: string;
+    approveTutorID?: number;
+    isDeleted?: boolean;
+    createTime?: string;
+    updateTime?: string;
+  };
+
+  type Device = {
+    deviceID: number;
+    deviceName: string;
+    deviceModel: string;
+    deviceType: string;
+    deviceSpecification: string;
+    deviceImageList: string;
+    deviceState: string;
+    userID: number;
+    isPublic: number;
+    stockQuantity: number;
+    unitPrice: number;
+    borrowRate: number;
+    purchaseDate: string;
+    assetNumber: string;
+    expectedScrapDate: string;
+    isDeleted: number;
+    createTime: string;
+    updateTime: string;
+  };
 }

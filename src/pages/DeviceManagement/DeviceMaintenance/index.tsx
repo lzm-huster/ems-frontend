@@ -1,3 +1,10 @@
+import { getMonth1st } from '@/services/general/dataProcess';
+import {
+  deleteMaintenanceRecord,
+  getMaintenanceList,
+  getMaintenanceNum,
+} from '@/services/swagger/maintenance';
+import { Line } from '@ant-design/charts';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
@@ -12,17 +19,10 @@ import {
   Space,
   Statistic,
 } from 'antd';
-import {
-  deleteMaintenanceRecord,
-  getMaintenanceList,
-  getMaintenanceNum,
-} from '@/services/swagger/maintenance';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
-import { Line } from '@ant-design/charts';
-import { getMonth1st } from '@/services/general/dataProcess';
 
 interface MaintenanceRecord {
   key: React.Key;
@@ -221,23 +221,27 @@ const Maintenance: React.FC = () => {
               详情
             </Link>
           </a>
-          <a>
-            <Link
-              to={{
-                pathname: '/deviceManagement/maintenance/detail',
-                state: {
-                  maintenanceID: record.maintenanceID,
-                  deviceName: record.deviceName,
-                  edit: true,
-                },
-              }}
-            >
-              修改
-            </Link>
-          </a>
-          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.maintenanceID)}>
-            <a>删除</a>
-          </Popconfirm>
+          <Access accessible={access.maintenanceUpdateBtn('maintenance:update')}>
+            <a>
+              <Link
+                to={{
+                  pathname: '/deviceManagement/maintenance/detail',
+                  state: {
+                    maintenanceID: record.maintenanceID,
+                    deviceName: record.deviceName,
+                    edit: true,
+                  },
+                }}
+              >
+                修改
+              </Link>
+            </a>
+          </Access>
+          <Access accessible={access.maintenanceDeleteBtn('maintenance:delete')}>
+            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.maintenanceID)}>
+              <a>删除</a>
+            </Popconfirm>
+          </Access>
         </Space>
       ),
     },
@@ -277,9 +281,12 @@ const Maintenance: React.FC = () => {
                 <Link to={'/deviceManagement/maintenance/addMaintenance'}>新增保养记录</Link>
               </Button>
             </Access>
-            <Button danger onClick={start} disabled={!hasSelected}>
-              批量删除
-            </Button>
+            <Access accessible={access.maintenanceDeleteBtn('maintenance:delete')}>
+              <Button danger onClick={start} disabled={!hasSelected}>
+                批量删除
+              </Button>
+            </Access>
+
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>

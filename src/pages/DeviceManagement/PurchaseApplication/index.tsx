@@ -188,10 +188,12 @@ const PurchaseApp: React.FC = () => {
                 <Link to={'/deviceManagement/purchaseApply/addPurchaseApply'}>新增采购申请</Link>
               </Button>
             </Access>
+            <Access accessible={access.purchaseUpdateBtn('purchase:update')}>
+              <Button onClick={start} disabled={!hasSelected}>
+                设备采购入库
+              </Button>
+            </Access>
 
-            <Button onClick={start} disabled={!hasSelected}>
-              设备采购入库
-            </Button>
             <Button danger onClick={start} disabled={!hasSelected}>
               批量撤销申请
             </Button>

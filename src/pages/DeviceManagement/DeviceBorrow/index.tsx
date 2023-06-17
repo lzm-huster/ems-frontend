@@ -205,13 +205,17 @@ const Borrow: React.FC = () => {
                 <Link to={'/deviceManagement/borrow/addBorrowApply'}>新增借用申请</Link>
               </Button>
             </Access>
+            <Access accessible={access.borrowUpdateBtn('borrow:update')}>
+              <Button onClick={start} disabled={!hasSelected}>
+                批量归还设备
+              </Button>
+            </Access>
+            <Access accessible={access.borrowDeleteBtn('borrow:delete')}>
+              <Button danger onClick={start} disabled={!hasSelected}>
+                批量删除记录
+              </Button>
+            </Access>
 
-            <Button onClick={start} disabled={!hasSelected}>
-              批量归还设备
-            </Button>
-            <Button danger onClick={start} disabled={!hasSelected}>
-              批量删除记录
-            </Button>
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>

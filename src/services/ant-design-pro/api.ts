@@ -19,6 +19,23 @@ export async function addRole(body: any, options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+/**
+ *
+ * @param body 更新用户头像
+ * @param options
+ * @returns
+ */
+export async function updateAvatar(body: FormData, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<string>>('/api/user/updateAvatar', {
+    method: 'POST',
+    data: body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requestType: 'form',
+    ...(options || {}),
+  });
+}
 
 /**获取角色详情 */
 export async function getRoleDetail(body: any, options?: { [key: string]: any }) {
