@@ -1,9 +1,9 @@
+import { deleteScrapRecord, getScrapList } from '@/services/swagger/scrap';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
-import { deleteScrapRecord, getScrapList } from '@/services/swagger/scrap';
 
 interface ScrapRecord {
   deviceID: number;
@@ -115,19 +115,23 @@ const DeviceScrap: React.FC = () => {
                 详情
               </Link>
             </a>
-            <a key="view">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/scrap/scrapDetail',
-                  state: { scrapID: record.scrapID, deviceName: record.deviceName, edit: true },
-                }}
-              >
-                编辑
-              </Link>
-            </a>
-            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.scrapID)}>
-              <a>删除</a>
-            </Popconfirm>
+            <Access accessible={access.scrapUpdateBtn('scrap:update')}>
+              <a key="view">
+                <Link
+                  to={{
+                    pathname: '/deviceManagement/scrap/scrapDetail',
+                    state: { scrapID: record.scrapID, deviceName: record.deviceName, edit: true },
+                  }}
+                >
+                  编辑
+                </Link>
+              </a>
+            </Access>
+            <Access accessible={access.scrapDeleteBtn('scrap:delete')}>
+              <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.scrapID)}>
+                <a>删除</a>
+              </Popconfirm>
+            </Access>
           </Space>
         );
       },
@@ -167,10 +171,11 @@ const DeviceScrap: React.FC = () => {
                   <Link to={'/deviceManagement/scrap/addScrap'}>新增报废记录</Link>
                 </Button>
               </Access>
-
-              <Button danger disabled={!hasSelected}>
-                批量删除记录
-              </Button>
+              <Access accessible={access.scrapDeleteBtn('scrap:delete')}>
+                <Button danger disabled={!hasSelected}>
+                  批量删除记录
+                </Button>
+              </Access>
             </GeneralTable>
           </Col>
         </Row>

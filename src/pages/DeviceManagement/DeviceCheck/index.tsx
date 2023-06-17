@@ -1,8 +1,8 @@
 import {
   deleteCheckRecord,
-  getCheckList,
   getCheckedNum,
   getCheckingNum,
+  getCheckList,
 } from '@/services/swagger/check';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
@@ -136,19 +136,23 @@ const DeviceCheck: React.FC = () => {
                 详情
               </Link>
             </a>
-            <a key="view">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/check/detail',
-                  state: { checkID: record.checkID, deviceName: record.deviceName, edit: true },
-                }}
-              >
-                编辑
-              </Link>
-            </a>
-            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.checkID)}>
-              <a>删除</a>
-            </Popconfirm>
+            <Access accessible={access.inventoryUpdateBtn('inventory:update')}>
+              <a key="view">
+                <Link
+                  to={{
+                    pathname: '/deviceManagement/check/detail',
+                    state: { checkID: record.checkID, deviceName: record.deviceName, edit: true },
+                  }}
+                >
+                  编辑
+                </Link>
+              </a>
+            </Access>
+            <Access accessible={access.inventoryDeleteBtn('inventory:delete')}>
+              <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.checkID)}>
+                <a>删除</a>
+              </Popconfirm>
+            </Access>
           </Space>
         );
       },
@@ -188,9 +192,11 @@ const DeviceCheck: React.FC = () => {
                   <Link to={'/deviceManagement/check/add'}>新增核查记录</Link>
                 </Button>
               </Access>
-              <Button danger disabled={!hasSelected}>
-                批量删除记录
-              </Button>
+              <Access accessible={access.inventoryDeleteBtn('inventory:delete')}>
+                <Button danger disabled={!hasSelected}>
+                  批量删除记录
+                </Button>
+              </Access>
             </GeneralTable>
           </Col>
         </Row>

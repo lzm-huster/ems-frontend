@@ -1,30 +1,30 @@
+import { getMonth1st } from '@/services/general/dataProcess';
 import {
   deleteRepairRecord,
   getRepairedNum,
   getRepairingNum,
   getRepairList,
 } from '@/services/swagger/repair';
+import { Line } from '@ant-design/charts';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
   Card,
   Col,
+  Divider,
   Form,
   FormInstance,
   Input,
+  message,
   Popconfirm,
   Row,
   Space,
   Statistic,
-  Divider,
-  message,
 } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
-import { getMonth1st } from '@/services/general/dataProcess';
-import { Line } from '@ant-design/charts';
 
 interface RepairRecord {
   key: React.Key;
@@ -210,19 +210,23 @@ const Repair: React.FC = () => {
               详情
             </Link>
           </a>
-          <a>
-            <Link
-              to={{
-                pathname: '/deviceManagement/repair/detail',
-                state: { repairID: record.repairID, deviceName: record.deviceName, edit: true },
-              }}
-            >
-              修改
-            </Link>
-          </a>
-          <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.repairID)}>
-            <a>删除</a>
-          </Popconfirm>
+          <Access accessible={access.repairUpdateBtn('repair:update')}>
+            <a>
+              <Link
+                to={{
+                  pathname: '/deviceManagement/repair/detail',
+                  state: { repairID: record.repairID, deviceName: record.deviceName, edit: true },
+                }}
+              >
+                修改
+              </Link>
+            </a>
+          </Access>
+          <Access accessible={access.repairDeleteBtn('repair:delete')}>
+            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.repairID)}>
+              <a>删除</a>
+            </Popconfirm>
+          </Access>
         </Space>
       ),
     },
@@ -294,10 +298,12 @@ const Repair: React.FC = () => {
                 <Link to={'/deviceManagement/repair/addRepair'}>新增维修记录</Link>
               </Button>
             </Access>
+            <Access accessible={access.repairDeleteBtn('repair:delete')}>
+              <Button danger onClick={start} disabled={!hasSelected}>
+                批量删除
+              </Button>
+            </Access>
 
-            <Button danger onClick={start} disabled={!hasSelected}>
-              批量删除
-            </Button>
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>
