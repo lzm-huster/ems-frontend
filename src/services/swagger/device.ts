@@ -21,6 +21,7 @@ export async function getPersonDeviceList(options?: { [key: string]: any }) {
   });
 }
 
+
 export async function getPublicAssetNumber(options?: { [key: string]: any }) {
   return request('/api/device/getPublicDeviceIDAndAssetNumber', {
     method: 'GET',
@@ -36,6 +37,13 @@ export async function updateDevice(body: FormData, options?: { [key: string]: an
       'Content-Type': 'multipart/form-data',
     },
     requestType: 'form',
+    ...(options || {}),
+  });
+}
+export async function UpdateDevice(device: API.Device, options?: { [key: string]: any }) {
+  return request('/api/device/UpdateDevice', {
+    method: 'POST',
+    params: device,
     ...(options || {}),
   });
 }

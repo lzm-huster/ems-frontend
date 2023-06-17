@@ -73,5 +73,24 @@ declare namespace API {
     updateTime?: string;
   };
 
-
+  type Device = {
+    deviceID: number;
+    deviceName: string;
+    deviceModel: string;
+    deviceType: string;
+    deviceSpecification: string;
+    deviceImageList: string;
+    deviceState: string;
+    userID: number;
+    isPublic: number;
+    stockQuantity: number;
+    unitPrice: number;
+    borrowRate: number;
+    purchaseDate: string;
+    assetNumber: string;
+    expectedScrapDate: string;
+    isDeleted: number;
+    createTime: string;
+    updateTime: string;
+  };
 }
