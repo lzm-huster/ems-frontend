@@ -22,3 +22,19 @@ export async function updateInfo(body: any) {
     data: body,
   });
 }
+
+
+export async function updatePassword(
+  body: {
+    oldPass: string;
+    newPass: string;
+    confirm: string;
+  },
+  options?: { [key: string]: any },
+) {
+  return request(`/api/user/updatePassword`, {
+    method: 'POST',
+    data: body,
+  });
+}
+
