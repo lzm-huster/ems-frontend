@@ -21,7 +21,6 @@ export async function getPersonDeviceList(options?: { [key: string]: any }) {
   });
 }
 
-
 export async function getPublicAssetNumber(options?: { [key: string]: any }) {
   return request('/api/device/getPublicDeviceIDAndAssetNumber', {
     method: 'GET',
