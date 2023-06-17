@@ -120,7 +120,7 @@ const AddDevice: React.FC = () => {
         ref={formRef}
         name="control-ref"
         onFinish={onFinish}
-        style={{ maxWidth: 1400 }}
+        style={{ width: '100%' }}
         disabled={componentDisabled}
       >
         <Divider orientation="left" orientationMargin={5}>
@@ -153,15 +153,15 @@ const AddDevice: React.FC = () => {
                 >
                   <Card
                     id="deviceCard"
-                    style={{ width: 1400 }}
+                    style={{ width: '100%' }}
                     title={[
                       <MinusCircleOutlined style={{ color: 'red' }} onClick={() => remove(name)} />,
                       `  设备${key + 1}`,
                     ]}
                   >
-                    <Row gutter={16}>
+                    <Row gutter={[16, 24]}>
                       <Col span={8}>
-                        <Form.Item label="设备编号" labelCol={{ offset: 0, span: 4 }}>
+                        <Form.Item label="设备编号">
                           <Input placeholder="提交后自动生成" disabled />
                         </Form.Item>
                       </Col>
@@ -171,7 +171,6 @@ const AddDevice: React.FC = () => {
                           name={[name, 'deviceName']}
                           rules={[{ required: true, message: '设备名称未填写' }]}
                           label="设备名称"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="设备名称" />
                         </Form.Item>
@@ -182,7 +181,6 @@ const AddDevice: React.FC = () => {
                           name={[name, 'deviceType']}
                           rules={[{ required: true, message: '设备类型未填写' }]}
                           label="设备类型"
-                          labelCol={{ span: 4 }}
                         >
                           <TreeSelect
                             showSearch
@@ -202,26 +200,36 @@ const AddDevice: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                    </Row>
-                    <Row gutter={16}>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'deviceModel']}
                           rules={[{ required: true, message: '设备参数未填写！' }]}
                           label="设备参数"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="设备参数" />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
+                        <Form.Item {...restField} name={[name, 'assetNumber']} label="资产编号">
+                          <Input placeholder="资产编号" disabled />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'deviceSpecification']}
+                          label="设备说明"
+                        >
+                          <Input placeholder="设备说明" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'unitPrice']}
                           rules={[{ required: true, message: '设备单价未填写！' }]}
                           label="设备单价"
-                          labelCol={{ span: 9 }}
                         >
                           <InputNumber<string>
                             min="0"
@@ -232,36 +240,23 @@ const AddDevice: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'stockQuantity']}
                           rules={[{ required: true, message: '设备数量未填写！' }]}
                           label="设备数量"
-                          labelCol={{ span: 11 }}
                         >
                           <InputNumber min={1} placeholder="设备数量" />
                         </Form.Item>
                       </Col>
+
                       <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'assetNumber']}
-                          label="资产编号"
-                          labelCol={{ span: 4 }}
-                        >
-                          <Input placeholder="资产编号" disabled />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    <Row gutter={16}>
-                      <Col span={4}>
                         <Form.Item
                           {...restField}
                           name={[name, 'isPublic']}
                           rules={[{ required: true, message: '是否公用未选择！' }]}
                           label="是否公用"
-                          labelCol={{ span: 9 }}
                         >
                           <Radio.Group>
                             <Radio.Button value={1}>公用</Radio.Button>
@@ -269,13 +264,12 @@ const AddDevice: React.FC = () => {
                           </Radio.Group>
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'borrowRate']}
                           rules={[{ required: false, message: '借用费率未填写！' }]}
                           label="借用费率"
-                          labelCol={{ span: 9 }}
                         >
                           <InputNumber disabled placeholder="借用费率" />
                         </Form.Item>
@@ -286,21 +280,10 @@ const AddDevice: React.FC = () => {
                           name={[name, 'deviceImage']}
                           rules={[{ required: true, message: '设备图片未上传！' }]}
                           label="设备图片"
-                          labelCol={{ span: 4 }}
                         >
                           <Upload {...props}>
-                            <Button icon={<UploadOutlined />}>上传PNG</Button>
+                            <Button icon={<UploadOutlined />}>上传图片</Button>
                           </Upload>
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'deviceSpecification']}
-                          label="设备说明"
-                          labelCol={{ span: 4 }}
-                        >
-                          <Input placeholder="设备说明" />
                         </Form.Item>
                       </Col>
                     </Row>

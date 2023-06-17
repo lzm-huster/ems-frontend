@@ -8,14 +8,15 @@ import {
   ProFormTextArea,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Button, Card, Modal } from 'antd';
+import { Button, Card, Modal, message } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'umi';
-import { getScrapDetail } from '@/services/swagger/scrap';
+import { getScrapDetail, updateScrap } from '@/services/swagger/scrap';
 import { convertToSelectData } from '@/services/general/dataProcess';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { getUserDetail } from '@/services/swagger/user';
+import { formatDate } from '@/utils/utils';
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -47,6 +48,17 @@ const DetailCheck: React.FC = () => {
     const res = await getScrapDetail({ scrapID: state.scrapID });
     if (res.code === 20000) {
       res.data.deviceName = state.deviceName;
+      const images = [];
+      JSON.parse(res.data.scrapImage).forEach((image: any, ind: number) => {
+        const node: any = {
+          url: image,
+          name: res.data.deviceName + ind,
+          status: 'done',
+          uid: ind,
+        };
+        images.push(node);
+      });
+      setFileList(images);
       setScrapRecord(res.data);
       setUneditable(!state.edit);
     }
@@ -74,9 +86,31 @@ const DetailCheck: React.FC = () => {
       <Button
         key="submit"
         type="primary"
-        onClick={() => {
-          props.form?.submit();
-          setUneditable(true);
+        onClick={async () => {
+          const values = props.form?.getFieldsValue();
+          console.log(values);
+          const pDate = formatDate(new Date(values.purchaseDate));
+          values.purchaseDate = pDate;
+          const { deviceImage, ...deviceData } = values;
+          const fileList1 = deviceImage.fileList;
+          console.log(deviceData);
+
+          const formData = new FormData();
+          // formData.append('file', fileList);
+          fileList1.forEach((file) => {
+            formData.append('files', file.originFileObj);
+          });
+          // formData.append('device', JSON.stringify(deviceData));
+          for (const key in deviceData) {
+            formData.append(key, deviceData[key] == undefined ? '' : deviceData[key]);
+          }
+          const res = await updateScrap(formData);
+          if (res.code === 20000 && res.data !== undefined) {
+            message.success('修改成功');
+            setUneditable(true);
+          } else {
+            message.error(res.message);
+          }
         }}
       >
         提交

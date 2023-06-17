@@ -89,13 +89,13 @@ const AddPurchaseApp: React.FC = () => {
         ref={formRef}
         name="control-ref"
         onFinish={onFinish}
-        style={{ maxWidth: 1400 }}
+        style={{ width: '100%' }}
         disabled={componentDisabled}
       >
         <Divider orientation="left" orientationMargin={5}>
           基本信息
         </Divider>
-        <Row gutter={16}>
+        <Row gutter={[16, 24]}>
           <Col span={8}>
             <Form.Item name="purchaseApplyID" label="申请单编号">
               <Input placeholder="提交后自动生成" disabled />
@@ -137,20 +137,19 @@ const AddPurchaseApp: React.FC = () => {
                 >
                   <Card
                     id="deviceCard"
-                    style={{ width: 1400 }}
+                    style={{ width: '100%' }}
                     title={[
                       <MinusCircleOutlined style={{ color: 'red' }} onClick={() => remove(name)} />,
                       `  设备${key + 1}`,
                     ]}
                   >
-                    <Row gutter={[16, 12]}>
+                    <Row gutter={[16, 24]}>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'deviceName']}
                           rules={[{ required: true, message: '设备名称未填写' }]}
                           label="设备名称"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="设备名称" />
                         </Form.Item>
@@ -161,7 +160,6 @@ const AddPurchaseApp: React.FC = () => {
                           name={[name, 'deviceType']}
                           rules={[{ required: true, message: '设备类型未填写' }]}
                           label="设备类型"
-                          labelCol={{ span: 4 }}
                         >
                           <TreeSelect
                             showSearch
@@ -179,18 +177,16 @@ const AddPurchaseApp: React.FC = () => {
                           name={[name, 'deviceModel']}
                           rules={[{ required: true, message: '设备参数未填写！' }]}
                           label="设备参数"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="设备参数" />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'unitPrice']}
                           rules={[{ required: true, message: '采购预算未填写！' }]}
                           label="采购预算"
-                          labelCol={{ span: 9 }}
                         >
                           <InputNumber<string>
                             min="0"
@@ -201,13 +197,12 @@ const AddPurchaseApp: React.FC = () => {
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'stockQuantity']}
                           rules={[{ required: true, message: '设备数量未填写！' }]}
                           label="设备数量"
-                          labelCol={{ span: 11 }}
                         >
                           <InputNumber min={1} placeholder="设备数量" />
                         </Form.Item>

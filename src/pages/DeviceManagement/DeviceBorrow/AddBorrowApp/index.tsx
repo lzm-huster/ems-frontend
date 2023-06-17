@@ -88,7 +88,7 @@ const AddDevice: React.FC = () => {
         ref={formRef}
         name="control-ref"
         onFinish={onFinish}
-        style={{ maxWidth: 1400 }}
+        style={{ width: '100%' }}
         disabled={componentDisabled}
       >
         <Divider orientation="left" orientationMargin={5}>
@@ -126,19 +126,15 @@ const AddDevice: React.FC = () => {
                 >
                   <Card
                     id="deviceCard"
-                    style={{ width: 1400 }}
+                    style={{ width: '100%' }}
                     title={[
                       <MinusCircleOutlined style={{ color: 'red' }} onClick={() => remove(name)} />,
                       `  设备${key + 1}`,
                     ]}
                   >
-                    <Row gutter={16}>
+                    <Row gutter={[16, 12]}>
                       <Col span={8}>
-                        <Form.Item
-                          name={[name, 'deviceID']}
-                          label="设备编号"
-                          labelCol={{ offset: 0, span: 4 }}
-                        >
+                        <Form.Item name={[name, 'deviceID']} label="设备编号">
                           <Select
                             placeholder="设备编号"
                             options={selectData}
@@ -174,7 +170,6 @@ const AddDevice: React.FC = () => {
                           name={[name, 'deviceName']}
                           rules={[{ required: true, message: '设备名称未填写' }]}
                           label="设备名称"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="根据设备编号自动填写" disabled />
                         </Form.Item>
@@ -185,7 +180,6 @@ const AddDevice: React.FC = () => {
                           name={[name, 'deviceType']}
                           rules={[{ required: true, message: '设备类型未填写' }]}
                           label="设备类型"
-                          labelCol={{ span: 4 }}
                         >
                           <Select placeholder="根据设备编号自动填写" disabled />
                         </Form.Item>
@@ -196,29 +190,22 @@ const AddDevice: React.FC = () => {
                           name={[name, 'deviceModel']}
                           rules={[{ required: true, message: '设备参数未填写！' }]}
                           label="设备参数"
-                          labelCol={{ span: 4 }}
                         >
                           <Input placeholder="根据设备编号自动填写" disabled />
                         </Form.Item>
                       </Col>
 
                       <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'remark']}
-                          label="借用说明"
-                          labelCol={{ span: 4 }}
-                        >
+                        <Form.Item {...restField} name={[name, 'remark']} label="借用说明">
                           <Input placeholder="借用说明" />
                         </Form.Item>
                       </Col>
-                      <Col span={4}>
+                      <Col span={8}>
                         <Form.Item
                           {...restField}
                           name={[name, 'unitPrice']}
                           rules={[{ required: true, message: '设备单价未填写！' }]}
                           label="借用费用"
-                          labelCol={{ span: 9 }}
                         >
                           <InputNumber<string>
                             min="0"

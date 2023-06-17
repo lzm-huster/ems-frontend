@@ -16,7 +16,7 @@ import {
 import { Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
+import { useHistory, useLocation } from 'umi';
 
 interface stateType {
   deviceID: number;
@@ -32,7 +32,7 @@ const getBase64 = (file: RcFile): Promise<string> =>
 
 const AddScrap: React.FC = () => {
   const formRef = useRef<ProFormInstance>();
-
+  const history = useHistory();
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [previewTitle, setPreviewTitle] = useState('');
@@ -84,11 +84,6 @@ const AddScrap: React.FC = () => {
           <ProForm
             style={{ width: 600 }}
             formRef={formRef}
-            // submitter={{
-            //   onSubmit: () => {
-            //     console.log(formRef.current?.getFieldsValue());
-            //   },
-            // }}
             onFinish={async (value) => {
               console.log(value);
               value.scrapTime = formatDate(value.scrapTime);
@@ -104,6 +99,7 @@ const AddScrap: React.FC = () => {
               const res = await insertScrap(formData);
               if (res.code === 20000 && res.data === true) {
                 message.success('添加报废记录成功');
+                history.push('/deviceManagement/scrap');
               } else {
                 message.error(res.message);
               }
