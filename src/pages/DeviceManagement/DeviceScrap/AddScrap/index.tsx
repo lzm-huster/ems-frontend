@@ -51,7 +51,7 @@ const AddScrap: React.FC = () => {
     if (state != null) {
       const device = await getDeviceDetail({ DeviceID: state.deviceID });
       if (device.code === 20000) {
-        formRef.current?.setFieldValue('deviceId', device.data.deviceID);
+        formRef.current?.setFieldValue('deviceID', device.data.deviceID);
         formRef.current?.setFieldValue('deviceName', device.data.deviceName);
         const uName = await getUserDetail({ userId: device.data.userID });
         if (uName.code === 20000) {

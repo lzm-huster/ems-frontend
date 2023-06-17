@@ -74,7 +74,7 @@ const DeviceDetail: React.FC = () => {
         onClick={async () => {
           const values = props.form?.getFieldsValue();
           console.log(values);
-          const pDate = formatDate(values.purchaseDate);
+          const pDate = formatDate(new Date(values.purchaseDate));
           values.purchaseDate = pDate;
           const { deviceImage, ...deviceData } = values;
           const fileList1 = deviceImage.fileList;
