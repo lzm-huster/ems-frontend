@@ -75,7 +75,7 @@ const RepairDetail: React.FC = () => {
         type="primary"
         onClick={async () => {
           const values = props.form?.getFieldsValue();
-          values.maintenanceTime = formatDate(values.maintenanceTime);
+          values.maintenanceTime = formatDate(new Date(values.maintenanceTime));
           const res = await updateMaintenance(values);
           if (res.code === 20000 && res.data === true) {
             message.success('修改成功');
