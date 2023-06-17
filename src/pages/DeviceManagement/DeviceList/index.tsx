@@ -152,7 +152,16 @@ const DeviceList: React.FC = () => {
               详情
             </Link>
           </a>
-          <a>借用</a>
+          <a key="borrow">
+            <Link
+              to={{
+                pathname: '/deviceManagement/borrow/addBorrowApply',
+                state: { deviceID: record.deviceID },
+              }}
+            >
+              借用
+            </Link>
+          </a>
           <a key="repair">
             <Link
               to={{

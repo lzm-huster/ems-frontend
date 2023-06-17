@@ -69,11 +69,20 @@ const columns: ColumnsType<PurchaseApply> = [
   {
     title: '操作',
     key: 'action',
-    render: () => (
+    render: (record) => (
       <Space size="middle">
-        <a>详情</a>
+        <a key="detail">
+          <Link
+            to={{
+              pathname: '/deviceManagement/purchaseApply/purchaseApplyDetail',
+              state: { scrapID: record.scrapID, deviceName: record.deviceName, edit: false },
+            }}
+          >
+            详情
+          </Link>
+        </a>
+        <a>入库</a>
         <a>修改</a>
-        <a>删除</a>
       </Space>
     ),
     onCell: (data) => {

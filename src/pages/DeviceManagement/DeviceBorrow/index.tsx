@@ -74,7 +74,6 @@ const columns: ColumnsType<BorrowRecord> = [
         <a>详情</a>
         <a>归还</a>
         <a>修改</a>
-        <a>删除</a>
       </Space>
     ),
     onCell: (data) => {

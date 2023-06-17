@@ -25,12 +25,14 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useModel } from 'umi';
+import { useLocation, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
 
-const dateFormat = 'YYYY/MM/DD';
+interface stateType {
+  deviceID: number;
+}
 
 //样式
 const layout = {
@@ -41,18 +43,6 @@ const layout = {
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
 };
-
-// const formatDate = (time: any) => {
-//   // 格式化日期，获取今天的日期
-//   const Dates = new Date(time);
-//   const year: number = Dates.getFullYear();
-//   const month: any =
-//     Dates.getMonth() + 1 < 10 ? '0' + (Dates.getMonth() + 1) : Dates.getMonth() + 1;
-//   const day: any = Dates.getDate() < 10 ? '0' + Dates.getDate() : Dates.getDate();
-//   return year + '/' + month + '/' + day;
-// };
-
-// const now = formatDate(new Date().getTime());
 
 //main
 const AddBorrow: React.FC = () => {
@@ -65,6 +55,8 @@ const AddBorrow: React.FC = () => {
   const [diff, setDiff] = useState(0);
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
+  const { state } = useLocation<stateType>();
+
   const initial = async () => {
     const assets = await getAssetNumber();
 
@@ -73,6 +65,23 @@ const AddBorrow: React.FC = () => {
     // formRef.current?.setFieldsValue({ purchaseDate: dayjs(now, dateFormat) });
     if (assets.code === 20000) {
       setSelectData(convertToSelectData(assets.data));
+    }
+    if (state != null) {
+      const device = await getDeviceDetail({ DeviceID: state.deviceID });
+      if (device.code === 20000) {
+        const list = formRef.current?.getFieldValue('devices') || [];
+        const nextList = list.concat({
+          key: list.length,
+          name: list.length,
+          fieldKey: list.length,
+          deviceID: device.data.deviceID,
+          deviceName: device.data.deviceName,
+          deviceType: device.data.deviceType,
+          deviceModel: device.data.deviceModel,
+          borrowFee: device.data.borrowRate * device.data.unitPrice,
+        });
+        formRef.current?.setFieldValue('devices', nextList);
+      }
     }
   };
   useEffect(() => {
@@ -248,8 +257,8 @@ const AddBorrow: React.FC = () => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'unitPrice']}
-                          rules={[{ required: true, message: '设备单价未填写！' }]}
+                          name={[name, 'borrowFee']}
+                          //rules={[{ required: true, message: '借用费用未填写！' }]}
                           label="借用费用"
                         >
                           <InputNumber<string>
