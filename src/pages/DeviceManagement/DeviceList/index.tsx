@@ -146,7 +146,7 @@ const DeviceList: React.FC = () => {
             <Link
               to={{
                 pathname: '/deviceManagement/list/detail',
-                state: { deviceID: record.deviceID, edit: false },
+                state: { deviceID: record.deviceID, userName: record.userName, edit: false },
               }}
             >
               详情
@@ -187,7 +187,7 @@ const DeviceList: React.FC = () => {
             <Link
               to={{
                 pathname: '/deviceManagement/list/detail',
-                state: { deviceID: record.deviceID, edit: true },
+                state: { deviceID: record.deviceID, userName: record.userName, edit: true },
               }}
             >
               修改

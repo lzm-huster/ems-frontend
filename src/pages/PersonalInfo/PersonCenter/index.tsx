@@ -18,7 +18,12 @@ import {
 import { EditOutlined, MailOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
 import './index.less';
 import { PageContainer, ProFormDateTimePicker } from '@ant-design/pro-components';
-import { UpdateDevice, getDeviceDetail, getDeviceList } from '@/services/swagger/device';
+import {
+  UpdateDevice,
+  getDeviceDetail,
+  getDeviceList,
+  getPersonDeviceList,
+} from '@/services/swagger/device';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import { Link, useModel } from 'umi';
@@ -77,7 +82,7 @@ const PersonalInfo: React.FC = () => {
 
   //数据库获取数据初始化操作
   const initial = async () => {
-    const res = await getDeviceList();
+    const res = await getPersonDeviceList();
     if (res.code === 20000) {
       for (let i = 0; i < res.data.length; i++) {
         res.data[i].key = i;

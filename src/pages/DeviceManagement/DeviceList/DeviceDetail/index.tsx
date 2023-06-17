@@ -20,6 +20,7 @@ import { formatDate } from '@/utils/utils';
 
 interface stateType {
   deviceID: number;
+  userName: string;
   edit: boolean;
 }
 
@@ -45,6 +46,18 @@ const DeviceDetail: React.FC = () => {
   const initial = async () => {
     const res = await getDeviceDetail({ DeviceID: state.deviceID });
     if (res.code === 20000) {
+      res.data.userName = state.userName;
+      const images = [];
+      JSON.parse(res.data.deviceImageList).forEach((image: any, ind: number) => {
+        const node: any = {
+          url: image,
+          name: res.data.deviceName + ind,
+          status: 'done',
+          uid: ind,
+        };
+        images.push(node);
+      });
+      setFileList(images);
       setDeviceDetail(res.data);
       setUneditable(!state.edit);
     }
