@@ -16,7 +16,7 @@ import {
 import { Button, Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
+import { useHistory, useLocation } from 'umi';
 
 interface stateType {
   deviceID: number;
@@ -42,6 +42,7 @@ const DeviceDetail: React.FC = () => {
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const { state } = useLocation<stateType>();
+  const history = useHistory();
 
   const initial = async () => {
     const res = await getDeviceDetail({ DeviceID: state.deviceID });
@@ -77,10 +78,27 @@ const DeviceDetail: React.FC = () => {
     initial();
   }, []);
 
-  const submitterEdit = () => {
+  const submitterEdit = (props: any) => {
     return [
-      <Button key="submit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
+      <Button key="edit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
         修改
+      </Button>,
+      <Button
+        danger
+        onClick={() => {
+          props.form?.resetFields();
+        }}
+        disabled={false}
+      >
+        删除
+      </Button>,
+      <Button
+        onClick={() => {
+          history.push('/deviceManagement/list');
+        }}
+        disabled={false}
+      >
+        返回
       </Button>,
     ];
   };
@@ -111,7 +129,7 @@ const DeviceDetail: React.FC = () => {
           const res = await updateDevice(formData);
           if (res.code === 20000 && res.data !== undefined) {
             message.success('修改成功');
-            setUneditable(true);
+            history.push('/deviceManagement/list');
           } else {
             message.error(res.message);
           }

@@ -38,8 +38,8 @@ export async function deleteRepairRecord(
 ) {
   return request('/api/repair/deleteDeviceRepairRecord', {
     method: 'POST',
-    ...(options || {}),
     params: { ...params },
+    ...(options || {}),
   });
 }
 

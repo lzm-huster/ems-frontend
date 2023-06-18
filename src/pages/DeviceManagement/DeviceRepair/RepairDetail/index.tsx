@@ -86,7 +86,7 @@ const RepairDetail: React.FC = () => {
 
           const res = await updateRepair(values);
 
-          if (res.code === 20000 && res.data === 1) {
+          if (res.code === 20000 && res.data === true) {
             message.success('修改成功');
             setUneditable(true);
           } else {

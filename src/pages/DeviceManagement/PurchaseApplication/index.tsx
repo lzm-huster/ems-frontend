@@ -70,19 +70,36 @@ const columns: ColumnsType<PurchaseApply> = [
     title: '操作',
     key: 'action',
     render: (record) => (
-      <Space size="middle">
+      <Space size="small">
         <a key="detail">
           <Link
             to={{
               pathname: '/deviceManagement/purchaseApply/purchaseApplyDetail',
-              state: { scrapID: record.scrapID, deviceName: record.deviceName, edit: false },
+              state: {
+                purchaseApplySheetID: record.purchaseApplySheetID,
+                userName: record.userName,
+                edit: false,
+              },
             }}
           >
             详情
           </Link>
         </a>
         <a>入库</a>
-        <a>修改</a>
+        <a key="edit">
+          <Link
+            to={{
+              pathname: '/deviceManagement/purchaseApply/purchaseApplyDetail',
+              state: {
+                purchaseApplySheetID: record.purchaseApplySheetID,
+                userName: record.userName,
+                edit: true,
+              },
+            }}
+          >
+            编辑
+          </Link>
+        </a>
       </Space>
     ),
     onCell: (data) => {

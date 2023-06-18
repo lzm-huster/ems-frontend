@@ -246,7 +246,21 @@ const Borrow: React.FC = () => {
             </Link>
           </a>
           <a>归还</a>
-          <a>修改</a>
+          <a key="edit">
+            <Link
+              to={{
+                pathname: '/deviceManagement/borrow/borrowApplyDetail',
+                state: {
+                  borrowApplyID: record.borrowApplyID,
+                  userName: record.userName,
+                  borrowApplyDate: record.borrowApplyDate,
+                  edit: true,
+                },
+              }}
+            >
+              编辑
+            </Link>
+          </a>
         </Space>
       ),
       onCell: (data) => {

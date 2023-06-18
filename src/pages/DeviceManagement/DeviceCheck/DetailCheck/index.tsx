@@ -82,11 +82,11 @@ const DetailCheck: React.FC = () => {
 
   const submitterEdit = (props: any) => {
     return [
-      <Button key="submit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
+      <Button key="edit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
         修改
       </Button>,
       <Button
-        type="ghost"
+        danger
         onClick={() => {
           props.form?.resetFields();
         }}

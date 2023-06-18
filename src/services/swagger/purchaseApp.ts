@@ -40,3 +40,14 @@ export async function getPurchaseApplySheetByID(
     params: { ...params },
   });
 }
+
+export async function getPurchaseApplySheets(
+  params: { PurchaseApplySheetID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/PurchaseApply/getPurchaseApplyDetailByPurchaseApplySheetID', {
+    method: 'GET',
+    ...(options || {}),
+    params: { ...params },
+  });
+}
