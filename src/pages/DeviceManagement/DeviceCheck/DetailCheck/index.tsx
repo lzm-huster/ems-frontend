@@ -1,7 +1,8 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
-import { getCheckDetail } from '@/services/swagger/check';
+import { getCheckDetail, updateCheck } from '@/services/swagger/check';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { getUserDetail } from '@/services/swagger/user';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -15,7 +16,7 @@ import {
 import { Button, Card, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
+import { useHistory, useLocation } from 'umi';
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -42,6 +43,7 @@ const DetailCheck: React.FC = () => {
   const [isUneditable, setUneditable] = useState(true);
   const [selectData, setSelectData] = useState([]);
   const { state } = useLocation<stateType>();
+  const history = useHistory();
 
   const initial = async () => {
     const res = await getCheckDetail({ checkID: state.checkID });
@@ -62,25 +64,71 @@ const DetailCheck: React.FC = () => {
     initial();
   }, []);
 
-  const submitterEdit = () => {
+  const submitterEdit = (props: any) => {
     return [
       <Button key="submit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
         修改
       </Button>,
+      <Button
+        type="ghost"
+        onClick={() => {
+          props.form?.resetFields();
+        }}
+      >
+        删除
+      </Button>,
+      <Button
+        onClick={() => {
+          history.push('/deviceManagement/check');
+        }}
+      >
+        返回
+      </Button>,
     ];
   };
 
-  const submitterSubmit = (props) => {
+  const submitterSubmit = (props: any) => {
     return [
       <Button
         key="submit"
         type="primary"
-        onClick={() => {
-          props.form?.submit();
-          setUneditable(true);
+        onClick={async () => {
+          const values = props.form?.getFieldsValue();
+          values.checkTime = formatDate(new Date(values.checkTime));
+          // console.log(values);
+          values.deviceID = props.form?.getFieldValue('deviceID');
+          console.log(values);
+
+          const res = await updateCheck(values);
+          console.log(res);
+
+          // if (res.code === 20000 && res.data === true) {
+          //   message.success('修改成功');
+          //   console.log(props);
+
+          //   setUneditable(true);
+          // } else {
+          //   message.error(res.message);
+          // }
         }}
       >
         提交
+      </Button>,
+      // eslint-disable-next-line react/jsx-key
+      <Button
+        onClick={() => {
+          props.form?.resetFields();
+        }}
+      >
+        重置
+      </Button>,
+      // eslint-disable-next-line react/jsx-key
+      <Button
+        onClick={() => {
+          history.push('/deviceManagement/check');
+        }}
+      >
+        返回
       </Button>,
     ];
   };
@@ -150,7 +198,12 @@ const DetailCheck: React.FC = () => {
               required
             />
 
-            <ProFormSelect label={'设备状态'} name={'deviceState'} required />
+            <ProFormSelect
+              label={'设备状态'}
+              name={'deviceState'}
+              required
+              options={['正常', '已报废', '丢失']}
+            />
             <ProFormDateTimePicker
               width={300}
               name="checkTime"

@@ -50,3 +50,11 @@ export async function insertRepair(params: any, options?: { [key: string]: any }
     ...(options || {}),
   });
 }
+
+export async function updateRepair(params: any, options?: { [key: string]: any }) {
+  return request('/api/repair/updateDeviceRepairRecord', {
+    method: 'POST',
+    data: params,
+    ...(options || {}),
+  });
+}

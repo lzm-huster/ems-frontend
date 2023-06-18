@@ -95,9 +95,9 @@ const DeviceDetail: React.FC = () => {
           console.log(values);
           const pDate = formatDate(new Date(values.purchaseDate));
           values.purchaseDate = pDate;
-          const { deviceImage, ...deviceData } = values;
-          const fileList1 = deviceImage.fileList;
-          console.log(deviceData);
+          const { deviceImageList, ...deviceData } = values;
+          const fileList1 = deviceImageList.fileList;
+          console.log(fileList1);
 
           const formData = new FormData();
           // formData.append('file', fileList);

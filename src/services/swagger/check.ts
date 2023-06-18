@@ -12,6 +12,18 @@ export async function insertCheck(body: FormData, options?: { [key: string]: any
   });
 }
 
+export async function updateCheck(body: FormData, options?: { [key: string]: any }) {
+  return request('/api/check/updateDeviceCheckRecord', {
+    method: 'POST',
+    data: body,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requestType: 'form',
+    ...(options || {}),
+  });
+}
+
 export async function getCheckList(options?: { [key: string]: any }) {
   return request('/api/check/getCheckList', {
     method: 'GET',

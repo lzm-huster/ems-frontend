@@ -42,6 +42,7 @@ const { Search } = Input;
 const Repair: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  //const [selectedRows, setSelectedRows] = useState<RepairRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [initRepair, setInitRepair] = useState([]);
   const [showRepair, setShowRepair] = useState([]);
@@ -153,6 +154,7 @@ const Repair: React.FC = () => {
       if (res.code === 20000 && res.data !== undefined) {
         for (let i = 0; i < res.data.length; i++) {
           res.data[i].repairTime = new Date(res.data[i].repairTime).toLocaleString();
+          res.data[i].key = i;
         }
         setShowRepair(res.data);
       } else {
@@ -279,18 +281,9 @@ const Repair: React.FC = () => {
     );
   };
 
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
-
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+  const onSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: RepairRecord[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+    //setSelectedRows(newSelectedRows);
   };
 
   const rowSelection = {
