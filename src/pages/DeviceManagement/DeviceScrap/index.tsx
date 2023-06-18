@@ -1,11 +1,12 @@
 import { deleteScrapRecord, getScrapList } from '@/services/swagger/scrap';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
+import { Button, Card, Col, Popconfirm, Row, Space, Statistic, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 
 interface ScrapRecord {
+  key: React.Key;
   deviceID: number;
   deviceName: string;
   assetNumber: string;
@@ -19,6 +20,7 @@ const DeviceScrap: React.FC = () => {
   const [tableData, setTableData] = useState<ScrapRecord[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [currentRow, setCurrentRow] = useState<ScrapRecord>();
+  const [loading, setLoading] = useState(false);
   const access = useAccess();
   const initial = async () => {
     const res = await getScrapList();
@@ -51,8 +53,53 @@ const DeviceScrap: React.FC = () => {
     deleteScrapRecord({ scrapID: scrapId });
     const res = await getScrapList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+        res.data[i].scrapTime = new Date(res.data[i].scrapTime).toLocaleString();
+      }
       setTableData(res.data);
     }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedDataIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedData = tableData.find(
+          (dataItem: ScrapRecord) => dataItem.key === selectedKey,
+        );
+        if (selectedData && selectedData.scrapID) {
+          return selectedData.scrapID;
+        }
+        return null;
+      })
+      .filter((scrapID: any): scrapID is number => scrapID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedDataIds.map((scrapID: any) =>
+      deleteScrapRecord({ scrapID: scrapID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getScrapList();
+        if (res.code === 20000) {
+          for (let i = 0; i < res.data.length; i++) {
+            res.data[i].key = i;
+            res.data[i].scrapTime = new Date(res.data[i].scrapTime).toLocaleString();
+          }
+          setTableData(res.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   const columns = [
@@ -102,7 +149,7 @@ const DeviceScrap: React.FC = () => {
       title: '操作',
       valueType: 'option',
       key: 'option',
-      render: (text, record: CheckRecord, _, action) => {
+      render: (text, record: ScrapRecord, _, action) => {
         return (
           <Space size={'middle'}>
             <a key="editable">
@@ -172,7 +219,7 @@ const DeviceScrap: React.FC = () => {
                 </Button>
               </Access>
               <Access accessible={access.scrapDeleteBtn('scrap:delete')}>
-                <Button danger disabled={!hasSelected}>
+                <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                   批量删除记录
                 </Button>
               </Access>
