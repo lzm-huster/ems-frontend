@@ -104,7 +104,6 @@ const PersonalInfo: React.FC = () => {
     });
     // 执行删除操作
     await deleteDeviceByDeviceID({ DeviceID: deviceID });
-    // 更新设备列表
     setShowDevice(newDevices);
   };
 
