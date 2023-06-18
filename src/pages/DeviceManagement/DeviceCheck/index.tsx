@@ -5,7 +5,7 @@ import {
   getCheckList,
 } from '@/services/swagger/check';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
+import { Button, Card, Col, message, Popconfirm, Row, Space, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
@@ -27,6 +27,7 @@ const DeviceCheck: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [checked, setChecked] = useState(0);
   const [checking, setChecking] = useState(0);
+  const [loading, setLoading] = useState(false);
   const access = useAccess();
   const initial = async () => {
     const res = await getCheckList();
@@ -68,9 +69,70 @@ const DeviceCheck: React.FC = () => {
     if (delRes.code === 20000) {
       const res = await getCheckList();
       if (res.code === 20000) {
+        for (let i = 0; i < res.data.length; i++) {
+          res.data[i].key = i;
+          res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
+        }
         setTableData(res.data);
       }
+      const checkedRes = await getCheckedNum();
+      if (checkedRes.code === 20000) {
+        setChecked(checkedRes.data);
+      }
+      const checkingRes = await getCheckingNum();
+      if (checkingRes.code === 20000) {
+        setChecking(checkingRes.data);
+      }
     }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedDataIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedData = tableData.find(
+          (dataItem: CheckRecord) => dataItem.key === selectedKey,
+        );
+        if (selectedData && selectedData.checkID) {
+          return selectedData.checkID;
+        }
+        return null;
+      })
+      .filter((checkID: any): checkID is number => checkID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedDataIds.map((checkID: any) =>
+      deleteCheckRecord({ checkID: checkID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getCheckList();
+        if (res.code === 20000) {
+          for (let i = 0; i < res.data.length; i++) {
+            res.data[i].key = i;
+            res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
+          }
+          setTableData(res.data);
+        }
+        const checkedRes = await getCheckedNum();
+        if (checkedRes.code === 20000) {
+          setChecked(checkedRes.data);
+        }
+        const checkingRes = await getCheckingNum();
+        if (checkingRes.code === 20000) {
+          setChecking(checkingRes.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   const columns = [
@@ -193,7 +255,7 @@ const DeviceCheck: React.FC = () => {
                 </Button>
               </Access>
               <Access accessible={access.inventoryDeleteBtn('inventory:delete')}>
-                <Button danger disabled={!hasSelected}>
+                <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                   批量删除记录
                 </Button>
               </Access>
