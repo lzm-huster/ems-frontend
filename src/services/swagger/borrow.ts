@@ -7,6 +7,14 @@ export async function getBorrowApplyRecordList(options?: { [key: string]: any })
   });
 }
 
+export async function getBorrowApplySheets(params: any, options?: { [key: string]: any }) {
+  return request('/api/BorrowApplySheet/getBorrowApplySheets', {
+    method: 'GET',
+    params: params,
+    ...(options || {}),
+  });
+}
+
 export async function getBorrowDeviceNumber(options?: { [key: string]: any }) {
   return request('/api/BorrowApplyRecord/getBorrowDeviceNumber', {
     method: 'GET',

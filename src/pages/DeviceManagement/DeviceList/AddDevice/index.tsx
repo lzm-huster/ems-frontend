@@ -80,7 +80,6 @@ const AddDevice: React.FC = () => {
 
   const onFinish = (values: any) => {
     const pDate = formatDate(values.purchaseDate);
-    const devices = values.devices;
     values.devices.forEach(async (device, ind: number) => {
       device.deviceType = deviceT[ind];
       device.purchaseDate = pDate;

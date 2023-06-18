@@ -6,6 +6,7 @@ import {
   ProFormMoney,
   ProFormSelect,
   ProFormText,
+  ProFormTextArea,
 } from '@ant-design/pro-components';
 import { Button, Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -56,13 +57,15 @@ const RepairDetail: React.FC = () => {
         onClick={() => {
           props.form?.resetFields();
         }}
+        disabled={false}
       >
         删除
       </Button>,
       <Button
         onClick={() => {
-          history.push('/deviceManagement/maintenance');
+          history.push('/deviceManagement/repair');
         }}
+        disabled={false}
       >
         返回
       </Button>,
@@ -83,10 +86,8 @@ const RepairDetail: React.FC = () => {
 
           const res = await updateRepair(values);
 
-          if (res.code === 20000 && res.data === true) {
+          if (res.code === 20000 && res.data === 1) {
             message.success('修改成功');
-            console.log(props);
-
             setUneditable(true);
           } else {
             message.error(res.message);
@@ -106,7 +107,7 @@ const RepairDetail: React.FC = () => {
       // eslint-disable-next-line react/jsx-key
       <Button
         onClick={() => {
-          history.push('/deviceManagement/maintenance');
+          history.push('/deviceManagement/repair');
         }}
       >
         返回
@@ -182,6 +183,7 @@ const RepairDetail: React.FC = () => {
               label="维修时间"
               required
             />
+            <ProFormTextArea name="remark" label="备注" placeholder="维修相关说明" />
           </ProForm>
         </div>
       </Card>

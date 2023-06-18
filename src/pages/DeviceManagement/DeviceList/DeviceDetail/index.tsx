@@ -48,7 +48,7 @@ const DeviceDetail: React.FC = () => {
     if (res.code === 20000) {
       res.data.userName = state.userName;
       console.log(res);
-      const images = [];
+      const images = fileList;
       if (res.data.deviceImageList) {
         const imageList = JSON.parse(res.data.deviceImageList);
         console.log(imageList);

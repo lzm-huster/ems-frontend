@@ -26,16 +26,10 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { useModel } from 'umi';
+import { useHistory, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
-
-//样式
-const layout = {
-  labelCol: { span: 4 },
-  wrapperCol: { span: 20 },
-};
 
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
@@ -49,7 +43,9 @@ const AddPurchaseApp: React.FC = () => {
   const [tree, setTree] = useState([]);
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
+  const history = useHistory();
   const deviceT: string[] = [];
+
   const initial = async () => {
     formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
     formRef.current?.setFieldsValue({ purchaseApplyDate: formatDate(new Date()) });
@@ -93,7 +89,7 @@ const AddPurchaseApp: React.FC = () => {
             });
             if (flag) {
               message.success('添加借用申请成功');
-              setComponentDisabled(true);
+              history.push('/deviceManagement/purchaseApp');
             } else {
               message.error('添加借用申请失败');
             }
@@ -112,7 +108,6 @@ const AddPurchaseApp: React.FC = () => {
   return (
     <PageContainer>
       <Form
-        {...layout}
         ref={formRef}
         name="control-ref"
         onFinish={onFinish}

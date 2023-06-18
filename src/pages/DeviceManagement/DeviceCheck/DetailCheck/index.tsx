@@ -50,6 +50,22 @@ const DetailCheck: React.FC = () => {
     if (res.code === 20000) {
       //res.data.scrapTime = new Date(res.data.scrapTime).toLocaleString();
       res.data.deviceName = state.deviceName;
+      const images = [];
+      if (res.data.deviceImageList) {
+        const imageList = JSON.parse(res.data.deviceImageList);
+        console.log(imageList);
+
+        imageList.forEach((image: any, ind: number) => {
+          const node: any = {
+            url: image,
+            name: res.data.deviceName + ind,
+            status: 'done',
+            uid: ind,
+          };
+          images.push(node);
+        });
+      }
+      setFileList(images);
       setCheckRecord(res.data);
       setUneditable(!state.edit);
     }

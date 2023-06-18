@@ -26,14 +26,6 @@ import { convertToTreeData } from '@/services/general/dataProcess';
 //日期
 dayjs.extend(customParseFormat);
 
-const dateFormat = 'YYYY/MM/DD';
-
-//样式
-const layout = {
-  labelCol: { span: 4 },
-  wrapperCol: { span: 20 },
-};
-
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
 };
@@ -85,7 +77,6 @@ const AddPurchaseApp: React.FC = () => {
   return (
     <PageContainer>
       <Form
-        {...layout}
         ref={formRef}
         name="control-ref"
         onFinish={onFinish}

@@ -185,9 +185,9 @@ const DeviceList: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 400,
+      width: '25%',
       render: (record) => (
-        <Space size="middle">
+        <Space size="small">
           <a key="detail">
             <Link
               to={{

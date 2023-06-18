@@ -113,68 +113,68 @@ const Borrow: React.FC = () => {
   };
   const hasSelected = selectedRowKeys.length > 0;
 
-  const handleDelete = async (borrowApplyId: number) => {
-    deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
-    const res1 = await getBorrowApplyRecordList();
-    const res2 = await getBorrowDeviceNumber();
+  // const handleDelete = async (borrowApplyId: number) => {
+  //   deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
+  //   const res1 = await getBorrowApplyRecordList();
+  //   const res2 = await getBorrowDeviceNumber();
 
-    if (res1.code === 20000) {
-      for (let i = 0; i < res1.data.length; i++) {
-        res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
-      }
-      setInitBorrow(rowCombination(res1.data));
-      setShowBorrow(rowCombination(res1.data));
-    }
-    if (res2.code === 20000) {
-      setBorrowNum(res2.data);
-    }
-  };
+  //   if (res1.code === 20000) {
+  //     for (let i = 0; i < res1.data.length; i++) {
+  //       res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+  //     }
+  //     setInitBorrow(rowCombination(res1.data));
+  //     setShowBorrow(rowCombination(res1.data));
+  //   }
+  //   if (res2.code === 20000) {
+  //     setBorrowNum(res2.data);
+  //   }
+  // };
 
-  const handleMessDelete = () => {
-    setLoading(true);
+  // const handleMessDelete = () => {
+  //   setLoading(true);
 
-    const selectedBorrowIds = selectedRowKeys
-      .map((selectedKey: any) => {
-        const selectedBorrow = initBorrow.find(
-          (borrowItem: BorrowRecord) => borrowItem.key === selectedKey,
-        );
-        if (selectedBorrow && selectedBorrow.borrowApplyID) {
-          return selectedBorrow.borrowApplyID;
-        }
-        return null;
-      })
-      .filter((borrowApplyID: any): borrowApplyID is number => borrowApplyID !== null);
-    // 依次删除每个设备
-    const deletePromises = selectedBorrowIds.map((borrowApplyID: any) =>
-      deleteBorrowRecord({ BorrowApplyID: borrowApplyID }).then((res) => res.code === 20000),
-    );
+  //   const selectedBorrowIds = selectedRowKeys
+  //     .map((selectedKey: any) => {
+  //       const selectedBorrow = initBorrow.find(
+  //         (borrowItem: BorrowRecord) => borrowItem.key === selectedKey,
+  //       );
+  //       if (selectedBorrow && selectedBorrow.borrowApplyID) {
+  //         return selectedBorrow.borrowApplyID;
+  //       }
+  //       return null;
+  //     })
+  //     .filter((borrowApplyID: any): borrowApplyID is number => borrowApplyID !== null);
+  //   // 依次删除每个设备
+  //   const deletePromises = selectedBorrowIds.map((borrowApplyID: any) =>
+  //     deleteBorrowRecord({ BorrowApplyID: borrowApplyID }).then((res) => res.code === 20000),
+  //   );
 
-    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
-    Promise.all(deletePromises).then(async (results) => {
-      if (results.every((result: any) => result)) {
-        const res1 = await getBorrowApplyRecordList();
-        const res2 = await getBorrowDeviceNumber();
+  //   // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+  //   Promise.all(deletePromises).then(async (results) => {
+  //     if (results.every((result: any) => result)) {
+  //       const res1 = await getBorrowApplyRecordList();
+  //       const res2 = await getBorrowDeviceNumber();
 
-        if (res1.code === 20000) {
-          for (let i = 0; i < res1.data.length; i++) {
-            res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
-          }
-          setInitBorrow(rowCombination(res1.data));
-          setShowBorrow(rowCombination(res1.data));
-        }
-        if (res2.code === 20000) {
-          setBorrowNum(res2.data);
-        }
-        message.success('删除成功');
-      } else {
-        message.error('删除失败');
-      }
-    });
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
+  //       if (res1.code === 20000) {
+  //         for (let i = 0; i < res1.data.length; i++) {
+  //           res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+  //         }
+  //         setInitBorrow(rowCombination(res1.data));
+  //         setShowBorrow(rowCombination(res1.data));
+  //       }
+  //       if (res2.code === 20000) {
+  //         setBorrowNum(res2.data);
+  //       }
+  //       message.success('删除成功');
+  //     } else {
+  //       message.error('删除失败');
+  //     }
+  //   });
+  //   setTimeout(() => {
+  //     setSelectedRowKeys([]);
+  //     setLoading(false);
+  //   }, 1000);
+  // };
 
   const columns: ColumnsType<BorrowRecord> = [
     {
@@ -228,9 +228,23 @@ const Borrow: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      render: () => (
-        <Space size="middle">
-          <a>详情</a>
+      render: (record) => (
+        <Space size="small">
+          <a key="detail">
+            <Link
+              to={{
+                pathname: '/deviceManagement/borrow/borrowApplyDetail',
+                state: {
+                  borrowApplyID: record.borrowApplyID,
+                  userName: record.userName,
+                  borrowApplyDate: record.borrowApplyDate,
+                  edit: false,
+                },
+              }}
+            >
+              详情
+            </Link>
+          </a>
           <a>归还</a>
           <a>修改</a>
         </Space>
@@ -278,11 +292,11 @@ const Borrow: React.FC = () => {
                 批量归还设备
               </Button>
             </Access>
-            <Access accessible={access.borrowDeleteBtn('borrow:delete')}>
+            {/* <Access accessible={access.borrowDeleteBtn('borrow:delete')}>
               <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                 批量删除记录
               </Button>
-            </Access>
+            </Access> */}
 
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}

@@ -25,7 +25,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useLocation, useModel } from 'umi';
+import { useHistory, useLocation, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -52,6 +52,7 @@ const AddBorrow: React.FC = () => {
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
   const { state } = useLocation<stateType>();
+  const history = useHistory();
 
   const initial = async () => {
     const assets = await getAssetNumber();
@@ -106,7 +107,7 @@ const AddBorrow: React.FC = () => {
             });
             if (flag) {
               message.success('添加借用申请成功');
-              setComponentDisabled(true);
+              history.push('/deviceManagement/borrow');
             } else {
               message.error('添加借用申请失败');
             }

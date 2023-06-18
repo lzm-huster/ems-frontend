@@ -167,7 +167,7 @@ export default [
         path: '/deviceManagement/check/add',
         name: '新增核查记录',
         icon: 'smile',
-        component: './DeviceManagement/DeviceCheck/addCheck',
+        component: './DeviceManagement/DeviceCheck/AddCheck',
         parentKeys: ['/deviceManagement/check'],
         hideInMenu: true,
         access: 'inventoryAdd',

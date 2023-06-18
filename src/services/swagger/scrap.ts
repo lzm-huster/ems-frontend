@@ -13,7 +13,7 @@ export async function insertScrap(body: FormData, options?: { [key: string]: any
 }
 
 export async function updateScrap(body: FormData, options?: { [key: string]: any }) {
-  return request('/api/scrap/updateDeviceScrapRecord', {
+  return request('/api/scrap/updateDeviceScarpRecord', {
     method: 'POST',
     data: body,
     headers: {
