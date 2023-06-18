@@ -7,12 +7,13 @@ import {
   ProFormSelect,
   ProFormText,
 } from '@ant-design/pro-components';
-import { Button, Card } from 'antd';
+import { Button, Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
-import { getRepairDetail } from '@/services/swagger/repair';
+import { useHistory, useLocation } from 'umi';
+import { getRepairDetail, updateRepair } from '@/services/swagger/repair';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { convertToSelectData } from '@/services/general/dataProcess';
+import { formatDate } from '@/utils/utils';
 
 interface stateType {
   repairID: number;
@@ -26,6 +27,7 @@ const RepairDetail: React.FC = () => {
   const [isUneditable, setUneditable] = useState(true);
   const [selectData, setSelectData] = useState([]);
   const { state } = useLocation<stateType>();
+  const history = useHistory();
 
   const initial = async () => {
     const res = await getRepairDetail({ repairID: state.repairID });
@@ -44,25 +46,70 @@ const RepairDetail: React.FC = () => {
     initial();
   }, []);
 
-  const submitterEdit = () => {
+  const submitterEdit = (props: any) => {
     return [
       <Button key="submit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
         修改
       </Button>,
+      <Button
+        type="ghost"
+        onClick={() => {
+          props.form?.resetFields();
+        }}
+      >
+        删除
+      </Button>,
+      <Button
+        onClick={() => {
+          history.push('/deviceManagement/maintenance');
+        }}
+      >
+        返回
+      </Button>,
     ];
   };
 
-  const submitterSubmit = (props) => {
+  const submitterSubmit = (props: any) => {
     return [
       <Button
         key="submit"
         type="primary"
-        onClick={() => {
-          props.form?.submit();
-          setUneditable(true);
+        onClick={async () => {
+          const values = props.form?.getFieldsValue();
+          values.repairTime = formatDate(new Date(values.repairTime));
+          // console.log(values);
+          values.deviceID = props.form?.getFieldValue('deviceID');
+          console.log(values);
+
+          const res = await updateRepair(values);
+
+          if (res.code === 20000 && res.data === true) {
+            message.success('修改成功');
+            console.log(props);
+
+            setUneditable(true);
+          } else {
+            message.error(res.message);
+          }
         }}
       >
         提交
+      </Button>,
+      // eslint-disable-next-line react/jsx-key
+      <Button
+        onClick={() => {
+          props.form?.resetFields();
+        }}
+      >
+        重置
+      </Button>,
+      // eslint-disable-next-line react/jsx-key
+      <Button
+        onClick={() => {
+          history.push('/deviceManagement/maintenance');
+        }}
+      >
+        返回
       </Button>,
     ];
   };

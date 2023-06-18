@@ -31,10 +31,10 @@ import { useHistory, useModel } from 'umi';
 dayjs.extend(customParseFormat);
 
 //样式
-const layout = {
-  labelCol: { span: 4 },
-  wrapperCol: { span: 20 },
-};
+// const layout = {
+//   labelCol: { span: 4 },
+//   wrapperCol: { span: 20 },
+// };
 
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
@@ -116,7 +116,6 @@ const AddDevice: React.FC = () => {
   return (
     <PageContainer>
       <Form
-        {...layout}
         ref={formRef}
         name="control-ref"
         onFinish={onFinish}
