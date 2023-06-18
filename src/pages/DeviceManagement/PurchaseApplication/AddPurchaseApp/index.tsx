@@ -117,33 +117,36 @@ const AddPurchaseApp: React.FC = () => {
         <Divider orientation="left" orientationMargin={5}>
           基本信息
         </Divider>
-        <Row gutter={[16, 24]}>
-          <Col span={8}>
-            <Form.Item name="purchaseApplyID" label="申请单编号">
-              <Input placeholder="提交后自动生成" disabled />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="userName" label="申请人" rules={[{ required: true }]}>
-              <Input placeholder="申请人姓名" />
-            </Form.Item>
-          </Col>
-          {/* <Col span={8}>
+        <Card>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="purchaseApplyID" label="申请单编号">
+                <Input placeholder="提交后自动生成" disabled />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="userName" label="申请人" rules={[{ required: true }]}>
+                <Input placeholder="申请人姓名" />
+              </Form.Item>
+            </Col>
+            {/* <Col span={8}>
             <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
               <Select placeholder="请选择导师" />
             </Form.Item>
           </Col> */}
-          <Col span={8}>
-            <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
-              <DateTimePicker />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="purchaseIllustration" label="采购说明" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-          </Col>
-        </Row>
+            <Col span={8}>
+              <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
+                <DateTimePicker />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="purchaseIllustration" label="采购说明" rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+
         <Divider orientation="left" orientationMargin={5}>
           设备详情
         </Divider>

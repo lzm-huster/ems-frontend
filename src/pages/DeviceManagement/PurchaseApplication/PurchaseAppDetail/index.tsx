@@ -12,6 +12,7 @@ import {
   Row,
   Select,
   Space,
+  Steps,
   TreeSelect,
 } from 'antd';
 import type { FormInstance } from 'antd/es/form';
@@ -121,40 +122,65 @@ const AddPurchaseApp: React.FC = () => {
         style={{ width: '100%' }}
         disabled={componentDisabled}
       >
+        <Card>
+          <Steps
+            current={1}
+            items={[
+              {
+                title: '已提交',
+              },
+              {
+                title: '管理员审批',
+              },
+              {
+                title: '院领导审批',
+              },
+              {
+                title: '借用中',
+              },
+              {
+                title: '已归还',
+              },
+            ]}
+          />
+        </Card>
         <Divider orientation="left" orientationMargin={5}>
           基本信息
         </Divider>
-        <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="purchaseApplySheetID" label="申请单编号">
-              <Input placeholder="提交后自动生成" disabled />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="userName" label="申请人" rules={[{ required: true }]}>
-              <Input placeholder="申请人姓名" />
-            </Form.Item>
-          </Col>
-          {/* <Col span={8}>
+        <Card>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="purchaseApplySheetID" label="申请单编号">
+                <Input placeholder="提交后自动生成" disabled />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="userName" label="申请人" rules={[{ required: true }]}>
+                <Input placeholder="申请人姓名" />
+              </Form.Item>
+            </Col>
+            {/* <Col span={8}>
             <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
               <Select placeholder="请选择导师" />
             </Form.Item>
           </Col> */}
-          <Col span={8}>
-            <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
-              <DateTimePicker />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item
-              name="purchaseApplyDescription"
-              label="采购说明"
-              rules={[{ required: true }]}
-            >
-              <Input />
-            </Form.Item>
-          </Col>
-        </Row>
+            <Col span={8}>
+              <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
+                <DateTimePicker />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="purchaseApplyDescription"
+                label="采购说明"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+
         <Divider orientation="left" orientationMargin={5}>
           设备详情
         </Divider>
