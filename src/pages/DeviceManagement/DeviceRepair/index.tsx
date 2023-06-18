@@ -161,6 +161,43 @@ const Repair: React.FC = () => {
     }
   };
 
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedRepairIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedRepair = initRepair.find(
+          (repairItem: RepairRecord) => repairItem.key === selectedKey,
+        );
+        if (selectedRepair && selectedRepair.repairID) {
+          return selectedRepair.repairID;
+        }
+        return null;
+      })
+      .filter((repairID: any): repairID is number => repairID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedRepairIds.map((repairID: any) =>
+      deleteRepairRecord({ repairID: repairID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getRepairList();
+        if (res.code === 20000) {
+          setShowRepair(res.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
+  };
+
   const columns: ColumnsType<RepairRecord> = [
     {
       title: '维修编号',
@@ -299,7 +336,7 @@ const Repair: React.FC = () => {
               </Button>
             </Access>
             <Access accessible={access.repairDeleteBtn('repair:delete')}>
-              <Button danger onClick={start} disabled={!hasSelected}>
+              <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                 批量删除
               </Button>
             </Access>

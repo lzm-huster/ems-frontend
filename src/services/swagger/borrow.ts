@@ -37,6 +37,17 @@ export async function getLatestBorrowApplyRecordID(options?: { [key: string]: an
   });
 }
 
+export async function deleteBorrowRecord(
+  params: { BorrowApplyID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/BorrowApplyRecord/deleteBorrowApplyRecordByBorrowApplyID', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}
+
 //   export async function getBorrowApplyRecordList(options?: { [key: string]: any }) {
 //     return request('/api/BorrowApplyRecord/getBorrowApplyRecordList', {
 //       method: 'GET',

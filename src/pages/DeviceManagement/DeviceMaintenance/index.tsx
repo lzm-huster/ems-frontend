@@ -18,6 +18,7 @@ import {
   Row,
   Space,
   Statistic,
+  message,
 } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
@@ -167,9 +168,66 @@ const Maintenance: React.FC = () => {
   const handleDelete = async (maintenanceId: number) => {
     deleteMaintenanceRecord({ maintenanceID: maintenanceId });
     const res = await getMaintenanceList();
+    const num = await getMaintenanceNum();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].maintenanceTime = new Date(res.data[i].maintenanceTime).toLocaleString();
+        res.data[i].key = i;
+      }
+      setInitMaintenance(res.data);
       setShowMaintenance(res.data);
+      setLineData(plotData(res.data));
     }
+    if (num.code === 20000) {
+      setMaintenanceNum(num.data);
+    }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedMaintenanceIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedMaintenance = initMaintenance.find(
+          (maintenanceItem: MaintenanceRecord) => maintenanceItem.key === selectedKey,
+        );
+        if (selectedMaintenance && selectedMaintenance.maintenanceID) {
+          return selectedMaintenance.maintenanceID;
+        }
+        return null;
+      })
+      .filter((maintenanceID: any): maintenanceID is number => maintenanceID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedMaintenanceIds.map((maintenanceID: any) =>
+      deleteMaintenanceRecord({ maintenanceID: maintenanceID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getMaintenanceList();
+        const num = await getMaintenanceNum();
+        if (res.code === 20000) {
+          for (let i = 0; i < res.data.length; i++) {
+            res.data[i].maintenanceTime = new Date(res.data[i].maintenanceTime).toLocaleString();
+            res.data[i].key = i;
+          }
+          setInitMaintenance(res.data);
+          setShowMaintenance(res.data);
+          setLineData(plotData(res.data));
+        }
+        if (num.code === 20000) {
+          setMaintenanceNum(num.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   const columns: ColumnsType<MaintenanceRecord> = [
@@ -282,7 +340,7 @@ const Maintenance: React.FC = () => {
               </Button>
             </Access>
             <Access accessible={access.maintenanceDeleteBtn('maintenance:delete')}>
-              <Button danger onClick={start} disabled={!hasSelected}>
+              <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                 批量删除
               </Button>
             </Access>

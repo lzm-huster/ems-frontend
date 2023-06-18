@@ -1,10 +1,11 @@
 import { deleteDevice, getDeviceList } from '@/services/swagger/device';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Form, FormInstance, Input, Popconfirm, Space } from 'antd';
+import { Button, Form, FormInstance, Input, Popconfirm, Space, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from './generalTable/GeneralTable';
+import { deleteDeviceByDeviceID } from '@/services/swagger/person';
 
 interface Device {
   key: React.Key;
@@ -77,8 +78,53 @@ const DeviceList: React.FC = () => {
     deleteDevice({ DeviceID: deviceId });
     const res = await getDeviceList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+        res.data[i].purchaseDate = new Date(res.data[i].purchaseDate).toLocaleString();
+      }
+      setInitDevice(res.data);
       setShowDevice(res.data);
     }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedDeviceIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedDevice = showDevice.find((deviceT: Device) => deviceT.key === selectedKey);
+        if (selectedDevice && selectedDevice.deviceID) {
+          return selectedDevice.deviceID;
+        }
+        return null;
+      })
+      .filter((deviceId: any): deviceId is number => deviceId !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedDeviceIds.map((deviceID: any) =>
+      deleteDeviceByDeviceID({ DeviceID: deviceID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getDeviceList();
+        if (res.code === 20000) {
+          for (let i = 0; i < res.data.length; i++) {
+            res.data[i].key = i;
+            res.data[i].purchaseDate = new Date(res.data[i].purchaseDate).toLocaleString();
+          }
+          setInitDevice(res.data);
+          setShowDevice(res.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   const columns: ColumnsType<Device> = [
@@ -234,7 +280,7 @@ const DeviceList: React.FC = () => {
           </Button>
         </Access>
         <Access accessible={access.deviceDeleteBtn('device:delete')}>
-          <Button danger onClick={start} disabled={!hasSelected}>
+          <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
             批量删除
           </Button>
         </Access>

@@ -1,6 +1,10 @@
-import { getBorrowApplyRecordList, getBorrowDeviceNumber } from '@/services/swagger/borrow';
+import {
+  deleteBorrowRecord,
+  getBorrowApplyRecordList,
+  getBorrowDeviceNumber,
+} from '@/services/swagger/borrow';
 import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic } from 'antd';
+import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic, message } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
@@ -16,71 +20,6 @@ interface BorrowRecord {
   userName: string;
   r: number;
 }
-
-const columns: ColumnsType<BorrowRecord> = [
-  {
-    title: '借用申请编号',
-    dataIndex: 'borrowApplyID',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
-  },
-  {
-    title: '设备列表',
-    dataIndex: 'deviceList',
-  },
-  {
-    title: '借用人',
-    dataIndex: 'userName',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
-  },
-  {
-    title: '责任导师',
-    dataIndex: 'approveTutorName',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
-  },
-  {
-    title: '借用时间',
-    dataIndex: 'borrowApplyDate',
-    sorter: (a, b) => {
-      if (a.borrowApplyDate === null || b.borrowApplyDate === null) {
-        return 0;
-      } else {
-        const aDate = Date.parse(a.borrowApplyDate);
-        const bDate = Date.parse(b.borrowApplyDate);
-        return aDate - bDate;
-      }
-    },
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
-  },
-  {
-    title: '借用状态',
-    dataIndex: 'borrowApplyState',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
-  },
-  {
-    title: '操作',
-    key: 'action',
-    render: () => (
-      <Space size="middle">
-        <a>详情</a>
-        <a>归还</a>
-        <a>修改</a>
-      </Space>
-    ),
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
-  },
-];
 
 const { Search } = Input;
 
@@ -123,6 +62,7 @@ const Borrow: React.FC = () => {
   const [initBorrow, setInitBorrow] = useState<BorrowRecord[]>([]);
   const [showBorrow, setShowBorrow] = useState<BorrowRecord[]>([]);
   const [borrowNum, setBorrowNum] = useState(0);
+  const [loading, setLoading] = useState(false);
   const access = useAccess();
   const initial = async () => {
     const res1 = await getBorrowApplyRecordList();
@@ -173,6 +113,134 @@ const Borrow: React.FC = () => {
   };
   const hasSelected = selectedRowKeys.length > 0;
 
+  const handleDelete = async (borrowApplyId: number) => {
+    deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
+    const res1 = await getBorrowApplyRecordList();
+    const res2 = await getBorrowDeviceNumber();
+
+    if (res1.code === 20000) {
+      for (let i = 0; i < res1.data.length; i++) {
+        res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+      }
+      setInitBorrow(rowCombination(res1.data));
+      setShowBorrow(rowCombination(res1.data));
+    }
+    if (res2.code === 20000) {
+      setBorrowNum(res2.data);
+    }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedBorrowIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedBorrow = initBorrow.find(
+          (borrowItem: BorrowRecord) => borrowItem.key === selectedKey,
+        );
+        if (selectedBorrow && selectedBorrow.borrowApplyID) {
+          return selectedBorrow.borrowApplyID;
+        }
+        return null;
+      })
+      .filter((borrowApplyID: any): borrowApplyID is number => borrowApplyID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedBorrowIds.map((borrowApplyID: any) =>
+      deleteBorrowRecord({ BorrowApplyID: borrowApplyID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res1 = await getBorrowApplyRecordList();
+        const res2 = await getBorrowDeviceNumber();
+
+        if (res1.code === 20000) {
+          for (let i = 0; i < res1.data.length; i++) {
+            res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+          }
+          setInitBorrow(rowCombination(res1.data));
+          setShowBorrow(rowCombination(res1.data));
+        }
+        if (res2.code === 20000) {
+          setBorrowNum(res2.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
+  };
+
+  const columns: ColumnsType<BorrowRecord> = [
+    {
+      title: '借用申请编号',
+      dataIndex: 'borrowApplyID',
+      onCell: (data) => {
+        return { rowSpan: data.r };
+      },
+    },
+    {
+      title: '设备列表',
+      dataIndex: 'deviceList',
+    },
+    {
+      title: '借用人',
+      dataIndex: 'userName',
+      onCell: (data) => {
+        return { rowSpan: data.r };
+      },
+    },
+    {
+      title: '责任导师',
+      dataIndex: 'approveTutorName',
+      onCell: (data) => {
+        return { rowSpan: data.r };
+      },
+    },
+    {
+      title: '借用时间',
+      dataIndex: 'borrowApplyDate',
+      sorter: (a, b) => {
+        if (a.borrowApplyDate === null || b.borrowApplyDate === null) {
+          return 0;
+        } else {
+          const aDate = Date.parse(a.borrowApplyDate);
+          const bDate = Date.parse(b.borrowApplyDate);
+          return aDate - bDate;
+        }
+      },
+      onCell: (data) => {
+        return { rowSpan: data.r };
+      },
+    },
+    {
+      title: '借用状态',
+      dataIndex: 'borrowApplyState',
+      onCell: (data) => {
+        return { rowSpan: data.r };
+      },
+    },
+    {
+      title: '操作',
+      key: 'action',
+      render: () => (
+        <Space size="middle">
+          <a>详情</a>
+          <a>归还</a>
+          <a>修改</a>
+        </Space>
+      ),
+      onCell: (data) => {
+        return { rowSpan: data.r };
+      },
+    },
+  ];
+
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
@@ -211,7 +279,7 @@ const Borrow: React.FC = () => {
               </Button>
             </Access>
             <Access accessible={access.borrowDeleteBtn('borrow:delete')}>
-              <Button danger onClick={start} disabled={!hasSelected}>
+              <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                 批量删除记录
               </Button>
             </Access>
