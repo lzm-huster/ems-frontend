@@ -156,11 +156,16 @@ const AddBorrow: React.FC = () => {
               />
             </Form.Item>
           </Col>
-          {/* <Col span={8}>
-            <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
-              <Select placeholder="请选择导师" />
+          <Col span={8}>
+            <Form.Item
+              name="approveTutorName"
+              label="责任导师"
+              rules={[{ required: true }]}
+              initialValue={1}
+            >
+              <Select placeholder="学生请选择导师" />
             </Form.Item>
-          </Col> */}
+          </Col>
         </Row>
         <Divider orientation="left" orientationMargin={5}>
           设备详情

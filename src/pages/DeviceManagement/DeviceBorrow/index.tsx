@@ -15,45 +15,32 @@ interface BorrowRecord {
   approveTutorName: string;
   borrowApplyDate: string;
   borrowApplyID: number;
-  borrowApplyState: string;
+  borrowApplyState?: string;
   deviceList: string;
   userName: string;
-  r: number;
 }
 
 const { Search } = Input;
 
 const rowCombination = (initData: BorrowRecord[]) => {
-  let sameN = 0;
+  const temptData: BorrowRecord[] = [];
   for (let i = 0, j = 0; i < initData.length; i++) {
-    if (i > 0 && i < initData.length - 1) {
-      if (initData[i].borrowApplyID - initData[i - 1].borrowApplyID == 0) {
+    if (i > 0) {
+      if (initData[i].borrowApplyID == initData[i - 1].borrowApplyID) {
         initData[i].key = j;
-        initData[i].r = 0;
-        sameN++;
+        temptData[j].deviceList = temptData[j].deviceList + ',' + initData[i].deviceList;
       } else {
         j++;
         initData[i].key = j;
-        initData[i - sameN - 1].r = sameN + 1;
-        sameN = 0;
+        temptData.push(JSON.parse(JSON.stringify(initData[i])));
       }
-    } else if (i == 0) {
-      initData[i].key = 0;
     } else {
-      if (initData[i].borrowApplyID - initData[i - 1].borrowApplyID == 0) {
-        initData[i].key = j;
-        initData[i].r = 0;
-        sameN++;
-        initData[i - sameN].r = sameN + 1;
-      } else {
-        j++;
-        initData[i].key = j;
-        initData[i].r = 1;
-        initData[i - sameN - 1].r = sameN + 1;
-      }
+      initData[i].key = 0;
+      temptData.push(JSON.parse(JSON.stringify(initData[i])));
     }
   }
-  return initData;
+  console.log(temptData);
+  return temptData;
 };
 
 const Borrow: React.FC = () => {
@@ -62,7 +49,6 @@ const Borrow: React.FC = () => {
   const [initBorrow, setInitBorrow] = useState<BorrowRecord[]>([]);
   const [showBorrow, setShowBorrow] = useState<BorrowRecord[]>([]);
   const [borrowNum, setBorrowNum] = useState(0);
-  const [loading, setLoading] = useState(false);
   const access = useAccess();
   const initial = async () => {
     const res1 = await getBorrowApplyRecordList();
@@ -72,8 +58,8 @@ const Borrow: React.FC = () => {
       for (let i = 0; i < res1.data.length; i++) {
         res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
       }
-      setInitBorrow(rowCombination(res1.data));
-      setShowBorrow(rowCombination(res1.data));
+      setInitBorrow(JSON.parse(JSON.stringify(rowCombination(res1.data))));
+      setShowBorrow(JSON.parse(JSON.stringify(rowCombination(res1.data))));
     }
     if (res2.code === 20000) {
       setBorrowNum(res2.data);
@@ -180,27 +166,39 @@ const Borrow: React.FC = () => {
     {
       title: '借用申请编号',
       dataIndex: 'borrowApplyID',
-      onCell: (data) => {
-        return { rowSpan: data.r };
-      },
     },
     {
       title: '设备列表',
       dataIndex: 'deviceList',
+      render: (record) => {
+        const deviceLi: string[] = record.split(',');
+        if (deviceLi.length < 2) return record;
+        else {
+          let dl: any = null;
+          deviceLi.forEach((d: string, ind: number) => {
+            if (ind == 0) {
+              dl = d;
+            } else {
+              dl = (
+                <span>
+                  {dl}
+                  <br></br>
+                  {d}
+                </span>
+              );
+            }
+          });
+          return <div>{dl}</div>;
+        }
+      },
     },
     {
       title: '借用人',
       dataIndex: 'userName',
-      onCell: (data) => {
-        return { rowSpan: data.r };
-      },
     },
     {
       title: '责任导师',
       dataIndex: 'approveTutorName',
-      onCell: (data) => {
-        return { rowSpan: data.r };
-      },
     },
     {
       title: '借用时间',
@@ -214,58 +212,52 @@ const Borrow: React.FC = () => {
           return aDate - bDate;
         }
       },
-      onCell: (data) => {
-        return { rowSpan: data.r };
-      },
     },
     {
       title: '借用状态',
       dataIndex: 'borrowApplyState',
-      onCell: (data) => {
-        return { rowSpan: data.r };
-      },
     },
     {
       title: '操作',
       key: 'action',
-      render: (record) => (
-        <Space size="small">
-          <a key="detail">
-            <Link
-              to={{
-                pathname: '/deviceManagement/borrow/borrowApplyDetail',
-                state: {
-                  borrowApplyID: record.borrowApplyID,
-                  userName: record.userName,
-                  borrowApplyDate: record.borrowApplyDate,
-                  edit: false,
-                },
-              }}
-            >
-              详情
-            </Link>
-          </a>
-          <a>归还</a>
-          <a key="edit">
-            <Link
-              to={{
-                pathname: '/deviceManagement/borrow/borrowApplyDetail',
-                state: {
-                  borrowApplyID: record.borrowApplyID,
-                  userName: record.userName,
-                  borrowApplyDate: record.borrowApplyDate,
-                  edit: true,
-                },
-              }}
-            >
-              编辑
-            </Link>
-          </a>
-        </Space>
-      ),
-      onCell: (data) => {
-        return { rowSpan: data.r };
-      },
+      render: (record) =>
+        record.borrowApplyID != null ? (
+          <Space size="small">
+            <a key="detail">
+              <Link
+                to={{
+                  pathname: '/deviceManagement/borrow/borrowApplyDetail',
+                  state: {
+                    borrowApplyID: record.borrowApplyID,
+                    userName: record.userName,
+                    borrowApplyDate: record.borrowApplyDate,
+                    borrowApplyState: record.borrowApplyState,
+                    edit: false,
+                  },
+                }}
+              >
+                详情
+              </Link>
+            </a>
+            <a>归还</a>
+            <a key="edit">
+              <Link
+                to={{
+                  pathname: '/deviceManagement/borrow/borrowApplyDetail',
+                  state: {
+                    borrowApplyID: record.borrowApplyID,
+                    userName: record.userName,
+                    borrowApplyDate: record.borrowApplyDate,
+                    borrowApplyState: record.borrowApplyState,
+                    edit: true,
+                  },
+                }}
+              >
+                编辑
+              </Link>
+            </a>
+          </Space>
+        ) : null,
     },
   ];
 
@@ -323,7 +315,7 @@ const Borrow: React.FC = () => {
                 <Button
                   type="text"
                   onClick={() => {
-                    setShowBorrow(initBorrow);
+                    setShowBorrow(JSON.parse(JSON.stringify(initBorrow)));
                     formRef.current?.setFieldsValue({ search: '' });
                   }}
                 >

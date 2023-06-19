@@ -19,6 +19,7 @@ import {
   InputNumber,
   message,
   Row,
+  Select,
   Space,
   TreeSelect,
 } from 'antd';
@@ -38,8 +39,6 @@ const tailLayout = {
 //main
 const AddPurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
-
-  const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
@@ -107,13 +106,7 @@ const AddPurchaseApp: React.FC = () => {
 
   return (
     <PageContainer>
-      <Form
-        ref={formRef}
-        name="control-ref"
-        onFinish={onFinish}
-        style={{ width: '100%' }}
-        disabled={componentDisabled}
-      >
+      <Form ref={formRef} name="control-ref" onFinish={onFinish} style={{ width: '100%' }}>
         <Divider orientation="left" orientationMargin={5}>
           基本信息
         </Divider>
@@ -129,11 +122,16 @@ const AddPurchaseApp: React.FC = () => {
                 <Input placeholder="申请人姓名" />
               </Form.Item>
             </Col>
-            {/* <Col span={8}>
-            <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
-              <Select placeholder="请选择导师" />
-            </Form.Item>
-          </Col> */}
+            <Col span={8}>
+              <Form.Item
+                name="approveTutorName"
+                label="责任导师"
+                rules={[{ required: true }]}
+                initialValue={1}
+              >
+                <Select placeholder="学生请选择导师" />
+              </Form.Item>
+            </Col>
             <Col span={8}>
               <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
                 <DateTimePicker />

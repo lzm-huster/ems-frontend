@@ -35,6 +35,7 @@ interface stateType {
   borrowApplyID: number;
   userName: string;
   edit: boolean;
+  borrowApplyState: string;
   borrowApplyDate: string;
 }
 
@@ -53,6 +54,7 @@ const BorrowDetail: React.FC = () => {
   const [eDate, setEDate] = useState('');
   const [lDate, setLDate] = useState('');
   const [diff, setDiff] = useState(0);
+  const [stateFlag, setState] = useState(0);
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
   const { state } = useLocation<stateType>();
@@ -60,7 +62,23 @@ const BorrowDetail: React.FC = () => {
 
   const initial = async () => {
     const assets = await getAssetNumber();
-
+    switch (state.borrowApplyState) {
+      case '待导师审批':
+        setState(1);
+        break;
+      case '待管理员审批':
+        setState(2);
+        break;
+      case '申请通过':
+      case '借用中':
+        setState(3);
+        break;
+      case '已归还':
+        setState(4);
+        break;
+      default:
+        setState(0);
+    }
     formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
     setUId(initialState?.currentUser?.userID);
     // formRef.current?.setFieldsValue({ purchaseDate: dayjs(now, dateFormat) });
@@ -149,16 +167,16 @@ const BorrowDetail: React.FC = () => {
       >
         <Card>
           <Steps
-            current={1}
+            current={stateFlag}
             items={[
               {
                 title: '已提交',
               },
               {
-                title: '管理员审批',
+                title: '导师审批',
               },
               {
-                title: '院领导审批',
+                title: '管理员审批',
               },
               {
                 title: '借用中',

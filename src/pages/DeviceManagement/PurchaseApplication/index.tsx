@@ -14,34 +14,65 @@ interface PurchaseApply {
   purchaseApplySheetID: number;
   purchaseApplyState: string;
   userName: string;
-  r: number;
 }
+
+const rowCombination = (initData: PurchaseApply[]) => {
+  const temptData: PurchaseApply[] = [];
+  for (let i = 0, j = 0; i < initData.length; i++) {
+    if (i > 0) {
+      if (initData[i].purchaseApplySheetID == initData[i - 1].purchaseApplySheetID) {
+        initData[i].key = j;
+        temptData[j].deviceList = temptData[j].deviceList + ',' + initData[i].deviceList;
+      } else {
+        j++;
+        initData[i].key = j;
+        temptData.push(JSON.parse(JSON.stringify(initData[i])));
+      }
+    } else {
+      initData[i].key = 0;
+      temptData.push(JSON.parse(JSON.stringify(initData[i])));
+    }
+  }
+  return temptData;
+};
 
 const columns: ColumnsType<PurchaseApply> = [
   {
     title: '采购申请编号',
     dataIndex: 'purchaseApplySheetID',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
   },
   {
     title: '设备列表',
     dataIndex: 'deviceList',
+    render: (record) => {
+      const deviceLi: string[] = record.split(',');
+      if (deviceLi.length < 2) return record;
+      else {
+        let dl: any = null;
+        deviceLi.forEach((d: string, ind: number) => {
+          if (ind == 0) {
+            dl = d;
+          } else {
+            dl = (
+              <span>
+                {dl}
+                <br></br>
+                {d}
+              </span>
+            );
+          }
+        });
+        return <div>{dl}</div>;
+      }
+    },
   },
   {
     title: '申请人',
     dataIndex: 'userName',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
   },
   {
     title: '责任导师',
     dataIndex: 'approveTutorName',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
   },
   {
     title: '申请时间',
@@ -55,16 +86,10 @@ const columns: ColumnsType<PurchaseApply> = [
         return aDate - bDate;
       }
     },
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
   },
   {
     title: '申请状态',
     dataIndex: 'purchaseApplyState',
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
   },
   {
     title: '操作',
@@ -102,9 +127,6 @@ const columns: ColumnsType<PurchaseApply> = [
         </a>
       </Space>
     ),
-    onCell: (data) => {
-      return { rowSpan: data.r };
-    },
   },
 ];
 
@@ -123,37 +145,8 @@ const PurchaseApp: React.FC = () => {
       for (let i = 0; i < res.data.length; i++) {
         res.data[i].purchaseApplyDate = new Date(res.data[i].purchaseApplyDate).toLocaleString();
       }
-      const initData = res.data;
-      let sameN = 0;
-      for (let i = 0, j = 0; i < initData.length; i++) {
-        if (i > 0 && i < initData.length - 1) {
-          if (initData[i].purchaseApplySheetID - initData[i - 1].purchaseApplySheetID == 0) {
-            initData[i].key = j;
-            initData[i].r = 0;
-            sameN++;
-          } else {
-            j++;
-            initData[i].key = j;
-            initData[i - sameN - 1].r = sameN + 1;
-            sameN = 0;
-          }
-        } else if (i == 0) {
-          initData[i].key = 0;
-        } else {
-          if (initData[i].purchaseApplySheetID - initData[i - 1].purchaseApplySheetID == 0) {
-            initData[i].key = j;
-            initData[i].r = 0;
-            sameN++;
-            initData[i - sameN].r = sameN + 1;
-          } else {
-            j++;
-            initData[i].key = j;
-            initData[i].r = 1;
-          }
-        }
-      }
-      setInitPurchaseApply(initData);
-      setShowPurchaseApply(initData);
+      setInitPurchaseApply(JSON.parse(JSON.stringify(rowCombination(res.data))));
+      setShowPurchaseApply(JSON.parse(JSON.stringify(rowCombination(res.data))));
     }
   };
 
@@ -225,7 +218,7 @@ const PurchaseApp: React.FC = () => {
                 <Button
                   type="text"
                   onClick={() => {
-                    setShowPurchaseApply(initPurchaseApply);
+                    setShowPurchaseApply(JSON.parse(JSON.stringify(initPurchaseApply)));
                     formRef.current?.setFieldsValue({ search: '' });
                   }}
                 >
