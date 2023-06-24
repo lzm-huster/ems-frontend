@@ -276,43 +276,45 @@ const DeviceScrap: React.FC = () => {
                   批量删除记录
                 </Button>
               </Access>
-              <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
-                <Form.Item name="deviceNameS">
-                  <Input placeholder="请输入设备名称" style={{ width: 150 }} />
-                </Form.Item>
-                <Form.Item name="timeRangeS">
-                  <ProFormDateRangePicker style={{ width: 200 }} />
-                </Form.Item>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    onClick={() => {
-                      const time = formRef.current?.getFieldValue('timeRangeS');
-                      if (time !== undefined)
-                        onSearch(
-                          formRef.current?.getFieldValue('deviceNameS'),
-                          Date.parse(time[0]),
-                          Date.parse(time[1]),
-                        );
-                      else onSearch(formRef.current?.getFieldValue('deviceNameS'));
-                    }}
-                  >
-                    <SearchOutlined />
-                    搜索
-                  </Button>
-                </Form.Item>
-                <Form.Item>
-                  <Button
-                    type="text"
-                    onClick={() => {
-                      setTableData(initTableData);
-                      formRef.current?.setFieldsValue({ deviceNameS: '', timeRanges: [] });
-                    }}
-                  >
-                    重置
-                  </Button>
-                </Form.Item>
-              </Form>
+              <div style={{ position: 'absolute', right: 0, top: 0 }}>
+                <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
+                  <Form.Item name="deviceNameS">
+                    <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+                  </Form.Item>
+                  <Form.Item name="timeRangeS">
+                    <ProFormDateRangePicker style={{ width: 200 }} />
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        const time = formRef.current?.getFieldValue('timeRangeS');
+                        if (time !== undefined)
+                          onSearch(
+                            formRef.current?.getFieldValue('deviceNameS'),
+                            Date.parse(time[0]),
+                            Date.parse(time[1]),
+                          );
+                        else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                      }}
+                    >
+                      <SearchOutlined />
+                      搜索
+                    </Button>
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="text"
+                      onClick={() => {
+                        setTableData(initTableData);
+                        formRef.current?.setFieldsValue({ deviceNameS: '', timeRanges: [] });
+                      }}
+                    >
+                      重置
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
             </GeneralTable>
           </Col>
         </Row>

@@ -4,7 +4,19 @@ import {
   getBorrowDeviceNumber,
 } from '@/services/swagger/borrow';
 import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
-import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic, message } from 'antd';
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  FormInstance,
+  Input,
+  Popconfirm,
+  Row,
+  Space,
+  Statistic,
+  message,
+} from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
@@ -45,6 +57,8 @@ const rowCombination = (initData: BorrowRecord[]) => {
 const Borrow: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [returnable, setReturnable] = useState(true);
+  const [cancel, setCancel] = useState(true);
   const [initBorrow, setInitBorrow] = useState<BorrowRecord[]>([]);
   const [showBorrow, setShowBorrow] = useState<BorrowRecord[]>([]);
   const [borrowNum, setBorrowNum] = useState(0);
@@ -104,9 +118,18 @@ const Borrow: React.FC = () => {
     }, 1000);
   };
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+  const onSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: BorrowRecord[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+    setCancel(true);
+    setReturnable(true);
+    newSelectedRows.forEach((item) => {
+      if (item.borrowApplyState !== '借用中') {
+        setReturnable(false);
+      }
+      if (item.borrowApplyState !== '待导师审批' && item.borrowApplyState !== '待管理员审批') {
+        setCancel(false);
+      }
+    });
   };
 
   const rowSelection = {
@@ -133,8 +156,6 @@ const Borrow: React.FC = () => {
   };
 
   const handleMessDelete = () => {
-    setLoading(true);
-
     const selectedBorrowIds = selectedRowKeys
       .map((selectedKey: any) => {
         const selectedBorrow = initBorrow.find(
@@ -232,48 +253,91 @@ const Borrow: React.FC = () => {
     {
       title: '借用状态',
       dataIndex: 'borrowApplyState',
+      filters: [
+        {
+          text: '待导师审批',
+          value: '待导师审批',
+        },
+        {
+          text: '待管理员审批',
+          value: '待管理员审批',
+        },
+        {
+          text: '申请通过',
+          value: '申请通过',
+        },
+        {
+          text: '借用中',
+          value: '借用中',
+        },
+        {
+          text: '已归还',
+          value: '已归还',
+        },
+        {
+          text: '驳回',
+          value: '驳回',
+        },
+      ],
+      onFilter: (value: string, record) => {
+        return record.borrowApplyState == value;
+      },
     },
     {
       title: '操作',
       key: 'action',
-      render: (record) =>
-        record.borrowApplyID != null ? (
-          <Space size="small">
-            <a key="detail">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/borrow/borrowApplyDetail',
-                  state: {
-                    borrowApplyID: record.borrowApplyID,
-                    userName: record.userName,
-                    borrowApplyDate: record.borrowApplyDate,
-                    borrowApplyState: record.borrowApplyState,
-                    edit: false,
-                  },
-                }}
-              >
-                详情
-              </Link>
-            </a>
+      render: (record) => (
+        <Space size="small">
+          <a key="detail">
+            <Link
+              to={{
+                pathname: '/deviceManagement/borrow/borrowApplyDetail',
+                state: {
+                  borrowApplyID: record.borrowApplyID,
+                  userName: record.userName,
+                  borrowApplyDate: record.borrowApplyDate,
+                  borrowApplyState: record.borrowApplyState,
+                  edit: false,
+                },
+              }}
+            >
+              详情
+            </Link>
+          </a>
+          <a key="edit">
+            <Link
+              to={{
+                pathname: '/deviceManagement/borrow/borrowApplyDetail',
+                state: {
+                  borrowApplyID: record.borrowApplyID,
+                  userName: record.userName,
+                  borrowApplyDate: record.borrowApplyDate,
+                  borrowApplyState: record.borrowApplyState,
+                  edit: true,
+                },
+              }}
+            >
+              编辑
+            </Link>
+          </a>
+          {record.borrowApplyState === '借用中' ? (
             <a>归还</a>
-            <a key="edit">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/borrow/borrowApplyDetail',
-                  state: {
-                    borrowApplyID: record.borrowApplyID,
-                    userName: record.userName,
-                    borrowApplyDate: record.borrowApplyDate,
-                    borrowApplyState: record.borrowApplyState,
-                    edit: true,
-                  },
-                }}
-              >
-                编辑
-              </Link>
-            </a>
-          </Space>
-        ) : null,
+          ) : (
+            <a style={{ color: 'grey' }}>归还</a>
+          )}
+          {record.borrowApplyState === '待导师审批' ||
+          record.borrowApplyState === '待管理员审批' ? (
+            <Popconfirm
+              title="确认撤销申请？"
+              onConfirm={() => handleDelete(record.borrowApplySheetID)}
+            >
+              <a>撤销</a>
+            </Popconfirm>
+          ) : (
+            <a style={{ color: 'grey' }}>撤销</a>
+          )}
+        </Space>
+      ),
     },
   ];
 
@@ -310,12 +374,16 @@ const Borrow: React.FC = () => {
               </Button>
             </Access>
             <Access accessible={access.borrowUpdateBtn('borrow:update')}>
-              <Button onClick={start} disabled={!hasSelected}>
+              <Button onClick={start} disabled={hasSelected === false ? !hasSelected : !returnable}>
                 批量归还设备
               </Button>
             </Access>
             <Access accessible={access.borrowDeleteBtn('borrow:delete')}>
-              <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
+              <Button
+                danger
+                onClick={handleMessDelete}
+                disabled={hasSelected === false ? !hasSelected : !cancel}
+              >
                 批量撤销申请
               </Button>
             </Access>
@@ -323,43 +391,45 @@ const Borrow: React.FC = () => {
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>
-            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
-              <Form.Item name="deviceNameS">
-                <Input placeholder="请输入设备名称" style={{ width: 150 }} />
-              </Form.Item>
-              <Form.Item name="timeRangeS">
-                <ProFormDateRangePicker style={{ width: 200 }} />
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    const time = formRef.current?.getFieldValue('timeRangeS');
-                    if (time !== undefined)
-                      onSearch(
-                        formRef.current?.getFieldValue('deviceNameS'),
-                        Date.parse(time[0]),
-                        Date.parse(time[1]),
-                      );
-                    else onSearch(formRef.current?.getFieldValue('deviceNameS'));
-                  }}
-                >
-                  <SearchOutlined />
-                  搜索
-                </Button>
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="text"
-                  onClick={() => {
-                    setShowBorrow(initBorrow);
-                    formRef.current?.setFieldsValue({ deviceNameS: '', timeRangeS: [] });
-                  }}
-                >
-                  重置
-                </Button>
-              </Form.Item>
-            </Form>
+            <div style={{ position: 'absolute', right: 0, top: 0 }}>
+              <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
+                <Form.Item name="deviceNameS">
+                  <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+                </Form.Item>
+                <Form.Item name="timeRangeS">
+                  <ProFormDateRangePicker style={{ width: 200 }} />
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      const time = formRef.current?.getFieldValue('timeRangeS');
+                      if (time !== undefined)
+                        onSearch(
+                          formRef.current?.getFieldValue('deviceNameS'),
+                          Date.parse(time[0]),
+                          Date.parse(time[1]),
+                        );
+                      else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                    }}
+                  >
+                    <SearchOutlined />
+                    搜索
+                  </Button>
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="text"
+                    onClick={() => {
+                      setShowBorrow(initBorrow);
+                      formRef.current?.setFieldsValue({ deviceNameS: '', timeRangeS: [] });
+                    }}
+                  >
+                    重置
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
           </GeneralTable>
         </Col>
       </Row>
