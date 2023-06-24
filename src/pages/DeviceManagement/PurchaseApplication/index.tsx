@@ -1,10 +1,11 @@
 import { getPurchaseApplySheetList } from '@/services/swagger/purchaseApp';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import { Button, Col, Form, FormInstance, Input, Row, Space } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface PurchaseApply {
   key: React.Key;
@@ -130,8 +131,6 @@ const columns: ColumnsType<PurchaseApply> = [
   },
 ];
 
-const { Search } = Input;
-
 const PurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -154,14 +153,33 @@ const PurchaseApp: React.FC = () => {
     initial();
   }, []);
 
-  const onSearch = (value: string) => {
-    setShowPurchaseApply(
-      value === ''
-        ? initPurchaseApply
-        : showPurchaseApply.filter((item: PurchaseApply) => {
-            return item['deviceList'].indexOf(value) != -1;
-          }),
-    );
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setShowPurchaseApply(
+        name === ''
+          ? initPurchaseApply
+          : initPurchaseApply.filter((item: PurchaseApply) => {
+              const pTime = Date.parse(item['purchaseApplyDate']);
+              return item['deviceList'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setShowPurchaseApply(
+        name === ''
+          ? initPurchaseApply
+          : initPurchaseApply.filter((item: PurchaseApply) => {
+              return item['deviceList'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setShowPurchaseApply(
+        name === ''
+          ? initPurchaseApply
+          : initPurchaseApply.filter((item: PurchaseApply) => {
+              const pTime = Date.parse(item['purchaseApplyDate']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
   };
 
   const start = () => {
@@ -210,16 +228,37 @@ const PurchaseApp: React.FC = () => {
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>
-            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-              <Form.Item name="search">
-                <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
+            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
+              <Form.Item name="deviceNameS">
+                <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+              </Form.Item>
+              <Form.Item name="timeRangeS">
+                <ProFormDateRangePicker style={{ width: 200 }} />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    const time = formRef.current?.getFieldValue('timeRangeS');
+                    if (time !== undefined)
+                      onSearch(
+                        formRef.current?.getFieldValue('deviceNameS'),
+                        Date.parse(time[0]),
+                        Date.parse(time[1]),
+                      );
+                    else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                  }}
+                >
+                  <SearchOutlined />
+                  搜索
+                </Button>
               </Form.Item>
               <Form.Item>
                 <Button
                   type="text"
                   onClick={() => {
-                    setShowPurchaseApply(JSON.parse(JSON.stringify(initPurchaseApply)));
-                    formRef.current?.setFieldsValue({ search: '' });
+                    setShowPurchaseApply(initPurchaseApply);
+                    formRef.current?.setFieldsValue({ deviceNameS: '', timeRangeS: [] });
                   }}
                 >
                   重置

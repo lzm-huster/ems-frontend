@@ -3,12 +3,13 @@ import {
   getBorrowApplyRecordList,
   getBorrowDeviceNumber,
 } from '@/services/swagger/borrow';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import { Button, Card, Col, Form, FormInstance, Input, Row, Space, Statistic, message } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface BorrowRecord {
   key: React.Key;
@@ -19,8 +20,6 @@ interface BorrowRecord {
   deviceList: string;
   userName: string;
 }
-
-const { Search } = Input;
 
 const rowCombination = (initData: BorrowRecord[]) => {
   const temptData: BorrowRecord[] = [];
@@ -69,16 +68,33 @@ const Borrow: React.FC = () => {
     initial();
   }, []);
 
-  const onSearch = (value: string) => {
-    setShowBorrow([]);
-    setShowBorrow(
-      value === ''
-        ? initBorrow
-        : initBorrow.filter((item) => {
-            return item['deviceList'].indexOf(value) != -1;
-          }),
-    );
-    console.log(showBorrow);
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setShowBorrow(
+        name === ''
+          ? initBorrow
+          : initBorrow.filter((item: BorrowRecord) => {
+              const pTime = Date.parse(item['borrowApplyDate']);
+              return item['deviceList'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setShowBorrow(
+        name === ''
+          ? initBorrow
+          : initBorrow.filter((item: BorrowRecord) => {
+              return item['deviceList'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setShowBorrow(
+        name === ''
+          ? initBorrow
+          : initBorrow.filter((item: BorrowRecord) => {
+              const pTime = Date.parse(item['borrowApplyDate']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
   };
 
   const start = () => {
@@ -99,68 +115,68 @@ const Borrow: React.FC = () => {
   };
   const hasSelected = selectedRowKeys.length > 0;
 
-  // const handleDelete = async (borrowApplyId: number) => {
-  //   deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
-  //   const res1 = await getBorrowApplyRecordList();
-  //   const res2 = await getBorrowDeviceNumber();
+  const handleDelete = async (borrowApplyId: number) => {
+    deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
+    const res1 = await getBorrowApplyRecordList();
+    const res2 = await getBorrowDeviceNumber();
 
-  //   if (res1.code === 20000) {
-  //     for (let i = 0; i < res1.data.length; i++) {
-  //       res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
-  //     }
-  //     setInitBorrow(rowCombination(res1.data));
-  //     setShowBorrow(rowCombination(res1.data));
-  //   }
-  //   if (res2.code === 20000) {
-  //     setBorrowNum(res2.data);
-  //   }
-  // };
+    if (res1.code === 20000) {
+      for (let i = 0; i < res1.data.length; i++) {
+        res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+      }
+      setInitBorrow(rowCombination(res1.data));
+      setShowBorrow(rowCombination(res1.data));
+    }
+    if (res2.code === 20000) {
+      setBorrowNum(res2.data);
+    }
+  };
 
-  // const handleMessDelete = () => {
-  //   setLoading(true);
+  const handleMessDelete = () => {
+    setLoading(true);
 
-  //   const selectedBorrowIds = selectedRowKeys
-  //     .map((selectedKey: any) => {
-  //       const selectedBorrow = initBorrow.find(
-  //         (borrowItem: BorrowRecord) => borrowItem.key === selectedKey,
-  //       );
-  //       if (selectedBorrow && selectedBorrow.borrowApplyID) {
-  //         return selectedBorrow.borrowApplyID;
-  //       }
-  //       return null;
-  //     })
-  //     .filter((borrowApplyID: any): borrowApplyID is number => borrowApplyID !== null);
-  //   // 依次删除每个设备
-  //   const deletePromises = selectedBorrowIds.map((borrowApplyID: any) =>
-  //     deleteBorrowRecord({ BorrowApplyID: borrowApplyID }).then((res) => res.code === 20000),
-  //   );
+    const selectedBorrowIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedBorrow = initBorrow.find(
+          (borrowItem: BorrowRecord) => borrowItem.key === selectedKey,
+        );
+        if (selectedBorrow && selectedBorrow.borrowApplyID) {
+          return selectedBorrow.borrowApplyID;
+        }
+        return null;
+      })
+      .filter((borrowApplyID: any): borrowApplyID is number => borrowApplyID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedBorrowIds.map((borrowApplyID: any) =>
+      deleteBorrowRecord({ BorrowApplyID: borrowApplyID }).then((res) => res.code === 20000),
+    );
 
-  //   // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
-  //   Promise.all(deletePromises).then(async (results) => {
-  //     if (results.every((result: any) => result)) {
-  //       const res1 = await getBorrowApplyRecordList();
-  //       const res2 = await getBorrowDeviceNumber();
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res1 = await getBorrowApplyRecordList();
+        const res2 = await getBorrowDeviceNumber();
 
-  //       if (res1.code === 20000) {
-  //         for (let i = 0; i < res1.data.length; i++) {
-  //           res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
-  //         }
-  //         setInitBorrow(rowCombination(res1.data));
-  //         setShowBorrow(rowCombination(res1.data));
-  //       }
-  //       if (res2.code === 20000) {
-  //         setBorrowNum(res2.data);
-  //       }
-  //       message.success('删除成功');
-  //     } else {
-  //       message.error('删除失败');
-  //     }
-  //   });
-  //   setTimeout(() => {
-  //     setSelectedRowKeys([]);
-  //     setLoading(false);
-  //   }, 1000);
-  // };
+        if (res1.code === 20000) {
+          for (let i = 0; i < res1.data.length; i++) {
+            res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+          }
+          setInitBorrow(rowCombination(res1.data));
+          setShowBorrow(rowCombination(res1.data));
+        }
+        if (res2.code === 20000) {
+          setBorrowNum(res2.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
+  };
 
   const columns: ColumnsType<BorrowRecord> = [
     {
@@ -298,25 +314,46 @@ const Borrow: React.FC = () => {
                 批量归还设备
               </Button>
             </Access>
-            {/* <Access accessible={access.borrowDeleteBtn('borrow:delete')}>
+            <Access accessible={access.borrowDeleteBtn('borrow:delete')}>
               <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
-                批量删除记录
+                批量撤销申请
               </Button>
-            </Access> */}
+            </Access>
 
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>
-            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-              <Form.Item name="search">
-                <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
+            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
+              <Form.Item name="deviceNameS">
+                <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+              </Form.Item>
+              <Form.Item name="timeRangeS">
+                <ProFormDateRangePicker style={{ width: 200 }} />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    const time = formRef.current?.getFieldValue('timeRangeS');
+                    if (time !== undefined)
+                      onSearch(
+                        formRef.current?.getFieldValue('deviceNameS'),
+                        Date.parse(time[0]),
+                        Date.parse(time[1]),
+                      );
+                    else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                  }}
+                >
+                  <SearchOutlined />
+                  搜索
+                </Button>
               </Form.Item>
               <Form.Item>
                 <Button
                   type="text"
                   onClick={() => {
-                    setShowBorrow(JSON.parse(JSON.stringify(initBorrow)));
-                    formRef.current?.setFieldsValue({ search: '' });
+                    setShowBorrow(initBorrow);
+                    formRef.current?.setFieldsValue({ deviceNameS: '', timeRangeS: [] });
                   }}
                 >
                   重置

@@ -1,11 +1,12 @@
 import { deleteDevice, getDeviceList } from '@/services/swagger/device';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import { Button, Form, FormInstance, Input, Popconfirm, Space, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from './generalTable/GeneralTable';
 import { deleteDeviceByDeviceID } from '@/services/swagger/person';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface Device {
   key: React.Key;
@@ -44,14 +45,33 @@ const DeviceList: React.FC = () => {
     initial();
   }, []);
 
-  const onSearch = (value: string) => {
-    setShowDevice(
-      value === ''
-        ? initDevice
-        : initDevice.filter((item: Device) => {
-            return item['deviceName'].indexOf(value) != -1;
-          }),
-    );
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setShowDevice(
+        name === ''
+          ? initDevice
+          : initDevice.filter((item: Device) => {
+              const pTime = Date.parse(item['purchaseDate']);
+              return item['deviceName'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setShowDevice(
+        name === ''
+          ? initDevice
+          : initDevice.filter((item: Device) => {
+              return item['deviceName'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setShowDevice(
+        name === ''
+          ? initDevice
+          : initDevice.filter((item: Device) => {
+              const pTime = Date.parse(item['purchaseDate']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
   };
 
   const start = () => {
@@ -186,83 +206,129 @@ const DeviceList: React.FC = () => {
       title: '操作',
       key: 'action',
       width: '25%',
-      render: (record) => (
-        <Space size="small">
-          <a key="detail">
-            <Link
-              to={{
-                pathname: '/deviceManagement/list/detail',
-                state: { deviceID: record.deviceID, userName: record.userName, edit: false },
-              }}
-            >
-              详情
-            </Link>
-          </a>
-          <Access accessible={access.borrowAddBtn('borrow:add')}>
-            <Link
-              to={{
-                pathname: '/deviceManagement/borrow/addBorrowApply',
-                state: { deviceID: record.deviceID },
-              }}
-            >
-              借用
-            </Link>
-          </Access>
-          <Access accessible={access.repairAddBtn('repair:add')}>
-            <a key="repair">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/repair/addRepair',
-                  state: { deviceID: record.deviceID },
-                }}
-              >
-                维修
-              </Link>
-            </a>
-          </Access>
-          <Access accessible={access.maintenanceAddBtn('maintenance:add')}>
-            <a key="maintenance">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/maintenance/addMaintenance',
-                  state: { deviceID: record.deviceID },
-                }}
-              >
-                保养
-              </Link>
-            </a>
-          </Access>
-          <Access accessible={access.scrapAddBtn('scrap:add')}>
-            <a key="scrap">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/scrap/addScrap',
-                  state: { deviceID: record.deviceID },
-                }}
-              >
-                报废
-              </Link>
-            </a>
-          </Access>
-          <Access accessible={access.deviceUpdateBtn('device:update')}>
-            <a key="update">
-              <Link
-                to={{
-                  pathname: '/deviceManagement/list/detail',
-                  state: { deviceID: record.deviceID, userName: record.userName, edit: true },
-                }}
-              >
-                修改
-              </Link>
-            </a>
-          </Access>
-          <Access accessible={access.deviceDeleteBtn('device:delete')}>
-            <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.deviceID)}>
-              <a>删除</a>
-            </Popconfirm>
-          </Access>
-        </Space>
-      ),
+      render: (record) => {
+        return record.deviceState === '正常'
+          ? [
+              <Space size="small">
+                <a key="detail">
+                  <Link
+                    to={{
+                      pathname: '/deviceManagement/list/detail',
+                      state: { deviceID: record.deviceID, userName: record.userName, edit: false },
+                    }}
+                  >
+                    详情
+                  </Link>
+                </a>
+                <Access accessible={access.borrowAddBtn('borrow:add')}>
+                  <Link
+                    to={{
+                      pathname: '/deviceManagement/borrow/addBorrowApply',
+                      state: { deviceID: record.deviceID },
+                    }}
+                  >
+                    借用
+                  </Link>
+                </Access>
+                <Access accessible={access.repairAddBtn('repair:add')}>
+                  <a key="repair">
+                    <Link
+                      to={{
+                        pathname: '/deviceManagement/repair/addRepair',
+                        state: { deviceID: record.deviceID },
+                      }}
+                    >
+                      维修
+                    </Link>
+                  </a>
+                </Access>
+                <Access accessible={access.maintenanceAddBtn('maintenance:add')}>
+                  <a key="maintenance">
+                    <Link
+                      to={{
+                        pathname: '/deviceManagement/maintenance/addMaintenance',
+                        state: { deviceID: record.deviceID },
+                      }}
+                    >
+                      保养
+                    </Link>
+                  </a>
+                </Access>
+                <Access accessible={access.scrapAddBtn('scrap:add')}>
+                  <a key="scrap">
+                    <Link
+                      to={{
+                        pathname: '/deviceManagement/scrap/addScrap',
+                        state: { deviceID: record.deviceID },
+                      }}
+                    >
+                      报废
+                    </Link>
+                  </a>
+                </Access>
+                <Access accessible={access.deviceUpdateBtn('device:update')}>
+                  <a key="update">
+                    <Link
+                      to={{
+                        pathname: '/deviceManagement/list/detail',
+                        state: { deviceID: record.deviceID, userName: record.userName, edit: true },
+                      }}
+                    >
+                      修改
+                    </Link>
+                  </a>
+                </Access>
+                <Access accessible={access.deviceDeleteBtn('device:delete')}>
+                  <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.deviceID)}>
+                    <a>删除</a>
+                  </Popconfirm>
+                </Access>
+              </Space>,
+            ]
+          : [
+              <Space size="small">
+                <a key="detail">
+                  <Link
+                    to={{
+                      pathname: '/deviceManagement/list/detail',
+                      state: { deviceID: record.deviceID, userName: record.userName, edit: false },
+                    }}
+                  >
+                    详情
+                  </Link>
+                </a>
+                <Access accessible={access.borrowAddBtn('borrow:add')}>
+                  <span key="borrow">借用</span>
+                </Access>
+                <Access accessible={access.repairAddBtn('repair:add')}>
+                  <span key="repair">维修</span>
+                </Access>
+                <Access accessible={access.maintenanceAddBtn('maintenance:add')}>
+                  <text key="maintenance">保养</text>
+                </Access>
+                <Access accessible={access.scrapAddBtn('scrap:add')}>
+                  <span key="scrap">报废</span>
+                </Access>
+                <Access accessible={access.deviceUpdateBtn('device:update')}>
+                  <a key="update">
+                    <Link
+                      to={{
+                        pathname: '/deviceManagement/list/detail',
+                        state: { deviceID: record.deviceID, userName: record.userName, edit: true },
+                      }}
+                    >
+                      修改
+                    </Link>
+                  </a>
+                </Access>
+                <Access accessible={access.deviceDeleteBtn('device:delete')}>
+                  <Popconfirm title="确认删除？" onConfirm={() => handleDelete(record.deviceID)}>
+                    <a>删除</a>
+                  </Popconfirm>
+                </Access>
+              </Space>,
+            ];
+      },
     },
   ];
 
@@ -289,16 +355,37 @@ const DeviceList: React.FC = () => {
           {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
         </span>
 
-        <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-          <Form.Item name="search">
-            <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
+        <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
+          <Form.Item name="deviceNameS">
+            <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+          </Form.Item>
+          <Form.Item name="timeRangeS">
+            <ProFormDateRangePicker style={{ width: 200 }} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              onClick={() => {
+                const time = formRef.current?.getFieldValue('timeRangeS');
+                if (time !== undefined)
+                  onSearch(
+                    formRef.current?.getFieldValue('deviceNameS'),
+                    Date.parse(time[0]),
+                    Date.parse(time[1]),
+                  );
+                else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+              }}
+            >
+              <SearchOutlined />
+              搜索
+            </Button>
           </Form.Item>
           <Form.Item>
             <Button
               type="text"
               onClick={() => {
                 setShowDevice(initDevice);
-                formRef.current?.setFieldsValue({ search: '' });
+                formRef.current?.setFieldsValue({ deviceNameS: '', timeRanges: [] });
               }}
             >
               重置

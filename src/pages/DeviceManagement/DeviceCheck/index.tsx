@@ -4,11 +4,25 @@ import {
   getCheckingNum,
   getCheckList,
 } from '@/services/swagger/check';
-import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, message, Popconfirm, Row, Space, Statistic } from 'antd';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  FormInstance,
+  Input,
+  message,
+  Popconfirm,
+  Row,
+  Space,
+  Statistic,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import React from 'react';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface CheckRecord {
   key: React.Key;
@@ -22,7 +36,10 @@ interface CheckRecord {
 }
 
 const DeviceCheck: React.FC = () => {
+  const formRef = React.useRef<FormInstance>(null);
+
   const [tableData, setTableData] = useState<CheckRecord[]>([]);
+  const [initTableData, setInitTableData] = useState<CheckRecord[]>([]);
   const [currentRow, setCurrentRow] = useState<CheckRecord>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [checked, setChecked] = useState(0);
@@ -37,6 +54,7 @@ const DeviceCheck: React.FC = () => {
         res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
       }
       setTableData(res.data);
+      setInitTableData(res.data);
     }
     const checkedRes = await getCheckedNum();
     if (checkedRes.code === 20000) {
@@ -51,6 +69,35 @@ const DeviceCheck: React.FC = () => {
   useEffect(() => {
     initial();
   }, []);
+
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setTableData(
+        name === ''
+          ? initTableData
+          : initTableData.filter((item: CheckRecord) => {
+              const pTime = Date.parse(item['checkTime']);
+              return item['deviceName'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setTableData(
+        name === ''
+          ? initTableData
+          : initTableData.filter((item: CheckRecord) => {
+              return item['deviceName'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setTableData(
+        name === ''
+          ? initTableData
+          : initTableData.filter((item: CheckRecord) => {
+              const pTime = Date.parse(item['checkTime']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
+  };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
@@ -259,6 +306,43 @@ const DeviceCheck: React.FC = () => {
                   批量删除记录
                 </Button>
               </Access>
+              <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
+                <Form.Item name="deviceNameS">
+                  <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+                </Form.Item>
+                <Form.Item name="timeRangeS">
+                  <ProFormDateRangePicker style={{ width: 200 }} />
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      const time = formRef.current?.getFieldValue('timeRangeS');
+                      if (time !== undefined)
+                        onSearch(
+                          formRef.current?.getFieldValue('deviceNameS'),
+                          Date.parse(time[0]),
+                          Date.parse(time[1]),
+                        );
+                      else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                    }}
+                  >
+                    <SearchOutlined />
+                    搜索
+                  </Button>
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="text"
+                    onClick={() => {
+                      setTableData(initTableData);
+                      formRef.current?.setFieldsValue({ deviceNameS: '', timeRanges: [] });
+                    }}
+                  >
+                    重置
+                  </Button>
+                </Form.Item>
+              </Form>
             </GeneralTable>
           </Col>
         </Row>

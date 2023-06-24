@@ -6,7 +6,7 @@ import {
   getRepairList,
 } from '@/services/swagger/repair';
 import { Line } from '@ant-design/charts';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import {
   Button,
   Card,
@@ -25,6 +25,7 @@ import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface RepairRecord {
   key: React.Key;
@@ -271,14 +272,33 @@ const Repair: React.FC = () => {
     },
   ];
 
-  const onSearch = (value: string) => {
-    setShowRepair(
-      value === ''
-        ? initRepair
-        : initRepair.filter((item: RepairRecord) => {
-            return item['deviceName'].indexOf(value) != -1;
-          }),
-    );
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setShowRepair(
+        name === ''
+          ? initRepair
+          : initRepair.filter((item: RepairRecord) => {
+              const pTime = Date.parse(item['repairTime']);
+              return item['deviceName'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setShowRepair(
+        name === ''
+          ? initRepair
+          : initRepair.filter((item: RepairRecord) => {
+              return item['deviceName'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setShowRepair(
+        name === ''
+          ? initRepair
+          : initRepair.filter((item: RepairRecord) => {
+              const pTime = Date.parse(item['repairTime']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
   };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: RepairRecord[]) => {
@@ -337,16 +357,37 @@ const Repair: React.FC = () => {
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>
-            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-              <Form.Item name="search">
-                <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
+            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 800 }}>
+              <Form.Item name="deviceNameS">
+                <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+              </Form.Item>
+              <Form.Item name="timeRangeS">
+                <ProFormDateRangePicker style={{ width: 200 }} />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    const time = formRef.current?.getFieldValue('timeRangeS');
+                    if (time !== undefined)
+                      onSearch(
+                        formRef.current?.getFieldValue('deviceNameS'),
+                        Date.parse(time[0]),
+                        Date.parse(time[1]),
+                      );
+                    else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                  }}
+                >
+                  <SearchOutlined />
+                  搜索
+                </Button>
               </Form.Item>
               <Form.Item>
                 <Button
                   type="text"
                   onClick={() => {
                     setShowRepair(initRepair);
-                    formRef.current?.setFieldsValue({ search: '' });
+                    formRef.current?.setFieldsValue({ deviceNameS: '', timeRangeS: [] });
                   }}
                 >
                   重置
