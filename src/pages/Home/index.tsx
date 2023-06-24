@@ -47,27 +47,15 @@ const Home: React.FC = () => {
       }).length,
     },
     {
-      state: '借出中',
+      state: '外借',
       num: initDevice.filter((x) => {
-        return x.deviceState == '借出中';
+        return x.deviceState == '外借';
       }).length,
     },
     {
-      state: '维修中',
+      state: '报废',
       num: initDevice.filter((x) => {
-        return x.deviceState == '维修中';
-      }).length,
-    },
-    {
-      state: '保养中',
-      num: initDevice.filter((x) => {
-        return x.deviceState == '保养中';
-      }).length,
-    },
-    {
-      state: '已报废',
-      num: initDevice.filter((x) => {
-        return x.deviceState == '已报废';
+        return x.deviceState == '报废';
       }).length,
     },
   ];
@@ -82,9 +70,9 @@ const Home: React.FC = () => {
   };
   const pieData = [
     {
-      type: '借出中',
+      type: '外借',
       num: initDevice.filter((x) => {
-        return x.deviceState == '借出中';
+        return x.deviceState == '外借';
       }).length,
     },
     {
@@ -92,10 +80,10 @@ const Home: React.FC = () => {
       num:
         deviceNum -
         initDevice.filter((x) => {
-          return x.deviceState == '借出中';
+          return x.deviceState == '外借';
         }).length -
         initDevice.filter((x) => {
-          return x.deviceState == '已报废';
+          return x.deviceState == '报废';
         }).length,
     },
   ];

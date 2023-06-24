@@ -1,6 +1,7 @@
 import { convertToTreeData } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
 import { insertDevice } from '@/services/swagger/device';
+import { getPurchaseApplySheets } from '@/services/swagger/purchaseApp';
 import { formatDate } from '@/utils/utils';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -25,16 +26,14 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { useHistory, useModel } from 'umi';
+import { useHistory, useLocation, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
 
-//样式
-// const layout = {
-//   labelCol: { span: 4 },
-//   wrapperCol: { span: 20 },
-// };
+interface stateType {
+  purchaseApplySheetID: number;
+}
 
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
@@ -63,6 +62,7 @@ const AddDevice: React.FC = () => {
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
   const deviceT: string[] = [];
+  const { state } = useLocation<stateType>();
 
   const initial = async () => {
     // console.log(initialState);
@@ -72,6 +72,27 @@ const AddDevice: React.FC = () => {
     const category = await getDeviceCategoryList();
     if (category.code === 20000) {
       setTree(convertToTreeData(category.data));
+    }
+    if (state !== null && state !== undefined) {
+      const sheets = await getPurchaseApplySheets({
+        PurchaseApplySheetID: state.purchaseApplySheetID,
+      });
+      if (sheets.code === 20000 && sheets.data !== undefined) {
+        sheets.data.forEach((sheet: any) => {
+          const list = formRef.current?.getFieldValue('devices') || [];
+          const nextList = list.concat({
+            key: list.length,
+            name: list.length,
+            fieldKey: list.length,
+            deviceName: sheet.deviceName,
+            deviceType: sheet.deviceType,
+            deviceModel: sheet.deviceModel,
+            unitPrice: sheet.purchaseBudget / sheet.deviceQuantity,
+            stockQuantity: sheet.deviceQuantity,
+          });
+          formRef.current?.setFieldValue('devices', nextList);
+        });
+      }
     }
   };
   useEffect(() => {
@@ -187,7 +208,7 @@ const AddDevice: React.FC = () => {
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                             allowClear
                             treeDefaultExpandAll
-                            onSelect={(value, node) => {
+                            onChange={(value, node) => {
                               const { devices } = formRef?.current?.getFieldsValue();
                               console.log(devices);
                               Object.assign(devices[key], { assetNumber: value });
@@ -217,9 +238,10 @@ const AddDevice: React.FC = () => {
                         <Form.Item
                           {...restField}
                           name={[name, 'deviceSpecification']}
+                          rules={[{ required: true, message: '设备说明未填写！' }]}
                           label="设备说明"
                         >
-                          <Input placeholder="设备说明" />
+                          <Input placeholder="请填写生产厂家（及备注说明）" />
                         </Form.Item>
                       </Col>
                       <Col span={8}>

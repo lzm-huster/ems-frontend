@@ -162,9 +162,9 @@ const RepairDetail: React.FC = () => {
               required
             />
             <ProFormText
-              label={'维修内容'}
+              label={'维修厂家与内容'}
               name={'repairContent'}
-              placeholder={'维修内容'}
+              placeholder={'维修厂家与维修内容'}
               required
             />
             <ProFormMoney

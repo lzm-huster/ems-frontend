@@ -49,15 +49,18 @@ const DetailCheck: React.FC = () => {
     if (res.code === 20000) {
       res.data.deviceName = state.deviceName;
       const images = [];
-      res.data.scrapImages.forEach((image: any, ind: number) => {
-        const node: any = {
-          url: image,
-          name: res.data.deviceName + ind,
-          status: 'done',
-          uid: ind,
-        };
-        images.push(node);
-      });
+      if (res.data.scrapImages !== 'null' && res.data.deviceImageList !== undefined) {
+        res.data.scrapImages.forEach((image: any, ind: number) => {
+          const node: any = {
+            url: image,
+            name: res.data.deviceName + ind,
+            status: 'done',
+            uid: ind,
+          };
+          images.push(node);
+        });
+      }
+
       setFileList(images);
       setScrapRecord(res.data);
       setUneditable(!state.edit);

@@ -50,7 +50,7 @@ const DeviceDetail: React.FC = () => {
       res.data.userName = state.userName;
       console.log(res);
       const images = fileList;
-      if (res.data.deviceImageList) {
+      if (res.data.deviceImageList !== 'null' && res.data.deviceImageList !== undefined) {
         const imageList = JSON.parse(res.data.deviceImageList);
         console.log(imageList);
 
@@ -244,7 +244,12 @@ const DeviceDetail: React.FC = () => {
                 <img alt="example" style={{ width: '100%' }} src={previewImage} />
               </Modal>
             </>
-            <ProFormText name="deviceSpecification" label="设备说明" placeholder="设备说明" />
+            <ProFormText
+              name="deviceSpecification"
+              label="设备说明"
+              placeholder="请填写生产厂家（及备注说明）"
+              required
+            />
           </ProForm>
         </div>
       </Card>

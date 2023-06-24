@@ -31,7 +31,7 @@ import { useHistory, useLocation, useModel } from 'umi';
 dayjs.extend(customParseFormat);
 
 interface stateType {
-  deviceID: number;
+  deviceID: string;
 }
 
 //样式
@@ -64,21 +64,24 @@ const AddBorrow: React.FC = () => {
       setSelectData(convertToSelectData(assets.data));
     }
     if (state != null) {
-      const device = await getDeviceDetail({ DeviceID: state.deviceID });
-      if (device.code === 20000) {
-        const list = formRef.current?.getFieldValue('devices') || [];
-        const nextList = list.concat({
-          key: list.length,
-          name: list.length,
-          fieldKey: list.length,
-          deviceID: device.data.deviceID,
-          deviceName: device.data.deviceName,
-          deviceType: device.data.deviceType,
-          deviceModel: device.data.deviceModel,
-          borrowFee: device.data.borrowRate * device.data.unitPrice,
-        });
-        formRef.current?.setFieldValue('devices', nextList);
-      }
+      const deviceList = JSON.parse(state.deviceID);
+      deviceList.forEach(async (deviceId: number) => {
+        const device = await getDeviceDetail({ DeviceID: deviceId });
+        if (device.code === 20000) {
+          const list = formRef.current?.getFieldValue('devices') || [];
+          const nextList = list.concat({
+            key: list.length,
+            name: list.length,
+            fieldKey: list.length,
+            deviceID: device.data.deviceID,
+            deviceName: device.data.deviceName,
+            deviceType: device.data.deviceType,
+            deviceModel: device.data.deviceModel,
+            borrowFee: device.data.borrowRate * device.data.unitPrice,
+          });
+          formRef.current?.setFieldValue('devices', nextList);
+        }
+      });
     }
   };
   useEffect(() => {

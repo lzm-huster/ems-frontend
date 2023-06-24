@@ -2,6 +2,7 @@ import {
   deleteBorrowRecord,
   getBorrowApplyRecordList,
   getBorrowDeviceNumber,
+  getReturnDeviceNumber,
 } from '@/services/swagger/borrow';
 import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import {
@@ -62,11 +63,12 @@ const Borrow: React.FC = () => {
   const [initBorrow, setInitBorrow] = useState<BorrowRecord[]>([]);
   const [showBorrow, setShowBorrow] = useState<BorrowRecord[]>([]);
   const [borrowNum, setBorrowNum] = useState(0);
+  const [returnNum, setReturnNum] = useState(0);
   const access = useAccess();
   const initial = async () => {
     const res1 = await getBorrowApplyRecordList();
     const res2 = await getBorrowDeviceNumber();
-
+    const res3 = await getReturnDeviceNumber();
     if (res1.code === 20000) {
       for (let i = 0; i < res1.data.length; i++) {
         res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
@@ -76,6 +78,9 @@ const Borrow: React.FC = () => {
     }
     if (res2.code === 20000) {
       setBorrowNum(res2.data);
+    }
+    if (res3.code === 20000) {
+      setReturnNum(res3.data);
     }
   };
   useEffect(() => {
@@ -347,10 +352,10 @@ const Borrow: React.FC = () => {
         <Col span={12}>
           <Card bordered={false}>
             <Statistic
-              title="借入设备"
+              title="借用中设备"
               value={borrowNum}
               precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
+              valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 40 }}
               suffix="台"
             />
           </Card>
@@ -358,10 +363,10 @@ const Borrow: React.FC = () => {
         <Col span={12}>
           <Card bordered={false}>
             <Statistic
-              title="借出设备"
-              value={12}
+              title="已归还设备"
+              value={returnNum}
               precision={0}
-              valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
+              valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 40 }}
               suffix="台"
             />
           </Card>

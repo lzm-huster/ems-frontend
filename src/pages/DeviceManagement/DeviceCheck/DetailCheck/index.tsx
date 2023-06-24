@@ -51,7 +51,7 @@ const DetailCheck: React.FC = () => {
       //res.data.scrapTime = new Date(res.data.scrapTime).toLocaleString();
       res.data.deviceName = state.deviceName;
       const images = [];
-      if (res.data.deviceImageList) {
+      if (res.data.deviceImageList !== 'null' && res.data.deviceImageList !== undefined) {
         const imageList = JSON.parse(res.data.deviceImageList);
         console.log(imageList);
 

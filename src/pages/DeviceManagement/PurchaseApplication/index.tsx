@@ -243,7 +243,18 @@ const PurchaseApp: React.FC = () => {
             </Link>
           </a>
           {record.purchaseApplyState === '采购中' ? (
-            <a>入库</a>
+            <a>
+              <Link
+                to={{
+                  pathname: '/deviceManagement/list/addDevice',
+                  state: {
+                    purchaseApplySheetID: record.purchaseApplySheetID,
+                  },
+                }}
+              >
+                入库
+              </Link>
+            </a>
           ) : (
             <a style={{ color: 'grey' }}>入库</a>
           )}

@@ -10,7 +10,8 @@ import { SearchOutlined } from '@ant-design/icons';
 
 interface Device {
   key: React.Key;
-  deviceID: string;
+  assetNumber: string;
+  deviceID: number;
   deviceModel: string;
   deviceName: string;
   deviceState: string;
@@ -25,10 +26,12 @@ const DeviceList: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const access = useAccess();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRows, setSelectedRows] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
   const [available, setAvailable] = useState(true);
   const [initDevice, setInitDevice] = useState([]);
   const [showDevice, setShowDevice] = useState([]);
+  const [deviceIDs, setDeviceIDs] = useState('');
 
   const initial = async () => {
     const res = await getDeviceList();
@@ -75,24 +78,18 @@ const DeviceList: React.FC = () => {
       );
   };
 
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
-
   const onSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: Device[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+    setSelectedRows(newSelectedRows);
+    const deviceIDS: any[] = [];
     setAvailable(true);
     newSelectedRows.forEach((item) => {
+      deviceIDS.push(item.deviceID);
       if (item.deviceState !== '正常') {
         setAvailable(false);
-        return;
       }
     });
+    setDeviceIDs(JSON.stringify(deviceIDS));
   };
 
   const rowSelection = {
@@ -113,8 +110,6 @@ const DeviceList: React.FC = () => {
       setShowDevice(res.data);
     }
   };
-
-  const handleBatchBorrow = () => {};
 
   const handleMessDelete = () => {
     setLoading(true);
@@ -254,7 +249,7 @@ const DeviceList: React.FC = () => {
                   <Link
                     to={{
                       pathname: '/deviceManagement/borrow/addBorrowApply',
-                      state: { deviceID: record.deviceID },
+                      state: { deviceID: JSON.stringify([record.deviceID]) },
                     }}
                   >
                     借用
@@ -362,12 +357,14 @@ const DeviceList: React.FC = () => {
           </Button>
         </Access>
         <Access accessible={access.borrowAddBtn('borrow:add')}>
-          <Button
-            onClick={handleBatchBorrow}
-            disabled={hasSelected === false ? !hasSelected : !available}
+          <Link
+            to={{
+              pathname: '/deviceManagement/borrow/addBorrowApply',
+              state: { deviceID: deviceIDs },
+            }}
           >
-            批量借用
-          </Button>
+            <Button disabled={hasSelected === false ? !hasSelected : !available}>批量借用</Button>
+          </Link>
         </Access>
         <Access accessible={access.deviceDeleteBtn('device:delete')}>
           <Button danger onClick={handleMessDelete} disabled={!hasSelected}>

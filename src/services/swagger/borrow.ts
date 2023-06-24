@@ -21,6 +21,13 @@ export async function getBorrowDeviceNumber(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+export async function getReturnDeviceNumber(options?: { [key: string]: any }) {
+  return request('/api/BorrowApplyRecord/getReturnDeviceNumber', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
 // /api/BorrowApplyRecord/insertBorrowApplyRecord
 export async function insertBorrowApplyRecord(body: any, options?: { [key: string]: any }) {
   return request('/api/BorrowApplyRecord/insertBorrowApplyRecord', {
