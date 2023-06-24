@@ -40,8 +40,8 @@ const rowCombination = (initData: PurchaseApply[]) => {
 const PurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [purchased, setPurchased] = useState(true);
+  // const [loading, setLoading] = useState(false);
+  // const [purchased, setPurchased] = useState(true);
   const [cancel, setCancel] = useState(true);
   const [initPurchaseApply, setInitPurchaseApply] = useState([]);
   const [showPurchaseApply, setShowPurchaseApply] = useState([]);
@@ -90,25 +90,25 @@ const PurchaseApp: React.FC = () => {
       );
   };
 
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
+  // const start = () => {
+  //   setLoading(true);
+  //   // ajax request after empty completing
+  //   setTimeout(() => {
+  //     setSelectedRowKeys([]);
+  //     setLoading(false);
+  //   }, 1000);
+  // };
 
   const handleDelete = (pID: number) => {};
 
   const onSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: PurchaseApply[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
     setCancel(true);
-    setPurchased(true);
+    // setPurchased(true);
     newSelectedRows.forEach((item) => {
-      if (item.purchaseApplyState !== '采购中') {
-        setPurchased(false);
-      }
+      // if (item.purchaseApplyState !== '采购中') {
+      //   setPurchased(false);
+      // }
       if (
         item.purchaseApplyState !== '待导师审批' &&
         item.purchaseApplyState !== '待管理员审批' &&
@@ -289,17 +289,13 @@ const PurchaseApp: React.FC = () => {
                 <Link to={'/deviceManagement/purchaseApply/addPurchaseApply'}>新增采购申请</Link>
               </Button>
             </Access>
-            <Access accessible={access.purchaseUpdateBtn('purchase:update')}>
+            {/* <Access accessible={access.purchaseUpdateBtn('purchase:update')}>
               <Button onClick={start} disabled={hasSelected === false ? !hasSelected : !purchased}>
                 设备采购入库
               </Button>
-            </Access>
+            </Access> */}
 
-            <Button
-              danger
-              onClick={start}
-              disabled={hasSelected === false ? !hasSelected : !cancel}
-            >
+            <Button danger disabled={hasSelected === false ? !hasSelected : !cancel}>
               批量撤销申请
             </Button>
             <span style={{ marginLeft: 8 }}>

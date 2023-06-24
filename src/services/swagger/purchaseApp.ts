@@ -16,6 +16,14 @@ export async function insertPurchaseApplySheet(body: any, options?: { [key: stri
     ...(options || {}),
   });
 }
+
+export async function entryPurchaseApplySheet(body: any, options?: { [key: string]: any }) {
+  return request('/api/PurchaseApplySheet/updateStateByApplySheetID', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
 // /api/PurchaseApplySheet/getLatestPurchaseApplySheetID
 export async function getLatestPurchaseApplyRecordID(options?: { [key: string]: any }) {
   return request('/api/PurchaseApplySheet/getLatestPurchaseApplySheetID', {

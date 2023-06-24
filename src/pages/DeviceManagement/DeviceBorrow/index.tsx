@@ -3,6 +3,7 @@ import {
   getBorrowApplyRecordList,
   getBorrowDeviceNumber,
   getReturnDeviceNumber,
+  returnBorrowRecord,
 } from '@/services/swagger/borrow';
 import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import {
@@ -143,6 +144,16 @@ const Borrow: React.FC = () => {
   };
   const hasSelected = selectedRowKeys.length > 0;
 
+  const handleReturn = async (borrowApplyId: number) => {
+    const returnR = await returnBorrowRecord({ BorrowApplyID: borrowApplyId });
+    if (returnR.code === 20000 && returnR.code === 1) {
+      message.success('归还成功');
+      initial();
+    } else {
+      message.error(returnR.message);
+    }
+  };
+
   const handleDelete = async (borrowApplyId: number) => {
     deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
     const res1 = await getBorrowApplyRecordList();
@@ -200,7 +211,6 @@ const Borrow: React.FC = () => {
     });
     setTimeout(() => {
       setSelectedRowKeys([]);
-      setLoading(false);
     }, 1000);
   };
 
@@ -326,7 +336,12 @@ const Borrow: React.FC = () => {
             </Link>
           </a>
           {record.borrowApplyState === '借用中' ? (
-            <a>归还</a>
+            <Popconfirm
+              title="确认归还？"
+              onConfirm={() => handleReturn(record.borrowApplySheetID)}
+            >
+              <a>归还</a>
+            </Popconfirm>
           ) : (
             <a style={{ color: 'grey' }}>归还</a>
           )}

@@ -63,6 +63,17 @@ export async function deleteBorrowRecord(
   });
 }
 
+export async function returnBorrowRecord(
+  params: { BorrowApplyID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/BorrowApplyRecord/updateReturnRecordAndDeviceState', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}
+
 //   export async function getBorrowApplyRecordList(options?: { [key: string]: any }) {
 //     return request('/api/BorrowApplyRecord/getBorrowApplyRecordList', {
 //       method: 'GET',

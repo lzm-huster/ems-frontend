@@ -1,7 +1,7 @@
 import { convertToTreeData } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
 import { insertDevice } from '@/services/swagger/device';
-import { getPurchaseApplySheets } from '@/services/swagger/purchaseApp';
+import { entryPurchaseApplySheet, getPurchaseApplySheets } from '@/services/swagger/purchaseApp';
 import { formatDate } from '@/utils/utils';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -120,8 +120,14 @@ const AddDevice: React.FC = () => {
       }
       const res = await insertDevice(formData);
       if (res.code === 20000 && res.data !== undefined) {
-        message.success('添加成功');
-        setComponentDisabled(true);
+        if (state !== null && state !== undefined) {
+          const added = await entryPurchaseApplySheet({
+            PurchaseApplySheetID: state.purchaseApplySheetID,
+          });
+          if (added.code === 20000 && added.data === 1) {
+            message.success('入库成功');
+          } else message.error(added.message);
+        } else message.success('添加成功');
         history.push('/deviceManagement/list');
       } else {
         message.error(res.message);
@@ -208,7 +214,7 @@ const AddDevice: React.FC = () => {
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                             allowClear
                             treeDefaultExpandAll
-                            onChange={(value, node) => {
+                            onSelect={(value, node) => {
                               const { devices } = formRef?.current?.getFieldsValue();
                               console.log(devices);
                               Object.assign(devices[key], { assetNumber: value });
