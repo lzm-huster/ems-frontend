@@ -1,4 +1,9 @@
-import { deleteScrapRecord, getScrapList } from '@/services/swagger/scrap';
+import {
+  deleteScrapRecord,
+  getExpectedScrapNum,
+  getScrapList,
+  getScrapNum,
+} from '@/services/swagger/scrap';
 import {
   PageContainer,
   ProFormDateRangePicker,
@@ -42,6 +47,8 @@ const DeviceScrap: React.FC = () => {
   const [tableData, setTableData] = useState<ScrapRecord[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [currentRow, setCurrentRow] = useState<ScrapRecord>();
+  const [scrapNum, setScrapNum] = useState(0);
+  const [expectedScrapNum, setExpectedScrapNum] = useState(0);
   const [loading, setLoading] = useState(false);
   const access = useAccess();
   const formRef = React.useRef<FormInstance>(null);
@@ -55,6 +62,14 @@ const DeviceScrap: React.FC = () => {
       }
       setTableData(res.data);
       setInitTableData(res.data);
+    }
+    const scrapN = await getScrapNum();
+    const eScrapN = await getExpectedScrapNum();
+    if (scrapN.code === 20000 && scrapN.data !== undefined) {
+      setScrapNum(scrapN.data);
+    }
+    if (eScrapN.code === 20000 && eScrapN.data !== undefined) {
+      setScrapNum(eScrapN.data);
     }
   };
 
@@ -246,7 +261,7 @@ const DeviceScrap: React.FC = () => {
             <Card bordered={false}>
               <Statistic
                 title="已报废设备"
-                value={5}
+                value={scrapNum}
                 precision={0}
                 valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
                 suffix="件"
@@ -257,7 +272,7 @@ const DeviceScrap: React.FC = () => {
             <Card bordered={false}>
               <Statistic
                 title="待报废设备"
-                value={12}
+                value={expectedScrapNum}
                 precision={0}
                 valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
                 suffix="个"
