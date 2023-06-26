@@ -8,7 +8,7 @@ import GeneralTable from './generalTable/GeneralTable';
 import { deleteDeviceByDeviceID } from '@/services/swagger/person';
 import { SearchOutlined } from '@ant-design/icons';
 
-interface Device {
+export interface Device {
   key: React.Key;
   assetNumber: string;
   deviceID: number;

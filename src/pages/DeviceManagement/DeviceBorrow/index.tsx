@@ -155,20 +155,56 @@ const Borrow: React.FC = () => {
   };
 
   const handleDelete = async (borrowApplyId: number) => {
-    deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
-    const res1 = await getBorrowApplyRecordList();
-    const res2 = await getBorrowDeviceNumber();
+    const delRes = await deleteBorrowRecord({ BorrowApplyID: borrowApplyId });
+    if (delRes.code === 20000 && delRes.data === 1) {
+      message.success('撤销成功');
+      initial();
+    } else {
+      message.error(delRes.message);
+    }
+  };
 
-    if (res1.code === 20000) {
-      for (let i = 0; i < res1.data.length; i++) {
-        res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+  const handleBatchReturn = () => {
+    const selectedBorrowIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedBorrow = initBorrow.find(
+          (borrowItem: BorrowRecord) => borrowItem.key === selectedKey,
+        );
+        if (selectedBorrow && selectedBorrow.borrowApplyID) {
+          return selectedBorrow.borrowApplyID;
+        }
+        return null;
+      })
+      .filter((borrowApplyID: any): borrowApplyID is number => borrowApplyID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedBorrowIds.map((borrowApplyID: any) =>
+      deleteBorrowRecord({ BorrowApplyID: borrowApplyID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res1 = await getBorrowApplyRecordList();
+        const res2 = await getBorrowDeviceNumber();
+
+        if (res1.code === 20000) {
+          for (let i = 0; i < res1.data.length; i++) {
+            res1.data[i].borrowApplyDate = new Date(res1.data[i].borrowApplyDate).toLocaleString();
+          }
+          setInitBorrow(rowCombination(res1.data));
+          setShowBorrow(rowCombination(res1.data));
+        }
+        if (res2.code === 20000) {
+          setBorrowNum(res2.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
       }
-      setInitBorrow(rowCombination(res1.data));
-      setShowBorrow(rowCombination(res1.data));
-    }
-    if (res2.code === 20000) {
-      setBorrowNum(res2.data);
-    }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+    }, 1000);
   };
 
   const handleMessDelete = () => {
@@ -394,7 +430,10 @@ const Borrow: React.FC = () => {
               </Button>
             </Access>
             <Access accessible={access.borrowUpdateBtn('borrow:update')}>
-              <Button onClick={start} disabled={hasSelected === false ? !hasSelected : !returnable}>
+              <Button
+                onClick={handleBatchReturn}
+                disabled={hasSelected === false ? !hasSelected : !returnable}
+              >
                 批量归还设备
               </Button>
             </Access>

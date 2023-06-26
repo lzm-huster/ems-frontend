@@ -58,8 +58,8 @@ export async function deleteBorrowRecord(
 ) {
   return request('/api/BorrowApplyRecord/deleteBorrowApplyRecordByBorrowApplyID', {
     method: 'POST',
+    params: params,
     ...(options || {}),
-    params: { ...params },
   });
 }
 

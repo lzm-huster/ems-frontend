@@ -297,7 +297,7 @@ const AddDevice: React.FC = () => {
                           rules={[{ required: false, message: '借用费率未填写！' }]}
                           label="借用费率"
                         >
-                          <InputNumber disabled placeholder="借用费率" />
+                          <InputNumber disabled placeholder="借用费率" defaultValue={0.003} />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
