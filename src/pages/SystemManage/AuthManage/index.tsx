@@ -223,17 +223,21 @@ const AuthManage: React.FC = () => {
         <Search
           placeholder="搜索权限"
           onSearch={(value) => {
-            const filterPermission = initPermission.filter((permission) => {
-              if (
-                permission.permissionName.includes(value) ||
-                permission.permissionDescription.includes(value)
-              ) {
-                return true;
-              } else {
-                return false;
-              }
-            });
-            setPermissionData(filterPermission);
+            if (value === '') {
+              setPermissionData(initPermission);
+            } else {
+              const filterPermission = initPermission.filter((permission) => {
+                if (
+                  permission.permissionName.includes(value) ||
+                  permission.permissionDescription.includes(value)
+                ) {
+                  return true;
+                } else {
+                  return false;
+                }
+              });
+              setPermissionData(filterPermission);
+            }
           }}
         />
         <Table

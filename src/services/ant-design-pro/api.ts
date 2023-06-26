@@ -6,7 +6,10 @@ import { request } from 'umi';
 export async function resetPassword(body: any, options?: { [key: string]: any }) {
   return request<API.BaseResponse<boolean>>('/api/user/password/reset', {
     method: 'POST',
-    data: body,
+    params: body,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
     ...(options || {}),
   });
 }
