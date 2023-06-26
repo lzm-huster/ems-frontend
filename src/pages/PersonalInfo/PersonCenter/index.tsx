@@ -379,7 +379,6 @@ const PersonalInfo: React.FC = () => {
           </Form.Item>
           <Form.Item>
             <ProFormDateTimePicker
-              // width={300}
               name="purchaseDate"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
