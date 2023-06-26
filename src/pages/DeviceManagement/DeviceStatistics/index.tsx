@@ -1,8 +1,7 @@
 import { PageContainer, ProCard } from '@ant-design/pro-components';
-import { Card, Col, Row, Space, Statistic } from 'antd';
+import { Card, Col, List, Row, Space, Statistic, Table } from 'antd';
 import { Area, Bar, Column, Pie } from '@ant-design/charts';
 import { getDeviceList } from '@/services/swagger/device';
-
 import React, { useState, useEffect } from 'react';
 import { getMonth1st } from '@/services/general/dataProcess';
 import { RepairRecord } from '../DeviceRepair';
@@ -11,7 +10,17 @@ import { MaintenanceRecord } from '../DeviceMaintenance';
 import { getMaintenanceList } from '@/services/swagger/maintenance';
 import { getScrapList, getScrapNum } from '@/services/swagger/scrap';
 import { ScrapRecord } from '../DeviceScrap';
+import { Device } from '../DeviceList';
+import { getBorrowFeeList } from '@/services/swagger/borrow';
 //import styles from './Home.less';
+
+interface BorrowFee {
+  borrowFee: number;
+  borrowID: number;
+  deviceID: number;
+  deviceName: string;
+  returnTime: string;
+}
 
 const Home: React.FC = () => {
   const [deviceNum, setDeviceNum] = useState(0);
@@ -24,14 +33,14 @@ const Home: React.FC = () => {
   const [scrapNum, setScrapNum] = useState(0);
   const [sColData, setScrapColData] = useState<{}>([]);
   const [months, setMonths] = useState(6);
-  const [repairs, setRepairs] = useState<RepairRecord[]>([]);
-  const [maintenances, setMaintenances] = useState<MaintenanceRecord[]>([]);
-  const [scraps, setScraps] = useState<ScrapRecord[]>([]);
+  const [borrow, setBorrow] = useState([]);
+  const [borrowNumRank, setBNRank] = useState<any[]>([]);
+  const [borrowFeeRank, setBFRank] = useState<any[]>([]);
+  const [profitRates, setProfitRates] = useState<any[]>([]);
 
   const repairLineData = (Repairs: RepairRecord[]) => {
     const month1st = getMonth1st(months);
     const data = [];
-
     for (let i = 0; i < months - 1; i++) {
       let fee = 0;
       const date = new Date(month1st[i]);
@@ -151,17 +160,103 @@ const Home: React.FC = () => {
     return data;
   };
 
+  //借用次数折线图数据
+  const bplotData = (borrows: BorrowFee[]) => {
+    const month1st = getMonth1st(months);
+    const data = [];
+    for (let i = 0; i < months - 1; i++) {
+      const date = new Date(month1st[i]);
+      const node = {
+        month: date.getFullYear() + '/' + (date.getMonth() + 1),
+        borrowNum: borrows.filter((x: BorrowFee) => {
+          const t = Date.parse(x.returnTime);
+          return t >= month1st[i] && t < month1st[i + 1];
+        }).length,
+      };
+      data.push(node);
+    }
+    const date = new Date(month1st[months - 1]);
+    const node = {
+      month: date.getFullYear() + '/' + (date.getMonth() + 1),
+      borrowNum: borrows.filter((x: BorrowFee) => {
+        const t = Date.parse(x.returnTime);
+        return t >= month1st[months - 1];
+      }).length,
+    };
+    data.push(node);
+    return data;
+  };
+
+  //借用数据
+  const borrowNumData = (borrowFeeList: BorrowFee[]) => {
+    const data = [];
+    const fee = [];
+    const borrowGroupByDevice: [{}] = JSON.parse(
+      JSON.stringify(
+        borrowFeeList.reduce((group, record) => {
+          const { deviceID } = record;
+          group[deviceID] = group[deviceID] ?? [];
+          group[deviceID].push(record);
+          return group;
+        }, {}),
+      ),
+    );
+    for (const key in borrowGroupByDevice) {
+      const node = {
+        deviceName: borrowGroupByDevice[key][0].deviceName,
+        borrowNum: borrowGroupByDevice[key].length,
+      };
+      data.push(node);
+      let initialNum = 0;
+      for (const key1 in borrowGroupByDevice[key]) {
+        initialNum += borrowGroupByDevice[key][key1].borrowFee;
+      }
+      if (initialNum !== 0) {
+        const nodef = {
+          deviceID: borrowGroupByDevice[key][0].deviceID,
+          deviceName: borrowGroupByDevice[key][0].deviceName,
+          borrowFee: initialNum,
+        };
+        fee.push(nodef);
+      }
+    }
+    return [data, fee];
+  };
+
+  const columns = [
+    {
+      title: '设备编号',
+      dataIndex: 'assetNumber',
+      copyable: true,
+      ellipsis: true,
+    },
+    {
+      title: '设备名称',
+      dataIndex: 'deviceName',
+      ellipsis: true,
+    },
+    {
+      title: '设备单价',
+      dataIndex: 'unitPrice',
+      ellipsis: true,
+    },
+    {
+      title: '设备收益率',
+      dataIndex: 'profitRate',
+      ellipsis: true,
+    },
+  ];
+
   const handleChangeMonths = async (m: number) => {
     setMonths(m);
-    setDevicePurchase(plotData(initDevice));
-    setRepairLineData(repairLineData(repairs));
-    setMaintenanceLineData(mplotData(maintenances));
-    setScrapColData(scrapPlotData(scraps));
   };
 
   const initial = async () => {
     const res = await getDeviceList();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].purchaseDate = new Date(res.data[i].purchaseDate).toLocaleString();
+      }
       setInitDevice(res.data);
       setDeviceNum(res.data.length);
       setDevicePurchase(plotData(res.data));
@@ -172,7 +267,6 @@ const Home: React.FC = () => {
         rep.data[i].repairTime = new Date(rep.data[i].repairTime).toLocaleString();
       }
       setRepairLineData(repairLineData(rep.data));
-      setRepairs(rep.data);
     }
     const mai = await getMaintenanceList();
     if (mai.code === 20000) {
@@ -180,7 +274,6 @@ const Home: React.FC = () => {
         mai.data[i].maintenanceTime = new Date(mai.data[i].maintenanceTime).toLocaleString();
       }
       setMaintenanceLineData(mplotData(mai.data));
-      setMaintenances(mai.data);
     }
     const scrap = await getScrapList();
     if (scrap.code === 20000) {
@@ -188,11 +281,21 @@ const Home: React.FC = () => {
         scrap.data[i].scrapTime = new Date(scrap.data[i].scrapTime).toLocaleString();
       }
       setScrapColData(scrapPlotData(scrap.data));
-      setScraps(scrap.data);
     }
     const scrapN = await getScrapNum();
     if (scrapN.code === 20000 && scrapN.data !== undefined) {
       setScrapNum(scrapN.data);
+    }
+    const bFees = await getBorrowFeeList();
+    if (bFees.code === 20000 && bFees.data !== undefined) {
+      for (let i = 0; i < bFees.data.length; i++) {
+        bFees.data[i].returnTime = new Date(bFees.data[i].returnTime).toLocaleString();
+      }
+      setBorrow(bplotData(bFees.data));
+      const tempt = borrowNumData(bFees.data);
+      setBNRank(tempt[0].sort((a, b) => b.borrowNum - a.borrowNum));
+      setBFRank(tempt[1].sort((a, b) => b.borrowFee - a.borrowFee));
+      setProfitRates(tempt[1]);
     }
   };
   useEffect(() => {
@@ -245,6 +348,20 @@ const Home: React.FC = () => {
     yAxis: false,
   };
 
+  //借用次数折线图配置
+  const borrowLineConfig = {
+    data: borrow,
+    xField: 'month',
+    yField: 'borrowNum',
+    smooth: true,
+    color: '#27A77F',
+    areaStyle: () => {
+      return {
+        fill: 'l(270) 0:#ffffff 0.5:#27A77F 1:#27A77F',
+      };
+    },
+  };
+
   //设备状态数据
   const deviceData = [
     {
@@ -271,7 +388,7 @@ const Home: React.FC = () => {
     xField: 'num',
     yField: 'state',
     seriesField: 'state',
-    legend: 'none',
+    legend: false,
   };
   const pieData = [
     {
@@ -298,6 +415,7 @@ const Home: React.FC = () => {
     angleField: 'num',
     colorField: 'type',
     radius: 0.75,
+    legend: false,
     label: {
       type: 'spider',
       labelHeight: 28,
@@ -331,32 +449,22 @@ const Home: React.FC = () => {
               title="设备数量"
               value={deviceNum}
               precision={0}
-              valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
+              valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
               suffix="台"
             />
-            <Bar height={100} width={100} {...barConfig} />
+            <Column height={80} {...deviceColumnConfig} />
           </Card>
         </Col>
         <Col span={6}>
-          <Card bordered={false} hoverable={true}>
-            <Statistic
-              title="待办事项"
-              value={5}
-              precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-              suffix="件"
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card bordered={false}>
+          <Card bordered={false} hoverable>
             <Statistic
               title="本月维修费用"
               value={repairFee}
               precision={0}
-              valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
-              suffix="个"
+              valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
+              prefix="￥"
             />
+            <Area height={80} {...repairLineConfig} />
           </Card>
         </Col>
         <Col span={6}>
@@ -394,8 +502,62 @@ const Home: React.FC = () => {
           </Card>
         </Col>
         <Col span={24}>
-          <ProCard bordered={false} title={'设备借用统计'} hoverable>
-            <Pie height={400} {...pieConfig} />
+          <ProCard title="设备借用统计" split="vertical" bordered headerBordered hoverable>
+            <ProCard title="月借用次数" colSpan="60%">
+              <Area height={360} {...borrowLineConfig} />
+            </ProCard>
+            <ProCard title="借用次数排名" colSpan="20%">
+              <List
+                itemLayout="horizontal"
+                dataSource={borrowNumRank}
+                renderItem={(item, index) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<text style={{ color: 'blue' }}>{index + 1}</text>}
+                      title={<text>{item.deviceName}</text>}
+                      description={<text>借用{item.borrowNum}次</text>}
+                    />
+                  </List.Item>
+                )}
+              />
+            </ProCard>
+            <ProCard title="借用费用排名" colSpan="20%">
+              <List
+                itemLayout="horizontal"
+                dataSource={borrowFeeRank}
+                renderItem={(item, index) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<text style={{ color: 'blue' }}>{index + 1}</text>}
+                      title={<text>{item.deviceName}</text>}
+                      description={<text>借用总费用{item.borrowFee}元</text>}
+                    />
+                  </List.Item>
+                )}
+              />
+            </ProCard>
+          </ProCard>
+        </Col>
+        <Col span={24}>
+          <ProCard title="设备借用收益" split="vertical" bordered headerBordered hoverable>
+            <ProCard title="设备收益率" colSpan="80%">
+              <Table columns={columns} dataSource={profitRates} />
+            </ProCard>
+            <ProCard title="设备收益率排名" colSpan="20%">
+              <List
+                itemLayout="horizontal"
+                dataSource={borrowFeeRank}
+                renderItem={(item, index) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      avatar={<text style={{ color: 'blue' }}>{index + 1}</text>}
+                      title={<text>{item.deviceName}</text>}
+                      description={<text>借用总费用{item.borrowFee}元</text>}
+                    />
+                  </List.Item>
+                )}
+              />
+            </ProCard>
           </ProCard>
         </Col>
       </Row>

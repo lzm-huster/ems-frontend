@@ -74,6 +74,12 @@ export async function returnBorrowRecord(
   });
 }
 
+export async function getBorrowFeeList(options?: { [key: string]: any }) {
+  return request('/api/BorrowApplySheet/getAllBorrowFeeRecord', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
 //   export async function getBorrowApplyRecordList(options?: { [key: string]: any }) {
 //     return request('/api/BorrowApplyRecord/getBorrowApplyRecordList', {
 //       method: 'GET',
