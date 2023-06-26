@@ -349,7 +349,7 @@ const UserManage: React.FC = () => {
                 title="总用户数"
                 value={peopleData.sum}
                 precision={0}
-                valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
                 suffix="人"
               />
             </Card>
@@ -360,7 +360,7 @@ const UserManage: React.FC = () => {
                 title="教职工数"
                 value={peopleData.staff}
                 precision={0}
-                valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
+                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
                 suffix="人"
               />
             </Card>
@@ -371,7 +371,7 @@ const UserManage: React.FC = () => {
                 title="学生数"
                 value={peopleData.student}
                 precision={0}
-                valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
+                valueStyle={{ color: '#8D42A3', fontWeight: 'regular', fontSize: 42 }}
                 suffix="人"
               />
             </Card>
@@ -382,7 +382,7 @@ const UserManage: React.FC = () => {
                 title="其他人员数"
                 value={peopleData.other}
                 precision={0}
-                valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
                 suffix="人"
               />
             </Card>

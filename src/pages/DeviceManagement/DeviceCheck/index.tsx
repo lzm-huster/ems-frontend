@@ -291,7 +291,7 @@ const DeviceCheck: React.FC = () => {
                 title="已核查设备"
                 value={checked}
                 precision={0}
-                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 40 }}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
                 suffix="台"
               />
             </Card>
@@ -302,7 +302,7 @@ const DeviceCheck: React.FC = () => {
                 title="待核查设备"
                 value={checking}
                 precision={0}
-                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 40 }}
+                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
                 suffix="台"
               />
             </Card>

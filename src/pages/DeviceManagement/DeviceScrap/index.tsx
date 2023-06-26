@@ -266,8 +266,8 @@ const DeviceScrap: React.FC = () => {
                 title="已报废设备"
                 value={scrapNum}
                 precision={0}
-                valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-                suffix="件"
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
+                suffix="台"
               />
             </Card>
           </Col>
@@ -277,8 +277,8 @@ const DeviceScrap: React.FC = () => {
                 title="待报废设备"
                 value={expectedScrapNum}
                 precision={0}
-                valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
-                suffix="个"
+                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
+                suffix="台"
               />
             </Card>
           </Col>
