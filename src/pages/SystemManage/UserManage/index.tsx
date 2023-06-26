@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-key */
 import {
   addUser,
+  resetPassword,
   roleList,
   updateAvatarById,
   updateInfoById,
@@ -78,6 +79,17 @@ const UserManage: React.FC = () => {
   useEffect(() => {
     form.setFieldsValue({ email: emailData });
   }, [emailData]);
+
+  const handleReset = async (values) => {
+    console.log(values);
+    const data = { userId: values.userID };
+    const res = await resetPassword(data);
+    if (res.code === 20000 && res.data === true) {
+      message.success('重置密码成功');
+    } else {
+      message.error('重置密码失败');
+    }
+  };
   const columns = [
     {
       title: '序号',
@@ -159,7 +171,12 @@ const UserManage: React.FC = () => {
         >
           编辑
         </a>,
-        <a onClick={() => {}} key="reset">
+        <a
+          onClick={() => {
+            handleReset(record);
+          }}
+          key="reset"
+        >
           重置密码
         </a>,
         <a
@@ -304,6 +321,7 @@ const UserManage: React.FC = () => {
       message.error(res.message);
     }
   };
+
   const peopleData = {
     sum: initData?.length,
     student: initData?.filter((i) => i.roleName.toLowerCase().includes('student')).length,
