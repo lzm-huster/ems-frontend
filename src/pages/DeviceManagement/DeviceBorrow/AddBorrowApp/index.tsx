@@ -52,7 +52,6 @@ const AddBorrow: React.FC = () => {
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
   const { state } = useLocation<stateType>();
-  const [duration, setDuration] = useState(0);
   const history = useHistory();
 
   const initial = async () => {
@@ -78,8 +77,7 @@ const AddBorrow: React.FC = () => {
             deviceName: device.data.deviceName,
             deviceType: device.data.deviceType,
             deviceModel: device.data.deviceModel,
-            unitBorrowFee: device.data.borrowRate * device.data.unitPrice,
-            borrowFee: 0,
+            borrowFee: device.data.borrowRate * device.data.unitPrice,
           });
           formRef.current?.setFieldValue('devices', nextList);
         }
@@ -156,12 +154,6 @@ const AddBorrow: React.FC = () => {
                     setEDate(dateStrings[0]);
                     setLDate(dateStrings[1]);
                     setDiff(moment(dateStrings[1]).diff(dateStrings[0], 'day'));
-                    const list = formRef.current?.getFieldValue('devices');
-                    list.forEach((item: any) => {
-                      item.borrowFee =
-                        item.unitBorrowFee * moment(dateStrings[1]).diff(dateStrings[0], 'day');
-                    });
-                    formRef.current?.setFieldValue('devices', list);
                   },
                 }}
               />

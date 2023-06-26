@@ -4,7 +4,6 @@ import { Area, Bar, Column, Pie } from '@ant-design/charts';
 import { getDeviceList } from '@/services/swagger/device';
 
 import React, { useState, useEffect } from 'react';
-import { Device } from '../DeviceList';
 import { getMonth1st } from '@/services/general/dataProcess';
 import { RepairRecord } from '../DeviceRepair';
 import { getRepairList } from '@/services/swagger/repair';
@@ -163,9 +162,6 @@ const Home: React.FC = () => {
   const initial = async () => {
     const res = await getDeviceList();
     if (res.code === 20000) {
-      for (let i = 0; i < res.data.length; i++) {
-        res.data[i].purchaseDate = new Date(res.data[i].purchaseDate).toLocaleString();
-      }
       setInitDevice(res.data);
       setDeviceNum(res.data.length);
       setDevicePurchase(plotData(res.data));
@@ -270,15 +266,13 @@ const Home: React.FC = () => {
       }).length,
     },
   ];
-  //设备状态条形图配置
   const barConfig = {
     data: deviceData,
     xField: 'num',
     yField: 'state',
     seriesField: 'state',
-    legend: false,
+    legend: 'none',
   };
-  //设备借用占比数据
   const pieData = [
     {
       type: '外借',
@@ -298,13 +292,11 @@ const Home: React.FC = () => {
         }).length,
     },
   ];
-  //设备借用占比饼图配置
   const pieConfig = {
     appendPadding: 10,
     data: pieData,
     angleField: 'num',
     colorField: 'type',
-    legend: false,
     radius: 0.75,
     label: {
       type: 'spider',
@@ -339,22 +331,32 @@ const Home: React.FC = () => {
               title="设备数量"
               value={deviceNum}
               precision={0}
-              valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
+              valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
               suffix="台"
             />
-            <Column height={80} {...deviceColumnConfig} />
+            <Bar height={100} width={100} {...barConfig} />
           </Card>
         </Col>
         <Col span={6}>
           <Card bordered={false} hoverable={true}>
             <Statistic
+              title="待办事项"
+              value={5}
+              precision={0}
+              valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
+              suffix="件"
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card bordered={false}>
+            <Statistic
               title="本月维修费用"
               value={repairFee}
               precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
-              prefix="￥"
+              valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
+              suffix="个"
             />
-            <Area height={80} {...repairLineConfig} />
           </Card>
         </Col>
         <Col span={6}>

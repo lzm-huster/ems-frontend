@@ -24,11 +24,12 @@ import {
   getDeviceList,
   getPersonDeviceList,
 } from '@/services/swagger/device';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Key, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import { Link, useModel } from 'umi';
 import { deleteDeviceByDeviceID } from '@/services/swagger/person';
 import moment from 'moment';
+import { replace } from 'lodash';
 interface Device {
   key: React.Key;
   deviceID: number;
@@ -73,6 +74,8 @@ const PersonalInfo: React.FC = () => {
   const [isEditShow, setIsEditShow] = useState(false); // 控制编辑modal显示和隐藏
   //正在编辑的设备
   const [onEditDevice, setOnEditDevice] = useState<API.Device>();
+
+  const defaultImg = 'http://101.43.18.103:9001/mes-bucket/device/20230615_1686794277_180.jpeg';
 
   //编辑个人信息
   const history = useHistory();
@@ -269,9 +272,9 @@ const PersonalInfo: React.FC = () => {
                     </a>
                     <a
                       onClick={async () => {
-                        setIsEditShow(true); //显示Modal
                         setCurrentDeviceId(r.deviceID);
                         setCurrentRow(r);
+                        setIsEditShow(true); //显示Modal
                         form.setFieldsValue(r);
                         const res = await getDeviceDetail({ DeviceID: r.deviceID });
                         if (res.code === 20000) {
@@ -376,7 +379,6 @@ const PersonalInfo: React.FC = () => {
           </Form.Item>
           <Form.Item>
             <ProFormDateTimePicker
-              // width={300}
               name="purchaseDate"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
@@ -389,7 +391,7 @@ const PersonalInfo: React.FC = () => {
       </Modal>
       <Modal
         title="查看设备详情"
-        width="60%"
+        width="70%"
         open={isShow}
         maskClosable={false}
         onCancel={() => setIsShow(false)}
@@ -432,7 +434,20 @@ const PersonalInfo: React.FC = () => {
               : '未知'}
           </Descriptions.Item>
           <Descriptions.Item label="设备参数">{currentRow?.deviceSpecification}</Descriptions.Item>
-          <Descriptions.Item label="设备图片列表">{currentRow?.deviceImageList}</Descriptions.Item>
+          <Descriptions.Item label="设备图片列表">
+            {
+              <img
+                src={
+                  currentRow?.deviceImageList != null &&
+                  currentRow?.deviceImageList.startsWith('["http')
+                    ? currentRow?.deviceImageList.replace(/[\[\]""]/g, '')
+                    : defaultImg
+                }
+                alt="Image"
+                style={{ width: '20%', height: 'auto' }}
+              />
+            }
+          </Descriptions.Item>
         </Descriptions>
       </Modal>
     </PageContainer>

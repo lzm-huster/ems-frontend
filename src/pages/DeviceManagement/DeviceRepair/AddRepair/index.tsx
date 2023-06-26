@@ -46,6 +46,7 @@ const AddRepair: React.FC = () => {
 
   const onFinish = async (values: any) => {
     console.log(values);
+
     values.repairTime = formatDate(values.repairTime);
     const res = await insertRepair(values);
     if (res.code === 20000 && res.data === true) {

@@ -232,7 +232,7 @@ const Repair: React.FC = () => {
       dataIndex: 'repairContent',
     },
     {
-      title: '维修费用（元）',
+      title: '维修费用',
       dataIndex: 'repairFee',
     },
     {
@@ -316,23 +316,25 @@ const Repair: React.FC = () => {
     <PageContainer>
       <Row gutter={[16, 24]}>
         <Col span={6}>
-          <Card bordered={false} hoverable={true} title="维修记录">
-            <Statistic
-              value={repaired}
-              title="维修次数"
-              precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
-              suffix="次"
-            />
-            <Divider />
-            <Statistic
-              value={repairFeeNow}
-              title="本月维修费用"
-              precision={0}
-              valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
-              prefix="￥"
-            />
-          </Card>
+          <Link to={'/deviceManagement/repair/addRecord'}>
+            <Card bordered={false} hoverable={true} title="维修记录">
+              <Statistic
+                value={repaired}
+                title="维修次数"
+                precision={0}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
+                suffix="次"
+              />
+              <Divider />
+              <Statistic
+                value={repairFeeNow}
+                title="本月维修费用"
+                precision={0}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 36 }}
+                prefix="￥"
+              />
+            </Card>
+          </Link>
         </Col>
         <Col span={18}>
           <Card bordered={false} title={'近五个月维修次数'} hoverable>
