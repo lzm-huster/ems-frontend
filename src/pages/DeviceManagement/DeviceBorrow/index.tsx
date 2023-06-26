@@ -167,8 +167,9 @@ const Borrow: React.FC = () => {
       setShowBorrow(rowCombination(res1.data));
     }
     if (res2.code === 20000) {
-      setBorrowNum(res2.data);
     }
+    setBorrowNum(res2.data);
+    console.log(borrowApplyId);
   };
 
   const handleMessDelete = () => {
@@ -204,9 +205,9 @@ const Borrow: React.FC = () => {
         if (res2.code === 20000) {
           setBorrowNum(res2.data);
         }
-        message.success('删除成功');
+        message.success('撤销成功');
       } else {
-        message.error('删除失败');
+        message.error('撤销失败');
       }
     });
     setTimeout(() => {
@@ -336,10 +337,7 @@ const Borrow: React.FC = () => {
             </Link>
           </a>
           {record.borrowApplyState === '借用中' ? (
-            <Popconfirm
-              title="确认归还？"
-              onConfirm={() => handleReturn(record.borrowApplySheetID)}
-            >
+            <Popconfirm title="确认归还？" onConfirm={() => handleReturn(record.borrowApplyID)}>
               <a>归还</a>
             </Popconfirm>
           ) : (
@@ -347,10 +345,7 @@ const Borrow: React.FC = () => {
           )}
           {record.borrowApplyState === '待导师审批' ||
           record.borrowApplyState === '待管理员审批' ? (
-            <Popconfirm
-              title="确认撤销申请？"
-              onConfirm={() => handleDelete(record.borrowApplySheetID)}
-            >
+            <Popconfirm title="确认撤销申请？" onConfirm={() => handleDelete(record.borrowApplyID)}>
               <a>撤销</a>
             </Popconfirm>
           ) : (

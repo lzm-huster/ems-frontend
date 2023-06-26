@@ -130,6 +130,9 @@ const DeviceScrap: React.FC = () => {
     }
   };
 
+  /**
+   * 批量删除
+   */
   const handleMessDelete = () => {
     setLoading(true);
 
