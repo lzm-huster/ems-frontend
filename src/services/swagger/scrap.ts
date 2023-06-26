@@ -1,7 +1,7 @@
 import { request } from 'umi';
 
 export async function insertScrap(body: FormData, options?: { [key: string]: any }) {
-  return request('/api/scrap/insertDeviceScarpRecord', {
+  return request('/api/scrap/insertDeviceScrapRecord', {
     method: 'POST',
     data: body,
     headers: {
@@ -26,6 +26,20 @@ export async function updateScrap(body: FormData, options?: { [key: string]: any
 
 export async function getScrapList(options?: { [key: string]: any }) {
   return request('/api/scrap/getScrapList', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+export async function getScrapNum(options?: { [key: string]: any }) {
+  return request('/api/scrap/getNumCurrentScrap', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+export async function getExpectedScrapNum(options?: { [key: string]: any }) {
+  return request('/api/scrap/getNumExpectedlyScrap', {
     method: 'GET',
     ...(options || {}),
   });

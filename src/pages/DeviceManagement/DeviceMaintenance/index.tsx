@@ -5,7 +5,7 @@ import {
   getMaintenanceNum,
 } from '@/services/swagger/maintenance';
 import { Line } from '@ant-design/charts';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import {
   Button,
   Card,
@@ -18,11 +18,13 @@ import {
   Row,
   Space,
   Statistic,
+  message,
 } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface MaintenanceRecord {
   key: React.Key;
@@ -134,23 +136,33 @@ const Maintenance: React.FC = () => {
     ],
   };
 
-  const onSearch = (value: string) => {
-    setShowMaintenance(
-      value === ''
-        ? initMaintenance
-        : initMaintenance.filter((item: MaintenanceRecord) => {
-            return item['deviceName'].indexOf(value) != -1;
-          }),
-    );
-  };
-
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setShowMaintenance(
+        name === ''
+          ? initMaintenance
+          : initMaintenance.filter((item: MaintenanceRecord) => {
+              const pTime = Date.parse(item['maintenanceTime']);
+              return item['deviceName'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setShowMaintenance(
+        name === ''
+          ? initMaintenance
+          : initMaintenance.filter((item: MaintenanceRecord) => {
+              return item['deviceName'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setShowMaintenance(
+        name === ''
+          ? initMaintenance
+          : initMaintenance.filter((item: MaintenanceRecord) => {
+              const pTime = Date.parse(item['maintenanceTime']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
   };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -167,9 +179,66 @@ const Maintenance: React.FC = () => {
   const handleDelete = async (maintenanceId: number) => {
     deleteMaintenanceRecord({ maintenanceID: maintenanceId });
     const res = await getMaintenanceList();
+    const num = await getMaintenanceNum();
     if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].maintenanceTime = new Date(res.data[i].maintenanceTime).toLocaleString();
+        res.data[i].key = i;
+      }
+      setInitMaintenance(res.data);
       setShowMaintenance(res.data);
+      setLineData(plotData(res.data));
     }
+    if (num.code === 20000) {
+      setMaintenanceNum(num.data);
+    }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedMaintenanceIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedMaintenance = initMaintenance.find(
+          (maintenanceItem: MaintenanceRecord) => maintenanceItem.key === selectedKey,
+        );
+        if (selectedMaintenance && selectedMaintenance.maintenanceID) {
+          return selectedMaintenance.maintenanceID;
+        }
+        return null;
+      })
+      .filter((maintenanceID: any): maintenanceID is number => maintenanceID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedMaintenanceIds.map((maintenanceID: any) =>
+      deleteMaintenanceRecord({ maintenanceID: maintenanceID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getMaintenanceList();
+        const num = await getMaintenanceNum();
+        if (res.code === 20000) {
+          for (let i = 0; i < res.data.length; i++) {
+            res.data[i].maintenanceTime = new Date(res.data[i].maintenanceTime).toLocaleString();
+            res.data[i].key = i;
+          }
+          setInitMaintenance(res.data);
+          setShowMaintenance(res.data);
+          setLineData(plotData(res.data));
+        }
+        if (num.code === 20000) {
+          setMaintenanceNum(num.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   const columns: ColumnsType<MaintenanceRecord> = [
@@ -282,7 +351,7 @@ const Maintenance: React.FC = () => {
               </Button>
             </Access>
             <Access accessible={access.maintenanceDeleteBtn('maintenance:delete')}>
-              <Button danger onClick={start} disabled={!hasSelected}>
+              <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                 批量删除
               </Button>
             </Access>
@@ -290,22 +359,45 @@ const Maintenance: React.FC = () => {
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>
-            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-              <Form.Item name="search">
-                <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="text"
-                  onClick={() => {
-                    setShowMaintenance(initMaintenance);
-                    formRef.current?.setFieldsValue({ search: '' });
-                  }}
-                >
-                  重置
-                </Button>
-              </Form.Item>
-            </Form>
+            <div style={{ position: 'absolute', right: 0, top: 0 }}>
+              <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 800 }}>
+                <Form.Item name="deviceNameS">
+                  <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+                </Form.Item>
+                <Form.Item name="timeRangeS">
+                  <ProFormDateRangePicker style={{ width: 200 }} />
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      const time = formRef.current?.getFieldValue('timeRangeS');
+                      if (time !== undefined)
+                        onSearch(
+                          formRef.current?.getFieldValue('deviceNameS'),
+                          Date.parse(time[0]),
+                          Date.parse(time[1]),
+                        );
+                      else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                    }}
+                  >
+                    <SearchOutlined />
+                    搜索
+                  </Button>
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="text"
+                    onClick={() => {
+                      setShowMaintenance(initMaintenance);
+                      formRef.current?.setFieldsValue({ deviceNameS: '', timeRanges: [] });
+                    }}
+                  >
+                    重置
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
           </GeneralTable>
         </Col>
       </Row>

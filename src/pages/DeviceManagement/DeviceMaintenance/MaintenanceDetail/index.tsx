@@ -10,7 +10,7 @@ import {
   ProFormSelect,
   ProFormText,
 } from '@ant-design/pro-components';
-import { Button, Card } from 'antd';
+import { Button, Card, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'umi';
 
@@ -55,6 +55,7 @@ const RepairDetail: React.FC = () => {
         onClick={() => {
           props.form?.resetFields();
         }}
+        disabled={false}
       >
         删除
       </Button>,
@@ -62,6 +63,7 @@ const RepairDetail: React.FC = () => {
         onClick={() => {
           history.push('/deviceManagement/maintenance');
         }}
+        disabled={false}
       >
         返回
       </Button>,
@@ -78,19 +80,14 @@ const RepairDetail: React.FC = () => {
           values.maintenanceTime = formatDate(new Date(values.maintenanceTime));
           // console.log(values);
           values.deviceID = props.form?.getFieldValue('deviceID');
-          console.log(values);
-
           const res = await updateMaintenance(values);
-          console.log(res);
 
-          // if (res.code === 20000 && res.data === true) {
-          //   message.success('修改成功');
-          //   console.log(props);
-
-          //   setUneditable(true);
-          // } else {
-          //   message.error(res.message);
-          // }
+          if (res.code === 20000 && res.data === 1) {
+            message.success('修改成功');
+            setUneditable(true);
+          } else {
+            message.error(res.message);
+          }
         }}
       >
         提交

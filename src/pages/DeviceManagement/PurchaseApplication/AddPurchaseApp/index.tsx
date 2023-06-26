@@ -19,6 +19,7 @@ import {
   InputNumber,
   message,
   Row,
+  Select,
   Space,
   TreeSelect,
 } from 'antd';
@@ -26,16 +27,10 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { useModel } from 'umi';
+import { useHistory, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
-
-//样式
-const layout = {
-  labelCol: { span: 4 },
-  wrapperCol: { span: 20 },
-};
 
 const tailLayout = {
   wrapperCol: { offset: 0, span: 16 },
@@ -44,12 +39,12 @@ const tailLayout = {
 //main
 const AddPurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
-
-  const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
+  const history = useHistory();
   const deviceT: string[] = [];
+
   const initial = async () => {
     formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
     formRef.current?.setFieldsValue({ purchaseApplyDate: formatDate(new Date()) });
@@ -93,7 +88,7 @@ const AddPurchaseApp: React.FC = () => {
             });
             if (flag) {
               message.success('添加借用申请成功');
-              setComponentDisabled(true);
+              history.push('/deviceManagement/purchaseApp');
             } else {
               message.error('添加借用申请失败');
             }
@@ -111,44 +106,45 @@ const AddPurchaseApp: React.FC = () => {
 
   return (
     <PageContainer>
-      <Form
-        {...layout}
-        ref={formRef}
-        name="control-ref"
-        onFinish={onFinish}
-        style={{ width: '100%' }}
-        disabled={componentDisabled}
-      >
+      <Form ref={formRef} name="control-ref" onFinish={onFinish} style={{ width: '100%' }}>
         <Divider orientation="left" orientationMargin={5}>
           基本信息
         </Divider>
-        <Row gutter={[16, 24]}>
-          <Col span={8}>
-            <Form.Item name="purchaseApplyID" label="申请单编号">
-              <Input placeholder="提交后自动生成" disabled />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="userName" label="申请人" rules={[{ required: true }]}>
-              <Input placeholder="申请人姓名" />
-            </Form.Item>
-          </Col>
-          {/* <Col span={8}>
-            <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
-              <Select placeholder="请选择导师" />
-            </Form.Item>
-          </Col> */}
-          <Col span={8}>
-            <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
-              <DateTimePicker />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="purchaseIllustration" label="采购说明" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-          </Col>
-        </Row>
+        <Card>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="purchaseApplyID" label="申请单编号">
+                <Input placeholder="提交后自动生成" disabled />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="userName" label="申请人" rules={[{ required: true }]}>
+                <Input placeholder="申请人姓名" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="approveTutorName"
+                label="责任导师"
+                rules={[{ required: true }]}
+                initialValue={1}
+              >
+                <Select placeholder="学生请选择导师" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
+                <DateTimePicker />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="purchaseIllustration" label="采购说明" rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+
         <Divider orientation="left" orientationMargin={5}>
           设备详情
         </Divider>

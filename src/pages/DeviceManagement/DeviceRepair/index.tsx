@@ -6,7 +6,7 @@ import {
   getRepairList,
 } from '@/services/swagger/repair';
 import { Line } from '@ant-design/charts';
-import { PageContainer } from '@ant-design/pro-components';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import {
   Button,
   Card,
@@ -25,6 +25,7 @@ import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface RepairRecord {
   key: React.Key;
@@ -42,6 +43,7 @@ const { Search } = Input;
 const Repair: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  //const [selectedRows, setSelectedRows] = useState<RepairRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [initRepair, setInitRepair] = useState([]);
   const [showRepair, setShowRepair] = useState([]);
@@ -153,12 +155,50 @@ const Repair: React.FC = () => {
       if (res.code === 20000 && res.data !== undefined) {
         for (let i = 0; i < res.data.length; i++) {
           res.data[i].repairTime = new Date(res.data[i].repairTime).toLocaleString();
+          res.data[i].key = i;
         }
         setShowRepair(res.data);
       } else {
         message.error(res.message);
       }
     }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedRepairIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedRepair = initRepair.find(
+          (repairItem: RepairRecord) => repairItem.key === selectedKey,
+        );
+        if (selectedRepair && selectedRepair.repairID) {
+          return selectedRepair.repairID;
+        }
+        return null;
+      })
+      .filter((repairID: any): repairID is number => repairID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedRepairIds.map((repairID: any) =>
+      deleteRepairRecord({ repairID: repairID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getRepairList();
+        if (res.code === 20000) {
+          setShowRepair(res.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   const columns: ColumnsType<RepairRecord> = [
@@ -232,28 +272,38 @@ const Repair: React.FC = () => {
     },
   ];
 
-  const onSearch = (value: string) => {
-    setShowRepair(
-      value === ''
-        ? initRepair
-        : initRepair.filter((item: RepairRecord) => {
-            return item['deviceName'].indexOf(value) != -1;
-          }),
-    );
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setShowRepair(
+        name === ''
+          ? initRepair
+          : initRepair.filter((item: RepairRecord) => {
+              const pTime = Date.parse(item['repairTime']);
+              return item['deviceName'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setShowRepair(
+        name === ''
+          ? initRepair
+          : initRepair.filter((item: RepairRecord) => {
+              return item['deviceName'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setShowRepair(
+        name === ''
+          ? initRepair
+          : initRepair.filter((item: RepairRecord) => {
+              const pTime = Date.parse(item['repairTime']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
   };
 
-  const start = () => {
-    setLoading(true);
-    // ajax request after empty completing
-    setTimeout(() => {
-      setSelectedRowKeys([]);
-      setLoading(false);
-    }, 1000);
-  };
-
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+  const onSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: RepairRecord[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+    //setSelectedRows(newSelectedRows);
   };
 
   const rowSelection = {
@@ -299,7 +349,7 @@ const Repair: React.FC = () => {
               </Button>
             </Access>
             <Access accessible={access.repairDeleteBtn('repair:delete')}>
-              <Button danger onClick={start} disabled={!hasSelected}>
+              <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                 批量删除
               </Button>
             </Access>
@@ -307,22 +357,45 @@ const Repair: React.FC = () => {
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>
-            <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 600 }}>
-              <Form.Item name="search">
-                <Search placeholder="请输入设备名称" onSearch={onSearch} style={{ width: 300 }} />
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="text"
-                  onClick={() => {
-                    setShowRepair(initRepair);
-                    formRef.current?.setFieldsValue({ search: '' });
-                  }}
-                >
-                  重置
-                </Button>
-              </Form.Item>
-            </Form>
+            <div style={{ position: 'absolute', right: 0, top: 0 }}>
+              <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 800 }}>
+                <Form.Item name="deviceNameS">
+                  <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+                </Form.Item>
+                <Form.Item name="timeRangeS">
+                  <ProFormDateRangePicker style={{ width: 200 }} />
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      const time = formRef.current?.getFieldValue('timeRangeS');
+                      if (time !== undefined)
+                        onSearch(
+                          formRef.current?.getFieldValue('deviceNameS'),
+                          Date.parse(time[0]),
+                          Date.parse(time[1]),
+                        );
+                      else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                    }}
+                  >
+                    <SearchOutlined />
+                    搜索
+                  </Button>
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="text"
+                    onClick={() => {
+                      setShowRepair(initRepair);
+                      formRef.current?.setFieldsValue({ deviceNameS: '', timeRangeS: [] });
+                    }}
+                  >
+                    重置
+                  </Button>
+                </Form.Item>
+              </Form>
+            </div>
           </GeneralTable>
         </Col>
       </Row>

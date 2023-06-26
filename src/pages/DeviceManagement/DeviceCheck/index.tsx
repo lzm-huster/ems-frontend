@@ -4,11 +4,25 @@ import {
   getCheckingNum,
   getCheckList,
 } from '@/services/swagger/check';
-import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Col, Popconfirm, Row, Space, Statistic } from 'antd';
+import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  FormInstance,
+  Input,
+  message,
+  Popconfirm,
+  Row,
+  Space,
+  Statistic,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
+import React from 'react';
+import { SearchOutlined } from '@ant-design/icons';
 
 interface CheckRecord {
   key: React.Key;
@@ -22,11 +36,15 @@ interface CheckRecord {
 }
 
 const DeviceCheck: React.FC = () => {
+  const formRef = React.useRef<FormInstance>(null);
+
   const [tableData, setTableData] = useState<CheckRecord[]>([]);
+  const [initTableData, setInitTableData] = useState<CheckRecord[]>([]);
   const [currentRow, setCurrentRow] = useState<CheckRecord>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [checked, setChecked] = useState(0);
   const [checking, setChecking] = useState(0);
+  const [loading, setLoading] = useState(false);
   const access = useAccess();
   const initial = async () => {
     const res = await getCheckList();
@@ -36,6 +54,7 @@ const DeviceCheck: React.FC = () => {
         res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
       }
       setTableData(res.data);
+      setInitTableData(res.data);
     }
     const checkedRes = await getCheckedNum();
     if (checkedRes.code === 20000) {
@@ -50,6 +69,35 @@ const DeviceCheck: React.FC = () => {
   useEffect(() => {
     initial();
   }, []);
+
+  const onSearch = (name?: string, sTime?: number, eTime?: number) => {
+    if (sTime !== undefined && eTime !== undefined && name !== undefined)
+      setTableData(
+        name === ''
+          ? initTableData
+          : initTableData.filter((item: CheckRecord) => {
+              const pTime = Date.parse(item['checkTime']);
+              return item['deviceName'].indexOf(name) != -1 && pTime <= eTime && pTime >= sTime;
+            }),
+      );
+    else if (name !== undefined)
+      setTableData(
+        name === ''
+          ? initTableData
+          : initTableData.filter((item: CheckRecord) => {
+              return item['deviceName'].indexOf(name) != -1;
+            }),
+      );
+    else if (sTime !== undefined && eTime !== undefined)
+      setTableData(
+        name === ''
+          ? initTableData
+          : initTableData.filter((item: CheckRecord) => {
+              const pTime = Date.parse(item['checkTime']);
+              return pTime <= eTime && pTime >= sTime;
+            }),
+      );
+  };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
@@ -68,9 +116,70 @@ const DeviceCheck: React.FC = () => {
     if (delRes.code === 20000) {
       const res = await getCheckList();
       if (res.code === 20000) {
+        for (let i = 0; i < res.data.length; i++) {
+          res.data[i].key = i;
+          res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
+        }
         setTableData(res.data);
       }
+      const checkedRes = await getCheckedNum();
+      if (checkedRes.code === 20000) {
+        setChecked(checkedRes.data);
+      }
+      const checkingRes = await getCheckingNum();
+      if (checkingRes.code === 20000) {
+        setChecking(checkingRes.data);
+      }
     }
+  };
+
+  const handleMessDelete = () => {
+    setLoading(true);
+
+    const selectedDataIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedData = tableData.find(
+          (dataItem: CheckRecord) => dataItem.key === selectedKey,
+        );
+        if (selectedData && selectedData.checkID) {
+          return selectedData.checkID;
+        }
+        return null;
+      })
+      .filter((checkID: any): checkID is number => checkID !== null);
+    // 依次删除每个设备
+    const deletePromises = selectedDataIds.map((checkID: any) =>
+      deleteCheckRecord({ checkID: checkID }).then((res) => res.code === 20000),
+    );
+
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getCheckList();
+        if (res.code === 20000) {
+          for (let i = 0; i < res.data.length; i++) {
+            res.data[i].key = i;
+            res.data[i].checkTime = new Date(res.data[i].checkTime).toLocaleString();
+          }
+          setTableData(res.data);
+        }
+        const checkedRes = await getCheckedNum();
+        if (checkedRes.code === 20000) {
+          setChecked(checkedRes.data);
+        }
+        const checkingRes = await getCheckingNum();
+        if (checkingRes.code === 20000) {
+          setChecking(checkingRes.data);
+        }
+        message.success('删除成功');
+      } else {
+        message.error('删除失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(false);
+    }, 1000);
   };
 
   const columns = [
@@ -118,6 +227,23 @@ const DeviceCheck: React.FC = () => {
       dataIndex: 'deviceState',
       copyable: true,
       ellipsis: true,
+      filters: [
+        {
+          text: '正常',
+          value: '正常',
+        },
+        {
+          text: '报废',
+          value: '报废',
+        },
+        {
+          text: '丢失',
+          value: '丢失',
+        },
+      ],
+      onFilter: (value: string, record) => {
+        return record.deviceState == value;
+      },
     },
     {
       title: '操作',
@@ -193,10 +319,49 @@ const DeviceCheck: React.FC = () => {
                 </Button>
               </Access>
               <Access accessible={access.inventoryDeleteBtn('inventory:delete')}>
-                <Button danger disabled={!hasSelected}>
+                <Button danger onClick={handleMessDelete} disabled={!hasSelected}>
                   批量删除记录
                 </Button>
               </Access>
+              <div style={{ position: 'absolute', right: 0, top: 0 }}>
+                <Form layout={'inline'} ref={formRef} name="control-ref" style={{ maxWidth: 1000 }}>
+                  <Form.Item name="deviceNameS">
+                    <Input placeholder="请输入设备名称" style={{ width: 150 }} />
+                  </Form.Item>
+                  <Form.Item name="timeRangeS">
+                    <ProFormDateRangePicker style={{ width: 200 }} />
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        const time = formRef.current?.getFieldValue('timeRangeS');
+                        if (time !== undefined)
+                          onSearch(
+                            formRef.current?.getFieldValue('deviceNameS'),
+                            Date.parse(time[0]),
+                            Date.parse(time[1]),
+                          );
+                        else onSearch(formRef.current?.getFieldValue('deviceNameS'));
+                      }}
+                    >
+                      <SearchOutlined />
+                      搜索
+                    </Button>
+                  </Form.Item>
+                  <Form.Item>
+                    <Button
+                      type="text"
+                      onClick={() => {
+                        setTableData(initTableData);
+                        formRef.current?.setFieldsValue({ deviceNameS: '', timeRanges: [] });
+                      }}
+                    >
+                      重置
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </div>
             </GeneralTable>
           </Col>
         </Row>

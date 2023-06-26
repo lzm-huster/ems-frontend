@@ -16,7 +16,7 @@ import {
 import { Button, Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'umi';
+import { useHistory, useLocation } from 'umi';
 
 interface stateType {
   deviceID: number;
@@ -42,14 +42,15 @@ const DeviceDetail: React.FC = () => {
   const [previewTitle, setPreviewTitle] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const { state } = useLocation<stateType>();
+  const history = useHistory();
 
   const initial = async () => {
     const res = await getDeviceDetail({ DeviceID: state.deviceID });
     if (res.code === 20000) {
       res.data.userName = state.userName;
       console.log(res);
-      const images = [];
-      if (res.data.deviceImageList) {
+      const images = fileList;
+      if (res.data.deviceImageList !== 'null' && res.data.deviceImageList !== undefined) {
         const imageList = JSON.parse(res.data.deviceImageList);
         console.log(imageList);
 
@@ -77,10 +78,27 @@ const DeviceDetail: React.FC = () => {
     initial();
   }, []);
 
-  const submitterEdit = () => {
+  const submitterEdit = (props: any) => {
     return [
-      <Button key="submit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
+      <Button key="edit" type="primary" onClick={() => setUneditable(false)} disabled={false}>
         修改
+      </Button>,
+      <Button
+        danger
+        onClick={() => {
+          props.form?.resetFields();
+        }}
+        disabled={false}
+      >
+        删除
+      </Button>,
+      <Button
+        onClick={() => {
+          history.push('/deviceManagement/list');
+        }}
+        disabled={false}
+      >
+        返回
       </Button>,
     ];
   };
@@ -95,9 +113,9 @@ const DeviceDetail: React.FC = () => {
           console.log(values);
           const pDate = formatDate(new Date(values.purchaseDate));
           values.purchaseDate = pDate;
-          const { deviceImage, ...deviceData } = values;
-          const fileList1 = deviceImage.fileList;
-          console.log(deviceData);
+          const { deviceImageList, ...deviceData } = values;
+          const fileList1 = deviceImageList.fileList;
+          console.log(fileList1);
 
           const formData = new FormData();
           // formData.append('file', fileList);
@@ -111,7 +129,7 @@ const DeviceDetail: React.FC = () => {
           const res = await updateDevice(formData);
           if (res.code === 20000 && res.data !== undefined) {
             message.success('修改成功');
-            setUneditable(true);
+            history.push('/deviceManagement/list');
           } else {
             message.error(res.message);
           }
@@ -226,7 +244,12 @@ const DeviceDetail: React.FC = () => {
                 <img alt="example" style={{ width: '100%' }} src={previewImage} />
               </Modal>
             </>
-            <ProFormText name="deviceSpecification" label="设备说明" placeholder="设备说明" />
+            <ProFormText
+              name="deviceSpecification"
+              label="设备说明"
+              placeholder="请填写生产厂家（及备注说明）"
+              required
+            />
           </ProForm>
         </div>
       </Card>

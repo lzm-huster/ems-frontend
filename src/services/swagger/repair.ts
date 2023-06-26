@@ -38,13 +38,21 @@ export async function deleteRepairRecord(
 ) {
   return request('/api/repair/deleteDeviceRepairRecord', {
     method: 'POST',
-    ...(options || {}),
     params: { ...params },
+    ...(options || {}),
   });
 }
 
 export async function insertRepair(params: any, options?: { [key: string]: any }) {
   return request('/api/repair/insertDeviceRepairRecord', {
+    method: 'POST',
+    data: params,
+    ...(options || {}),
+  });
+}
+
+export async function updateRepair(params: any, options?: { [key: string]: any }) {
+  return request('/api/repair/updateDeviceRepairRecord', {
     method: 'POST',
     data: params,
     ...(options || {}),

@@ -49,15 +49,18 @@ const DetailCheck: React.FC = () => {
     if (res.code === 20000) {
       res.data.deviceName = state.deviceName;
       const images = [];
-      JSON.parse(res.data.scrapImage).forEach((image: any, ind: number) => {
-        const node: any = {
-          url: image,
-          name: res.data.deviceName + ind,
-          status: 'done',
-          uid: ind,
-        };
-        images.push(node);
-      });
+      if (res.data.scrapImages !== 'null' && res.data.deviceImageList !== undefined) {
+        res.data.scrapImages.forEach((image: any, ind: number) => {
+          const node: any = {
+            url: image,
+            name: res.data.deviceName + ind,
+            status: 'done',
+            uid: ind,
+          };
+          images.push(node);
+        });
+      }
+
       setFileList(images);
       setScrapRecord(res.data);
       setUneditable(!state.edit);
@@ -88,21 +91,23 @@ const DetailCheck: React.FC = () => {
         type="primary"
         onClick={async () => {
           const values = props.form?.getFieldsValue();
-          console.log(values);
-          const pDate = formatDate(new Date(values.purchaseDate));
-          values.purchaseDate = pDate;
-          const { deviceImage, ...deviceData } = values;
-          const fileList1 = deviceImage.fileList;
-          console.log(deviceData);
+          const pDate = formatDate(new Date(values.scrapTime));
+          values.scrapTime = pDate;
+
+          // const { scrapImages, ...deviceData } = values;
+          // const fileList1 = scrapImages;
 
           const formData = new FormData();
-          // formData.append('file', fileList);
-          fileList1.forEach((file) => {
-            formData.append('files', file.originFileObj);
-          });
-          // formData.append('device', JSON.stringify(deviceData));
-          for (const key in deviceData) {
-            formData.append(key, deviceData[key] == undefined ? '' : deviceData[key]);
+          // // formData.append('file', fileList);
+          // fileList1.forEach((file) => {
+          //   formData.append('files', file.originFileObj);
+          // });
+          // // formData.append('device', JSON.stringify(deviceData));
+          // for (const key in deviceData) {
+          //   formData.append(key, deviceData[key] == undefined ? '' : deviceData[key]);
+          // }
+          for (const key in values) {
+            formData.append(key, values[key] == undefined ? '' : values[key]);
           }
           const res = await updateScrap(formData);
           if (res.code === 20000 && res.data !== undefined) {
@@ -154,7 +159,7 @@ const DetailCheck: React.FC = () => {
           >
             <ProFormSelect
               label={'设备编号'}
-              name={'assetNumber'}
+              name={'deviceID'}
               required
               options={selectData}
               fieldProps={{
@@ -203,7 +208,7 @@ const DetailCheck: React.FC = () => {
             />
             <>
               <ProFormUploadButton
-                name="scrapImage"
+                name="scrapImages"
                 label="报废图片"
                 max={5}
                 fieldProps={{

@@ -62,6 +62,16 @@ export default [
         accessCode: 'purchase:add',
       },
       {
+        path: '/deviceManagement/purchaseApply/purchaseApplyDetail',
+        name: '设备采购申请详情',
+        icon: 'smile',
+        component: './DeviceManagement/PurchaseApplication/PurchaseAppDetail',
+        parentKeys: ['/deviceManagement/purchaseApply'],
+        hideInMenu: true,
+        access: 'purchaseAdd',
+        accessCode: 'purchase:query',
+      },
+      {
         path: '/deviceManagement/borrow',
         name: '设备借用',
         icon: 'smile',
@@ -78,6 +88,16 @@ export default [
         hideInMenu: true,
         access: 'borrowAdd',
         accessCode: 'borrow:add',
+      },
+      {
+        path: '/deviceManagement/borrow/borrowApplyDetail',
+        name: '设备借用申请详情',
+        icon: 'smile',
+        component: './DeviceManagement/DeviceBorrow/BorrowAppDetail',
+        parentKeys: ['/deviceManagement/borrow'],
+        hideInMenu: true,
+        access: 'borrowAdd',
+        accessCode: 'borrow:query',
       },
       {
         path: '/deviceManagement/repair',
