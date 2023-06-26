@@ -1,12 +1,9 @@
 import { PageContainer, ProCard } from '@ant-design/pro-components';
-import { Card, Col, Row, Statistic } from 'antd';
-import { Area, Bar, Column, Line, Pie, Progress, RingProgress } from '@ant-design/charts';
+import { Card, Col, Row, Space, Statistic } from 'antd';
+import { Area, Bar, Column, Pie } from '@ant-design/charts';
 import { getDeviceList } from '@/services/swagger/device';
 
 import React, { useState, useEffect } from 'react';
-import { render } from 'react-dom';
-import { RightOutlined } from '@ant-design/icons';
-import { Link } from 'umi';
 import { Device } from '../DeviceList';
 import { getMonth1st } from '@/services/general/dataProcess';
 import { RepairRecord } from '../DeviceRepair';
@@ -16,60 +13,6 @@ import { getMaintenanceList } from '@/services/swagger/maintenance';
 import { getScrapList, getScrapNum } from '@/services/swagger/scrap';
 import { ScrapRecord } from '../DeviceScrap';
 //import styles from './Home.less';
-
-//设备采购次数数据
-const plotData = (devices: Device[]) => {
-  const month1st = getMonth1st(5);
-  const data = [];
-  for (let i = 0; i < 4; i++) {
-    const date = new Date(month1st[i]);
-    const node = {
-      month: date.getFullYear() + '/' + (date.getMonth() + 1),
-      purchaseNum: devices.filter((x: Device) => {
-        const t = Date.parse(x.purchaseDate);
-        return t >= month1st[i] && t < month1st[i + 1];
-      }).length,
-    };
-    data.push(node);
-  }
-  const date = new Date(month1st[4]);
-  const node = {
-    month: date.getFullYear() + '/' + (date.getMonth() + 1),
-    purchaseNum: devices.filter((x: Device) => {
-      const t = Date.parse(x.purchaseDate);
-      return t >= month1st[4];
-    }).length,
-  };
-  data.push(node);
-  return data;
-};
-
-//设备报废次数数据
-const scrapPlotData = (devices: ScrapRecord[]) => {
-  const month1st = getMonth1st(5);
-  const data = [];
-  for (let i = 0; i < 4; i++) {
-    const date = new Date(month1st[i]);
-    const node = {
-      month: date.getFullYear() + '/' + (date.getMonth() + 1),
-      scrapNum: devices.filter((x: ScrapRecord) => {
-        const t = Date.parse(x.scrapTime);
-        return t >= month1st[i] && t < month1st[i + 1];
-      }).length,
-    };
-    data.push(node);
-  }
-  const date = new Date(month1st[4]);
-  const node = {
-    month: date.getFullYear() + '/' + (date.getMonth() + 1),
-    scrapNum: devices.filter((x: ScrapRecord) => {
-      const t = Date.parse(x.scrapTime);
-      return t >= month1st[4];
-    }).length,
-  };
-  data.push(node);
-  return data;
-};
 
 const Home: React.FC = () => {
   const [deviceNum, setDeviceNum] = useState(0);
@@ -81,38 +24,38 @@ const Home: React.FC = () => {
   const [mLineData, setMaintenanceLineData] = useState<{}>([]);
   const [scrapNum, setScrapNum] = useState(0);
   const [sColData, setScrapColData] = useState<{}>([]);
+  const [months, setMonths] = useState(6);
+  const [repairs, setRepairs] = useState<RepairRecord[]>([]);
+  const [maintenances, setMaintenances] = useState<MaintenanceRecord[]>([]);
+  const [scraps, setScraps] = useState<ScrapRecord[]>([]);
 
-  const repairLineData = (repairs: RepairRecord[]) => {
-    const month1st = getMonth1st(5);
+  const repairLineData = (Repairs: RepairRecord[]) => {
+    const month1st = getMonth1st(months);
     const data = [];
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < months - 1; i++) {
       let fee = 0;
       const date = new Date(month1st[i]);
-      repairs
-        .filter((x: RepairRecord) => {
-          const t = Date.parse(x.repairTime);
-          return t >= month1st[i] && t < month1st[i + 1];
-        })
-        .forEach((r) => {
-          fee += r.repairFee;
-        });
+      Repairs.filter((x: RepairRecord) => {
+        const t = Date.parse(x.repairTime);
+        return t >= month1st[i] && t < month1st[i + 1];
+      }).forEach((r) => {
+        fee += r.repairFee;
+      });
       const node = {
         month: date.getFullYear() + '/' + (date.getMonth() + 1),
         repairFee: fee,
       };
       data.push(node);
     }
-    const date = new Date(month1st[4]);
+    const date = new Date(month1st[months - 1]);
     let fee = 0;
-    repairs
-      .filter((x: RepairRecord) => {
-        const t = Date.parse(x.repairTime);
-        return t >= month1st[4];
-      })
-      .forEach((r) => {
-        fee += r.repairFee;
-      });
+    Repairs.filter((x: RepairRecord) => {
+      const t = Date.parse(x.repairTime);
+      return t >= month1st[months - 1];
+    }).forEach((r) => {
+      fee += r.repairFee;
+    });
     const node = {
       month: date.getFullYear() + '/' + (date.getMonth() + 1),
       repairFee: fee,
@@ -122,37 +65,99 @@ const Home: React.FC = () => {
     return data;
   };
 
-  //维修折线图数据
-  const mplotData = (repairs: MaintenanceRecord[]) => {
-    const month1st = getMonth1st(5);
+  //设备采购次数数据
+  const plotData = (devices: Device[]) => {
+    const month1st = getMonth1st(months);
     const data = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < months - 1; i++) {
       const date = new Date(month1st[i]);
       const node = {
         month: date.getFullYear() + '/' + (date.getMonth() + 1),
-        maintenanceNum: repairs.filter((x: MaintenanceRecord) => {
+        purchaseNum: devices.filter((x: Device) => {
+          const t = Date.parse(x.purchaseDate);
+          return t >= month1st[i] && t < month1st[i + 1];
+        }).length,
+      };
+      data.push(node);
+    }
+    const date = new Date(month1st[months - 1]);
+    const node = {
+      month: date.getFullYear() + '/' + (date.getMonth() + 1),
+      purchaseNum: devices.filter((x: Device) => {
+        const t = Date.parse(x.purchaseDate);
+        return t >= month1st[months - 1];
+      }).length,
+    };
+    data.push(node);
+    return data;
+  };
+
+  //设备报废次数数据
+  const scrapPlotData = (devices: ScrapRecord[]) => {
+    const month1st = getMonth1st(months);
+    const data = [];
+    for (let i = 0; i < months - 1; i++) {
+      const date = new Date(month1st[i]);
+      const node = {
+        month: date.getFullYear() + '/' + (date.getMonth() + 1),
+        scrapNum: devices.filter((x: ScrapRecord) => {
+          const t = Date.parse(x.scrapTime);
+          return t >= month1st[i] && t < month1st[i + 1];
+        }).length,
+      };
+      data.push(node);
+    }
+    const date = new Date(month1st[months - 1]);
+    const node = {
+      month: date.getFullYear() + '/' + (date.getMonth() + 1),
+      scrapNum: devices.filter((x: ScrapRecord) => {
+        const t = Date.parse(x.scrapTime);
+        return t >= month1st[months - 1];
+      }).length,
+    };
+    data.push(node);
+    return data;
+  };
+
+  //维修折线图数据
+  const mplotData = (Repairs: MaintenanceRecord[]) => {
+    const month1st = getMonth1st(months);
+    const data = [];
+    for (let i = 0; i < months - 1; i++) {
+      const date = new Date(month1st[i]);
+      const node = {
+        month: date.getFullYear() + '/' + (date.getMonth() + 1),
+        maintenanceNum: Repairs.filter((x: MaintenanceRecord) => {
           const t = Date.parse(x.maintenanceTime);
           return t >= month1st[i] && t < month1st[i + 1];
         }).length,
       };
       data.push(node);
     }
-    const date = new Date(month1st[4]);
+    const date = new Date(month1st[months - 1]);
     const node = {
       month: date.getFullYear() + '/' + (date.getMonth() + 1),
-      maintenanceNum: repairs.filter((x: MaintenanceRecord) => {
+      maintenanceNum: Repairs.filter((x: MaintenanceRecord) => {
         const t = Date.parse(x.maintenanceTime);
-        return t >= month1st[4];
+        return t >= month1st[months - 1];
       }).length,
     };
     data.push(node);
     setMaintenanceMonth(
-      repairs.filter((x: MaintenanceRecord) => {
+      Repairs.filter((x: MaintenanceRecord) => {
         const t = Date.parse(x.maintenanceTime);
-        return t >= month1st[4];
+        return t >= month1st[months - 1];
       }).length,
     );
     return data;
+  };
+
+  const handleChangeMonths = async (m: number) => {
+    setMonths(m);
+    setDevicePurchase(plotData(initDevice));
+    setRepairLineData(repairLineData(repairs));
+    setMaintenanceLineData(mplotData(maintenances));
+    setScrapColData(scrapPlotData(scraps));
   };
 
   const initial = async () => {
@@ -171,6 +176,7 @@ const Home: React.FC = () => {
         rep.data[i].repairTime = new Date(rep.data[i].repairTime).toLocaleString();
       }
       setRepairLineData(repairLineData(rep.data));
+      setRepairs(rep.data);
     }
     const mai = await getMaintenanceList();
     if (mai.code === 20000) {
@@ -178,6 +184,7 @@ const Home: React.FC = () => {
         mai.data[i].maintenanceTime = new Date(mai.data[i].maintenanceTime).toLocaleString();
       }
       setMaintenanceLineData(mplotData(mai.data));
+      setMaintenances(mai.data);
     }
     const scrap = await getScrapList();
     if (scrap.code === 20000) {
@@ -185,6 +192,7 @@ const Home: React.FC = () => {
         scrap.data[i].scrapTime = new Date(scrap.data[i].scrapTime).toLocaleString();
       }
       setScrapColData(scrapPlotData(scrap.data));
+      setScraps(scrap.data);
     }
     const scrapN = await getScrapNum();
     if (scrapN.code === 20000 && scrapN.data !== undefined) {
@@ -193,14 +201,13 @@ const Home: React.FC = () => {
   };
   useEffect(() => {
     initial();
-  }, []);
+  }, [months]);
 
   //设备柱形图配置
   const deviceColumnConfig = {
     data: devicePurchase,
     xField: 'month',
     yField: 'purchaseNum',
-    xAxis: false,
     yAxis: false,
     color: '#27A77F',
   };
@@ -211,7 +218,6 @@ const Home: React.FC = () => {
     xField: 'month',
     yField: 'repairFee',
     smooth: true,
-    xAxis: false,
     yAxis: false,
     areaStyle: () => {
       return {
@@ -226,7 +232,6 @@ const Home: React.FC = () => {
     xField: 'month',
     yField: 'maintenanceNum',
     smooth: true,
-    xAxis: false,
     yAxis: false,
     color: '#27A77F',
     areaStyle: () => {
@@ -241,7 +246,6 @@ const Home: React.FC = () => {
     data: sColData,
     xField: 'month',
     yField: 'scrapNum',
-    xAxis: false,
     yAxis: false,
   };
 
@@ -319,6 +323,16 @@ const Home: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
+        <Col span={24}>
+          <Card>
+            <Space>
+              <text>时间范围</text>
+              <a onClick={() => handleChangeMonths(3)}>近三个月</a>
+              <a onClick={() => handleChangeMonths(6)}>近六个月</a>
+              <a onClick={() => handleChangeMonths(12)}>近一年</a>
+            </Space>
+          </Card>
+        </Col>
         <Col span={6}>
           <Card bordered={false} hoverable={true}>
             <Statistic
@@ -334,7 +348,7 @@ const Home: React.FC = () => {
         <Col span={6}>
           <Card bordered={false} hoverable={true}>
             <Statistic
-              title="维修费用"
+              title="本月维修费用"
               value={repairFee}
               precision={0}
               valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
@@ -344,9 +358,9 @@ const Home: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card bordered={false}>
+          <Card bordered={false} hoverable>
             <Statistic
-              title="本月保养"
+              title="本月保养次数"
               value={maintenanceTMonth}
               precision={0}
               valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
@@ -356,7 +370,7 @@ const Home: React.FC = () => {
           </Card>
         </Col>
         <Col span={6}>
-          <Card bordered={false}>
+          <Card bordered={false} hoverable>
             <Statistic
               title="已报废设备"
               value={scrapNum}
@@ -368,17 +382,17 @@ const Home: React.FC = () => {
           </Card>
         </Col>
         <Col span={16}>
-          <Card bordered={false} title={'设备状态统计'}>
+          <Card bordered={false} title={'设备状态统计'} hoverable>
             <Bar height={300} {...barConfig} />
           </Card>
         </Col>
         <Col span={8}>
-          <Card bordered={false} title={'设备借用占比'}>
+          <Card bordered={false} title={'设备借用占比'} hoverable>
             <Pie height={300} {...pieConfig} />
           </Card>
         </Col>
         <Col span={24}>
-          <ProCard bordered={false} title={'设备借用统计'}>
+          <ProCard bordered={false} title={'设备借用统计'} hoverable>
             <Pie height={400} {...pieConfig} />
           </ProCard>
         </Col>

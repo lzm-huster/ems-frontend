@@ -112,7 +112,7 @@ const PurchaseApp: React.FC = () => {
       if (
         item.purchaseApplyState !== '待导师审批' &&
         item.purchaseApplyState !== '待管理员审批' &&
-        item.purchaseApplyState !== '待院领导审批'
+        item.purchaseApplyState !== '待领导审批'
       ) {
         setCancel(false);
       }
@@ -189,8 +189,8 @@ const PurchaseApp: React.FC = () => {
           value: '待管理员审批',
         },
         {
-          text: '待院领导审批',
-          value: '待院领导审批',
+          text: '待领导审批',
+          value: '待领导审批',
         },
         {
           text: '采购中',
@@ -260,7 +260,7 @@ const PurchaseApp: React.FC = () => {
           )}
           {record.purchaseApplyState === '待导师审批' ||
           record.purchaseApplyState === '待管理员审批' ||
-          record.purchaseApplyState === '待院领导审批' ? (
+          record.purchaseApplyState === '待领导审批' ? (
             <Popconfirm
               title="确认撤销申请？"
               onConfirm={() => handleDelete(record.purchaseApplySheetID)}

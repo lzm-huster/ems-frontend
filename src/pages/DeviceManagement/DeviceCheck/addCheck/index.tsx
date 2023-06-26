@@ -131,7 +131,7 @@ const AddCheck: React.FC = () => {
               label={'设备状态'}
               name={'deviceState'}
               required
-              options={['正常', '已报废', '丢失']}
+              options={['正常', '报废', '丢失']}
             />
             <ProFormDateTimePicker
               width={300}
