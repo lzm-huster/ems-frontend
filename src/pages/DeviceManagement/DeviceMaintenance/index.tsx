@@ -26,7 +26,7 @@ import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 import { SearchOutlined } from '@ant-design/icons';
 
-interface MaintenanceRecord {
+export interface MaintenanceRecord {
   key: React.Key;
   deviceID: number;
   assetNumber: string;
@@ -320,7 +320,7 @@ const Maintenance: React.FC = () => {
     <PageContainer>
       <Row gutter={[16, 24]}>
         <Col span={6}>
-          <Card bordered={false} hoverable={true} title="维修记录">
+          <Card bordered={false} hoverable={true} title="保养记录">
             <Statistic
               value={maintenanceNum}
               title="保养次数"

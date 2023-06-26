@@ -29,7 +29,7 @@ import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 import { SearchOutlined } from '@ant-design/icons';
 import React from 'react';
 
-interface ScrapRecord {
+export interface ScrapRecord {
   key: React.Key;
   deviceID: number;
   deviceName: string;
