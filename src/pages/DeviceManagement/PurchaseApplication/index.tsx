@@ -1,6 +1,9 @@
-import { getPurchaseApplySheetList } from '@/services/swagger/purchaseApp';
+import {
+  deletePurchaseApplySheetByPurchaseApplySheetID,
+  getPurchaseApplySheetList,
+} from '@/services/swagger/purchaseApp';
 import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
-import { Button, Col, Form, FormInstance, Input, Popconfirm, Row, Space } from 'antd';
+import { Button, Col, Form, FormInstance, Input, Popconfirm, Row, Space, message } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import React, { useEffect, useState } from 'react';
 import { Access, Link, useAccess } from 'umi';
@@ -40,7 +43,7 @@ const rowCombination = (initData: PurchaseApply[]) => {
 const PurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  // const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   // const [purchased, setPurchased] = useState(true);
   const [cancel, setCancel] = useState(true);
   const [initPurchaseApply, setInitPurchaseApply] = useState([]);
@@ -99,7 +102,73 @@ const PurchaseApp: React.FC = () => {
   //   }, 1000);
   // };
 
-  const handleDelete = (pID: number) => {};
+  /**
+   *
+   * @param purchaseApplySheetId 撤销/删除
+   */
+  const handleDelete = async (purchaseApplySheetId: number) => {
+    deletePurchaseApplySheetByPurchaseApplySheetID({ PurchaseApplySheetID: purchaseApplySheetId });
+    const res = await getPurchaseApplySheetList();
+    if (res.code === 20000) {
+      for (let i = 0; i < res.data.length; i++) {
+        res.data[i].key = i;
+        res.data[i].purchaseApplyDate = new Date(res.data[i].purchaseApplyDate).toLocaleString();
+      }
+      setInitPurchaseApply(JSON.parse(JSON.stringify(rowCombination(res.data))));
+      setShowPurchaseApply(JSON.parse(JSON.stringify(rowCombination(res.data))));
+    }
+  };
+
+  /**
+   * 批量删除
+   */
+  const handleMessDelete = () => {
+    setLoading(true);
+    const selectedDataIds = selectedRowKeys
+      .map((selectedKey: any) => {
+        const selectedData = showPurchaseApply.find(
+          (dataItem: PurchaseApply) => dataItem.key === selectedKey,
+        );
+        if (selectedData && selectedData.purchaseApplySheetID) {
+          return selectedData.purchaseApplySheetID;
+        }
+        return null;
+      })
+      .filter(
+        (purchaseApplySheetID: any): purchaseApplySheetID is number =>
+          purchaseApplySheetID !== null,
+      );
+    // console.log(selectedDataIds);
+    // 依次删除每个设备
+    const deletePromises = selectedDataIds.map((purchaseApplySheetID: any) =>
+      deletePurchaseApplySheetByPurchaseApplySheetID({
+        PurchaseApplySheetID: purchaseApplySheetID,
+      }).then((res) => res.code === 20000),
+    );
+    // console.log(2);
+    // 等待所有删除请求完成后，更新表格数据和清空选中的行数据
+    Promise.all(deletePromises).then(async (results) => {
+      if (results.every((result: any) => result)) {
+        const res = await getPurchaseApplySheetList();
+        if (res.code === 20000) {
+          for (let i = 0; i < res.data.length; i++) {
+            res.data[i].key = i;
+            res.data[i].purchaseApplyDate = new Date(
+              res.data[i].purchaseApplyDate,
+            ).toLocaleString();
+          }
+          setShowPurchaseApply(JSON.parse(JSON.stringify(rowCombination(res.data))));
+        }
+        message.success('撤销成功');
+      } else {
+        message.error('撤销失败');
+      }
+    });
+    setTimeout(() => {
+      setSelectedRowKeys([]);
+      setLoading(true);
+    }, 1000);
+  };
 
   const onSelectChange = (newSelectedRowKeys: React.Key[], newSelectedRows: PurchaseApply[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
@@ -295,9 +364,15 @@ const PurchaseApp: React.FC = () => {
               </Button>
             </Access> */}
 
-            <Button danger disabled={hasSelected === false ? !hasSelected : !cancel}>
-              批量撤销申请
-            </Button>
+            <Access accessible={access.purchaseDeleteBtn('purchase:delete')}>
+              <Button
+                danger
+                onClick={handleMessDelete}
+                disabled={hasSelected === false ? !hasSelected : !cancel}
+              >
+                批量撤销申请
+              </Button>
+            </Access>
             <span style={{ marginLeft: 8 }}>
               {hasSelected ? `已选择 ${selectedRowKeys.length} 项` : ''}
             </span>

@@ -60,7 +60,7 @@ export async function deleteScrapRecord(
   params: { scrapID: number },
   options?: { [key: string]: any },
 ) {
-  return request('/api/scrap/deleteScrapRecord', {
+  return request('/api/scrap/deleteDeviceScrapRecord', {
     method: 'POST',
     ...(options || {}),
     params: { ...params },
