@@ -7,12 +7,14 @@ import React, { useState, useEffect } from 'react';
 import { render } from 'react-dom';
 import { RightOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
+import { getUserInfo } from '@/services/swagger/user';
 //import styles from './Home.less';
 
 const Home: React.FC = () => {
   const [deviceNum, setDeviceNum] = useState(0);
   const [initDevice, setInitDevice] = useState([]);
   const [timeNow, setTime] = useState('00:00:00');
+  const [userName, setUserName] = useState('尊敬的用户');
 
   function formatTime() {
     const date = new Date();
@@ -34,6 +36,10 @@ const Home: React.FC = () => {
     if (res.code === 20000) {
       setInitDevice(res.data);
       setDeviceNum(res.data.length);
+    }
+    const user = await getUserInfo();
+    if (user.code === 20000) {
+      setUserName(user.data.userName);
     }
   };
   useEffect(() => {
@@ -110,49 +116,34 @@ const Home: React.FC = () => {
   return (
     <PageContainer>
       <Row gutter={[16, 24]}>
-        <Col span={6}>
-          <Link to={'/deviceManagement/repair/addRecord'}>
-            <Card bordered={false} hoverable={true}>
-              <Statistic
-                title="待办事项"
-                value={5}
-                precision={0}
-                valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-                suffix="件"
-              />
-            </Card>
-          </Link>
-        </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Card bordered={false}>
             <Statistic
-              title="系统通知"
-              value={12}
-              precision={0}
-              valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
-              suffix="个"
+              title="欢迎您"
+              value={userName}
+              valueStyle={{ color: '#000000', fontWeight: 'regular', fontSize: 40 }}
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Link to={'/deviceManagement/list/'}>
             <Card bordered={false} hoverable={true}>
               <Statistic
                 title="设备数量"
                 value={deviceNum}
                 precision={0}
-                valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 42 }}
+                valueStyle={{ color: '#8D42A3', fontWeight: 'bold', fontSize: 40 }}
                 suffix="台"
               />
             </Card>
           </Link>
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Card bordered={false}>
             <Statistic
               title="当前时间"
               value={timeNow}
-              valueStyle={{ color: '#000000', fontSize: 42 }}
+              valueStyle={{ color: '#000000', fontSize: 40 }}
             />
           </Card>
         </Col>
