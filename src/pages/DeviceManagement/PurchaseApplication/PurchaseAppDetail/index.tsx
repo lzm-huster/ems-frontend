@@ -1,6 +1,11 @@
 import { convertToTreeData } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
-import { getPurchaseApplySheetByID, getPurchaseApplySheets } from '@/services/swagger/purchaseApp';
+import {
+  getPurchaseApplySheetByID,
+  getPurchaseApplySheets,
+  updatePurchaseApply,
+  updatePurchaseApplySheet,
+} from '@/services/swagger/purchaseApp';
 import { PageContainer } from '@ant-design/pro-components';
 import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
 import {
@@ -57,6 +62,7 @@ const PurchaseAppDetail: React.FC = () => {
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
   const [stateFlag, setState] = useState(0);
+  const deviceT: string[] = [];
   const { state } = useLocation<stateType>();
   const history = useHistory();
   const access = useAccess();
@@ -111,6 +117,8 @@ const PurchaseAppDetail: React.FC = () => {
           deviceModel: sheet.deviceModel,
           purchaseBudget: sheet.purchaseBudget,
           deviceQuantity: sheet.deviceQuantity,
+          remark: sheet.remark,
+          purchaseApplyID: sheet.purchaseApplyID,
         });
         formRef.current?.setFieldValue('devices', nextList);
       });
@@ -124,10 +132,40 @@ const PurchaseAppDetail: React.FC = () => {
     initial();
   }, []);
 
-  const onFinish = (values: any) => {
-    message.success('提交成功');
-    setComponentDisabled(true);
-    console.log(values);
+  const onFinish = async (values: any) => {
+    if (!values.devices) {
+      message.error('请添加设备');
+    } else {
+      const { devices } = values;
+      const recordID = formRef.current?.getFieldValue('purchaseApplySheetID');
+      const applyRecord = {
+        purchaseApplyDescription: values.purchaseDescription,
+        purchaseApplyDate: values.purchaseApplyDate,
+        approveTutorID: values.approveTutorName === undefined ? null : values.approveTutorName,
+        purchaseApplySheetID: recordID,
+      };
+      const res = await updatePurchaseApplySheet(applyRecord);
+      if (res.code === 20000 && res.data !== undefined) {
+        let flag = true;
+
+        devices.map((device: any, ind: number) => {
+          device.purchaseApplySheetID = recordID;
+          // device.expectedReturnTime = lDate;
+          device.deviceType = deviceT[ind];
+          updatePurchaseApply(device).then((sheetRes) => {
+            if (sheetRes.code !== 20000 || sheetRes.data === undefined) {
+              flag = false;
+            }
+          });
+          if (flag) {
+            message.success('更新采购申请成功');
+            history.push('/deviceManagement/purchaseApply');
+          } else {
+            message.error('更新采购申请失败');
+          }
+        });
+      }
+    }
   };
 
   const onReset = () => {
@@ -247,6 +285,14 @@ const PurchaseAppDetail: React.FC = () => {
                             dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                             allowClear
                             treeDefaultExpandAll
+                            onSelect={(value, node) => {
+                              const { devices } = formRef?.current?.getFieldsValue();
+                              console.log(devices);
+                              Object.assign(devices[key], { assetNumber: value });
+                              console.log(devices);
+                              deviceT.push(node['title']);
+                              formRef?.current?.setFieldsValue({ devices });
+                            }}
                           />
                         </Form.Item>
                       </Col>

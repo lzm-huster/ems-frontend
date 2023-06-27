@@ -36,9 +36,24 @@ export async function insertBorrowApplyRecord(body: any, options?: { [key: strin
     ...(options || {}),
   });
 }
+export async function updateBorrowApplyRecord(body: any, options?: { [key: string]: any }) {
+  return request('/api/BorrowApplyRecord/updateBorrowApplyRecord', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
 // /api/BorrowApplySheet/insertBorrowApplySheet
 export async function insertBorrowApplySheet(body: any, options?: { [key: string]: any }) {
   return request('/api/BorrowApplySheet/insertBorrowApplySheet', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+export async function updateBorrowApplySheet(body: any, options?: { [key: string]: any }) {
+  return request('/api/BorrowApplySheet/updateBorrowApplySheet', {
     method: 'POST',
     data: body,
     ...(options || {}),
