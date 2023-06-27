@@ -1,4 +1,10 @@
-import { addRole, getRoleDetail, permissionList, roleList } from '@/services/ant-design-pro/api';
+import {
+  addRole,
+  getRoleDetail,
+  permissionList,
+  roleList,
+  updateRole,
+} from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
 import {
   ModalForm,
@@ -173,7 +179,10 @@ const AuthManage: React.FC = () => {
         toolbar={{
           search: {
             onSearch: (value: string) => {
-              alert(value);
+              const filterRole = initRole.filter(
+                (role) => role.roleName.includes(value) || role.roleDescription.includes(value),
+              );
+              setRoleData(filterRole);
             },
           },
           actions: [
@@ -260,24 +269,18 @@ const AuthManage: React.FC = () => {
         onVisibleChange={setEditVisible}
         // form={form}
         onFinish={async (value) => {
-          // value.permissionIdList = selectedPermissionKeys;
-          // console.log(value);
-          // addRole(value)
-          //   .then((res) => {
-          //     if (res.code === 20000 && res.data !== undefined) {
-          //       message.success('添加成功');
-          //       setAddVisible(false);
-          //     } else {
-          //       message.error('添加失败');
-          //     }
-          //   })
-          //   .catch((e) => {
-          //     message.error(e);
-          //   });
-          // reload();
-          // value.roleId = value.roleId.value;
-          // value.email = value.email + emailSuffix;
-          // await handleAdd(value);
+          value.roleId = currentRow?.roleID;
+          value.permissionIdList = editPermissionKeys;
+          console.log(value);
+          const res = await updateRole(value);
+          if (res.code === 20000 && res.data === true) {
+            message.success('更新成功');
+          } else {
+            message.error('更新失败');
+          }
+          setEditVisible(false);
+          setCurrentRow(undefined);
+          reload();
         }}
       >
         <ProFormText

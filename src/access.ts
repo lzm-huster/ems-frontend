@@ -4,7 +4,7 @@
 export default function access(initialState: { currentUser?: API.CurrentUser } | undefined) {
   const { currentUser } = initialState ?? {};
   console.log(currentUser);
-  const { userPermissionList } = currentUser ?? {};
+  const { userPermissionList, roleList } = currentUser ?? {};
   return {
     // normalRouteFilter: (route: { name: any }) => userPermissionList?.includes(route.name),
     // deviceList: userPermissionList?.includes(route.name),
@@ -52,5 +52,16 @@ export default function access(initialState: { currentUser?: API.CurrentUser } |
     userList: (route: any) => userPermissionList?.includes(route.accessCode),
     roleList: (route: any) => userPermissionList?.includes(route.accessCode),
     approvalUpdate: (route: any) => userPermissionList?.includes(route.accessCode),
+    isStudent: () => {
+      if (roleList === undefined || roleList?.length === 0) return false;
+      else {
+        const role: string = roleList[0];
+        if (role == 'internalStudent') {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    },
   };
 }

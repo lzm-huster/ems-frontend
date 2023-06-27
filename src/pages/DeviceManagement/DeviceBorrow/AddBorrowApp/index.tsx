@@ -25,7 +25,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useHistory, useLocation, useModel } from 'umi';
+import { Access, useAccess, useHistory, useLocation, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -53,6 +53,7 @@ const AddBorrow: React.FC = () => {
   const { initialState, setInitialState } = useModel('@@initialState');
   const { state } = useLocation<stateType>();
   const history = useHistory();
+  const access = useAccess();
 
   const initial = async () => {
     const assets = await getAssetNumber();
@@ -159,16 +160,19 @@ const AddBorrow: React.FC = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item
-              name="approveTutorName"
-              label="责任导师"
-              rules={[{ required: true }]}
-              initialValue={1}
-            >
-              <Select placeholder="学生请选择导师" />
-            </Form.Item>
-          </Col>
+
+          <Access accessible={access.isStudent()}>
+            <Col span={8}>
+              <Form.Item
+                name="approveTutorName"
+                label="责任导师"
+                rules={[{ required: true }]}
+                initialValue={1}
+              >
+                <Select placeholder="学生请选择导师" />
+              </Form.Item>
+            </Col>
+          </Access>
         </Row>
         <Divider orientation="left" orientationMargin={5}>
           设备详情

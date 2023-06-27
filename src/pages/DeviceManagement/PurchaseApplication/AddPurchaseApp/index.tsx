@@ -27,7 +27,7 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { useHistory, useModel } from 'umi';
+import { Access, useAccess, useHistory, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -44,6 +44,7 @@ const AddPurchaseApp: React.FC = () => {
   const { initialState, setInitialState } = useModel('@@initialState');
   const history = useHistory();
   const deviceT: string[] = [];
+  const access = useAccess();
 
   const initial = async () => {
     formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
@@ -122,16 +123,19 @@ const AddPurchaseApp: React.FC = () => {
                 <Input placeholder="申请人姓名" />
               </Form.Item>
             </Col>
-            <Col span={8}>
-              <Form.Item
-                name="approveTutorName"
-                label="责任导师"
-                rules={[{ required: true }]}
-                initialValue={1}
-              >
-                <Select placeholder="学生请选择导师" />
-              </Form.Item>
-            </Col>
+            <Access accessible={access.isStudent()}>
+              <Col span={8}>
+                <Form.Item
+                  name="approveTutorName"
+                  label="责任导师"
+                  rules={[{ required: true }]}
+                  initialValue={1}
+                >
+                  <Select placeholder="学生请选择导师" />
+                </Form.Item>
+              </Col>
+            </Access>
+
             <Col span={8}>
               <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
                 <DateTimePicker />
