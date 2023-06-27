@@ -24,11 +24,12 @@ import {
   getDeviceList,
   getPersonDeviceList,
 } from '@/services/swagger/device';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Key, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import { Link, useModel } from 'umi';
 import { deleteDeviceByDeviceID } from '@/services/swagger/person';
 import moment from 'moment';
+import { replace } from 'lodash';
 interface Device {
   key: React.Key;
   deviceID: number;
@@ -73,6 +74,9 @@ const PersonalInfo: React.FC = () => {
   const [isEditShow, setIsEditShow] = useState(false); // 控制编辑modal显示和隐藏
   //正在编辑的设备
   const [onEditDevice, setOnEditDevice] = useState<API.Device>();
+  const [detail, setDetail] = useState<API.Device>();
+
+  const defaultImg = 'http://101.43.18.103:9001/mes-bucket/device/20230615_1686794277_180.jpeg';
 
   //编辑个人信息
   const history = useHistory();
@@ -106,15 +110,6 @@ const PersonalInfo: React.FC = () => {
     await deleteDeviceByDeviceID({ DeviceID: deviceID });
     setShowDevice(newDevices);
   };
-
-  const detail = async () => {
-    const res = await getDeviceDetail({ DeviceID: currentDeviceId });
-    const deviceDetail = res.data; // 获取设备详情对象
-    setCurrentRow(deviceDetail); // 将设备详情对象传入 setCurrentRow 方法中
-  };
-  useEffect(() => {
-    detail(); // 在组件渲染之后调用 detail 函数
-  }, []);
 
   //批量删除
   const massRemove = () => {
@@ -259,19 +254,31 @@ const PersonalInfo: React.FC = () => {
                   <Space size="middle">
                     <a
                       onClick={async () => {
-                        setIsShow(true); //显示Modal
                         setCurrentDeviceId(r.deviceID);
-                        detail();
-                        await form.setFieldsValue(r);
+                        setCurrentRow(r);
+                        setIsShow(true); //显示Modal
+                        form.setFieldsValue(r);
+
+                        const res = await getDeviceDetail({ DeviceID: r.deviceID });
+                        if (res.code === 20000) {
+                          res.data.purchaseDate = new Date(res.data.purchaseDate).toLocaleString();
+                          res.data.expectedScrapDate = new Date(
+                            res.data.expectedScrapDate,
+                          ).toLocaleString();
+                          res.data.createTime = new Date(res.data.createTime).toLocaleString();
+                          res.data.updateTime = new Date(res.data.updateTime).toLocaleString();
+                          setDetail(res.data);
+                        }
+                        // setDetail((await getDeviceDetail({ DeviceID: currentDeviceId })).data);
                       }}
                     >
                       查看详情
                     </a>
                     <a
                       onClick={async () => {
-                        setIsEditShow(true); //显示Modal
                         setCurrentDeviceId(r.deviceID);
                         setCurrentRow(r);
+                        setIsEditShow(true); //显示Modal
                         form.setFieldsValue(r);
                         const res = await getDeviceDetail({ DeviceID: r.deviceID });
                         if (res.code === 20000) {
@@ -376,7 +383,6 @@ const PersonalInfo: React.FC = () => {
           </Form.Item>
           <Form.Item>
             <ProFormDateTimePicker
-              // width={300}
               name="purchaseDate"
               fieldProps={{
                 format: 'yyyy-MM-DD HH:mm:ss',
@@ -389,7 +395,7 @@ const PersonalInfo: React.FC = () => {
       </Modal>
       <Modal
         title="查看设备详情"
-        width="60%"
+        width="70%"
         open={isShow}
         maskClosable={false}
         onCancel={() => setIsShow(false)}
@@ -411,28 +417,40 @@ const PersonalInfo: React.FC = () => {
             backgroundColor: '#fdffff9e',
           }}
         >
-          <Descriptions.Item label="设备编号">{currentRow?.deviceID}</Descriptions.Item>
-          <Descriptions.Item label="设备名称">{currentRow?.deviceName}</Descriptions.Item>
-          <Descriptions.Item label="设备型号">{currentRow?.deviceModel}</Descriptions.Item>
-          <Descriptions.Item label="购买类型">{currentRow?.deviceType}</Descriptions.Item>
-          <Descriptions.Item label="设备状态">{currentRow?.deviceState}</Descriptions.Item>
-          <Descriptions.Item label="设备负责人">{currentRow?.userID}</Descriptions.Item>
-          <Descriptions.Item label="单价">{currentRow?.unitPrice}</Descriptions.Item>
-          <Descriptions.Item label="库存数量">{currentRow?.stockQuantity}</Descriptions.Item>
-          <Descriptions.Item label="借用费率">{currentRow?.borrowRate}</Descriptions.Item>
+          <Descriptions.Item label="设备编号">{detail?.deviceID}</Descriptions.Item>
+          <Descriptions.Item label="设备名称">{detail?.deviceName}</Descriptions.Item>
+          <Descriptions.Item label="设备型号">{detail?.deviceModel}</Descriptions.Item>
+          <Descriptions.Item label="购买类型">{detail?.deviceType}</Descriptions.Item>
+          <Descriptions.Item label="设备状态">{detail?.deviceState}</Descriptions.Item>
+          <Descriptions.Item label="设备负责人">{detail?.userID}</Descriptions.Item>
+          <Descriptions.Item label="单价">{detail?.unitPrice}</Descriptions.Item>
+          <Descriptions.Item label="库存数量">{detail?.stockQuantity}</Descriptions.Item>
+          <Descriptions.Item label="借用费率">{detail?.borrowRate}</Descriptions.Item>
           <Descriptions.Item label="购买日期">
-            {currentRow && currentRow.purchaseDate
-              ? new Date(currentRow.purchaseDate).toLocaleString('zh-CN')
+            {detail && detail.purchaseDate
+              ? new Date(detail.purchaseDate).toLocaleString('zh-CN')
               : '未知'}
           </Descriptions.Item>
-          <Descriptions.Item label="资产编号">{currentRow?.assetNumber}</Descriptions.Item>
+          <Descriptions.Item label="资产编号">{detail?.assetNumber}</Descriptions.Item>
           <Descriptions.Item label="预计报废时间">
-            {currentRow && currentRow.expectedScrapDate
-              ? new Date(currentRow.expectedScrapDate).toLocaleString('zh-CN')
+            {detail && detail.expectedScrapDate
+              ? new Date(detail.expectedScrapDate).toLocaleString('zh-CN')
               : '未知'}
           </Descriptions.Item>
-          <Descriptions.Item label="设备参数">{currentRow?.deviceSpecification}</Descriptions.Item>
-          <Descriptions.Item label="设备图片列表">{currentRow?.deviceImageList}</Descriptions.Item>
+          <Descriptions.Item label="设备参数">{detail?.deviceSpecification}</Descriptions.Item>
+          <Descriptions.Item label="设备图片列表">
+            {detail?.deviceImageList
+              .replace(/[\[\]""]/g, '')
+              .split(',')
+              .map((imageUrl, index) => (
+                <img
+                  key={index}
+                  src={imageUrl}
+                  alt={`Image ${index}`}
+                  style={{ width: '20%', height: 'auto' }}
+                />
+              ))}
+          </Descriptions.Item>
         </Descriptions>
       </Modal>
     </PageContainer>

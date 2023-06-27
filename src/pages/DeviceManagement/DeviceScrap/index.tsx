@@ -29,7 +29,7 @@ import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 import { SearchOutlined } from '@ant-design/icons';
 import React from 'react';
 
-interface ScrapRecord {
+export interface ScrapRecord {
   key: React.Key;
   deviceID: number;
   deviceName: string;
@@ -130,6 +130,9 @@ const DeviceScrap: React.FC = () => {
     }
   };
 
+  /**
+   * 批量删除
+   */
   const handleMessDelete = () => {
     setLoading(true);
 
@@ -263,8 +266,8 @@ const DeviceScrap: React.FC = () => {
                 title="已报废设备"
                 value={scrapNum}
                 precision={0}
-                valueStyle={{ color: '#5781CD', fontWeight: 'bold', fontSize: 42 }}
-                suffix="件"
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
+                suffix="台"
               />
             </Card>
           </Col>
@@ -274,8 +277,8 @@ const DeviceScrap: React.FC = () => {
                 title="待报废设备"
                 value={expectedScrapNum}
                 precision={0}
-                valueStyle={{ color: '#27A77F', fontWeight: 'bold', fontSize: 42 }}
-                suffix="个"
+                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
+                suffix="台"
               />
             </Card>
           </Col>

@@ -59,3 +59,14 @@ export async function getPurchaseApplySheets(
     params: { ...params },
   });
 }
+
+export async function deletePurchaseApplySheetByPurchaseApplySheetID(
+  params: { PurchaseApplySheetID: number },
+  options?: { [key: string]: any },
+) {
+  return request('/api/PurchaseApplySheet/deletePurchaseApplySheetByPurchaseApplySheetID', {
+    method: 'POST',
+    ...(options || {}),
+    params: { ...params },
+  });
+}

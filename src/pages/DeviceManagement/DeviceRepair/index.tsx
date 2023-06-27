@@ -27,7 +27,7 @@ import { Access, Link, useAccess } from 'umi';
 import GeneralTable from '../DeviceList/generalTable/GeneralTable';
 import { SearchOutlined } from '@ant-design/icons';
 
-interface RepairRecord {
+export interface RepairRecord {
   key: React.Key;
   deviceID: number;
   assetNumber: string;

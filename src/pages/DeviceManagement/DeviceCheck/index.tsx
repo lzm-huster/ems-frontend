@@ -40,7 +40,6 @@ const DeviceCheck: React.FC = () => {
 
   const [tableData, setTableData] = useState<CheckRecord[]>([]);
   const [initTableData, setInitTableData] = useState<CheckRecord[]>([]);
-  const [currentRow, setCurrentRow] = useState<CheckRecord>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [checked, setChecked] = useState(0);
   const [checking, setChecking] = useState(0);
@@ -113,7 +112,8 @@ const DeviceCheck: React.FC = () => {
 
   const handleDelete = async (checkId: number) => {
     const delRes = await deleteCheckRecord({ checkID: checkId });
-    if (delRes.code === 20000) {
+    if (delRes.code === 20000 && delRes.data === 1) {
+      message.success('删除成功');
       const res = await getCheckList();
       if (res.code === 20000) {
         for (let i = 0; i < res.data.length; i++) {
@@ -130,6 +130,8 @@ const DeviceCheck: React.FC = () => {
       if (checkingRes.code === 20000) {
         setChecking(checkingRes.data);
       }
+    } else {
+      message.error(delRes.message);
     }
   };
 
@@ -183,12 +185,6 @@ const DeviceCheck: React.FC = () => {
   };
 
   const columns = [
-    // {
-    //   title: '序号',
-    //   dataIndex: 'index',
-    //   valueType: 'index',
-    //   width: 60,
-    // },
     {
       title: '核查编号',
       dataIndex: 'checkID',
@@ -295,7 +291,7 @@ const DeviceCheck: React.FC = () => {
                 title="已核查设备"
                 value={checked}
                 precision={0}
-                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 40 }}
+                valueStyle={{ color: '#5781CD', fontWeight: 'regular', fontSize: 42 }}
                 suffix="台"
               />
             </Card>
@@ -306,7 +302,7 @@ const DeviceCheck: React.FC = () => {
                 title="待核查设备"
                 value={checking}
                 precision={0}
-                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 40 }}
+                valueStyle={{ color: '#27A77F', fontWeight: 'regular', fontSize: 42 }}
                 suffix="台"
               />
             </Card>
