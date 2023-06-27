@@ -1,10 +1,5 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
-import {
-  getBorrowApplySheets,
-  getLatestBorrowApplyRecordID,
-  insertBorrowApplyRecord,
-  insertBorrowApplySheet,
-} from '@/services/swagger/borrow';
+import { getBorrowApplySheets } from '@/services/swagger/borrow';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { PageContainer } from '@ant-design/pro-components';
 import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
@@ -26,7 +21,7 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { useHistory, useLocation, useModel } from 'umi';
+import { Access, useAccess, useHistory, useLocation, useModel } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -59,6 +54,7 @@ const BorrowDetail: React.FC = () => {
   const { initialState, setInitialState } = useModel('@@initialState');
   const { state } = useLocation<stateType>();
   const history = useHistory();
+  const access = useAccess();
 
   const initial = async () => {
     const assets = await getAssetNumber();
@@ -125,30 +121,30 @@ const BorrowDetail: React.FC = () => {
       message.error('请添加设备');
     } else {
       const { devices } = values;
-      const applyRecord = { borrowerID: uId, applyDescription: '测试新增借用申请' };
-      const res = await insertBorrowApplyRecord(applyRecord);
-      if (res.code === 20000 && res.data !== 0) {
-        const recordRes = await getLatestBorrowApplyRecordID();
-        let flag = true;
-        if (recordRes.code === 20000 && recordRes.data !== undefined) {
-          const recordID = recordRes.data;
-          devices.map((device: any) => {
-            device.borrowApplyID = recordID;
-            device.expectedReturnTime = lDate;
-            insertBorrowApplySheet(device).then((sheetRes) => {
-              if (sheetRes.code !== 20000 || sheetRes.data === undefined) {
-                flag = false;
-              }
-            });
-            if (flag) {
-              message.success('添加借用申请成功');
-              history.push('/deviceManagement/borrow');
-            } else {
-              message.error('添加借用申请失败');
-            }
-          });
-        }
-      }
+      const applyRecord = { borrowerID: uId, applyDescription: '测试更新借用申请' };
+      // const res = await insertBorrowApplyRecord(applyRecord);
+      // if (res.code === 20000 && res.data !== 0) {
+      //   const recordRes = await getLatestBorrowApplyRecordID();
+      //   let flag = true;
+      //   if (recordRes.code === 20000 && recordRes.data !== undefined) {
+      //     const recordID = recordRes.data;
+      //     devices.map((device: any) => {
+      //       device.borrowApplyID = recordID;
+      //       device.expectedReturnTime = lDate;
+      //       insertBorrowApplySheet(device).then((sheetRes) => {
+      //         if (sheetRes.code !== 20000 || sheetRes.data === undefined) {
+      //           flag = false;
+      //         }
+      //       });
+      //       if (flag) {
+      //         message.success('添加借用申请成功');
+      //         history.push('/deviceManagement/borrow');
+      //       } else {
+      //         message.error('添加借用申请失败');
+      //       }
+      //     });
+      //   }
+      // }
     }
   };
 
@@ -222,11 +218,13 @@ const BorrowDetail: React.FC = () => {
                 <DateTimePicker placeholder={'暂未归还'} />
               </Form.Item>
             </Col>
-            {/* <Col span={8}>
-            <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
-              <Select placeholder="请选择导师" />
-            </Form.Item>
-          </Col> */}
+            <Access accessible={access.isStudent()}>
+              <Col span={8}>
+                <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
+                  <Select placeholder="请选择导师" />
+                </Form.Item>
+              </Col>
+            </Access>
           </Row>
         </Card>
 
