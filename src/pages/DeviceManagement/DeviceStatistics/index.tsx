@@ -20,6 +20,8 @@ interface BorrowFee {
   deviceID: number;
   deviceName: string;
   returnTime: string;
+  assetNumber: string;
+  unitPrice: number;
 }
 
 const Home: React.FC = () => {
@@ -37,6 +39,7 @@ const Home: React.FC = () => {
   const [borrowNumRank, setBNRank] = useState<any[]>([]);
   const [borrowFeeRank, setBFRank] = useState<any[]>([]);
   const [profitRates, setProfitRates] = useState<any[]>([]);
+  const [profitRateRank, setPRRank] = useState<any[]>([]);
 
   const repairLineData = (Repairs: RepairRecord[]) => {
     const month1st = getMonth1st(months);
@@ -216,6 +219,9 @@ const Home: React.FC = () => {
           deviceID: borrowGroupByDevice[key][0].deviceID,
           deviceName: borrowGroupByDevice[key][0].deviceName,
           borrowFee: initialNum,
+          assetNumber: borrowGroupByDevice[key][0].assetNumber,
+          unitPrice: borrowGroupByDevice[key][0].unitPrice,
+          profitRate: initialNum / borrowGroupByDevice[key][0].unitPrice,
         };
         fee.push(nodef);
       }
@@ -244,6 +250,9 @@ const Home: React.FC = () => {
       title: '设备收益率',
       dataIndex: 'profitRate',
       ellipsis: true,
+      render: (record: any) => {
+        return <text>{record * 100}%</text>;
+      },
     },
   ];
 
@@ -296,6 +305,7 @@ const Home: React.FC = () => {
       setBNRank(tempt[0].sort((a, b) => b.borrowNum - a.borrowNum));
       setBFRank(tempt[1].sort((a, b) => b.borrowFee - a.borrowFee));
       setProfitRates(tempt[1]);
+      setPRRank(tempt[1].sort((a, b) => b.profitRate - a.profitRate));
     }
   };
   useEffect(() => {
@@ -546,13 +556,13 @@ const Home: React.FC = () => {
             <ProCard title="设备收益率排名" colSpan="20%">
               <List
                 itemLayout="horizontal"
-                dataSource={borrowFeeRank}
+                dataSource={profitRateRank}
                 renderItem={(item, index) => (
                   <List.Item>
                     <List.Item.Meta
                       avatar={<text style={{ color: 'blue' }}>{index + 1}</text>}
                       title={<text>{item.deviceName}</text>}
-                      description={<text>借用总费用{item.borrowFee}元</text>}
+                      description={<text>收益率{item.profitRate * 100}%</text>}
                     />
                   </List.Item>
                 )}
