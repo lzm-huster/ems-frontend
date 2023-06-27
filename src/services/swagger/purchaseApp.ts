@@ -17,6 +17,23 @@ export async function insertPurchaseApplySheet(body: any, options?: { [key: stri
   });
 }
 
+// /api/PurchaseApply/insertPurchaseApply
+export async function updatePurchaseApply(body: any, options?: { [key: string]: any }) {
+  return request('/api/PurchaseApply/updatePurchaseApply', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+// /api/PurchaseApplySheet/insertPurchaseApplySheet
+export async function updatePurchaseApplySheet(body: any, options?: { [key: string]: any }) {
+  return request('/api/PurchaseApplySheet/updatePurchaseApplySheet', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 export async function entryPurchaseApplySheet(body: any, options?: { [key: string]: any }) {
   return request('/api/PurchaseApplySheet/updateStateByApplySheetID', {
     method: 'POST',
