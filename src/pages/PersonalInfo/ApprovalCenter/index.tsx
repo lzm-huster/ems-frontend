@@ -77,7 +77,7 @@ const ApprovalCenter: React.FC = () => {
   };
   const purchaseMap = {
     //请求映射
-    staff: '未审批',
+    staff: '待导师审批',
     deviceAdmin: '待管理员审批',
     leader: '待领导审批',
   };
