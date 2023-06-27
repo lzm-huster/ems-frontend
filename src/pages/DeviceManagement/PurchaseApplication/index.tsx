@@ -289,6 +289,7 @@ const PurchaseApp: React.FC = () => {
                 pathname: '/deviceManagement/purchaseApply/purchaseApplyDetail',
                 state: {
                   purchaseApplySheetID: record.purchaseApplySheetID,
+                  purchaseApplyState: record.purchaseApplyState,
                   userName: record.userName,
                   edit: false,
                 },
@@ -303,6 +304,7 @@ const PurchaseApp: React.FC = () => {
                 pathname: '/deviceManagement/purchaseApply/purchaseApplyDetail',
                 state: {
                   purchaseApplySheetID: record.purchaseApplySheetID,
+                  purchaseApplyState: record.purchaseApplyState,
                   userName: record.userName,
                   edit: true,
                 },

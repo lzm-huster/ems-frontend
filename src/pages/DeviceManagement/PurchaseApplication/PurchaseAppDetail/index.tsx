@@ -1,4 +1,3 @@
-import { getUserInfo } from '@/services/swagger/user';
 import { PageContainer } from '@ant-design/pro-components';
 import {
   Button,
@@ -10,7 +9,6 @@ import {
   InputNumber,
   message,
   Row,
-  Select,
   Space,
   Steps,
   TreeSelect,
@@ -19,7 +17,6 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
 import { getDeviceCategoryList } from '@/services/swagger/category';
 import { convertToTreeData } from '@/services/general/dataProcess';
@@ -31,6 +28,7 @@ dayjs.extend(customParseFormat);
 
 interface stateType {
   purchaseApplySheetID: number;
+  purchaseApplyState: string;
   edit: boolean;
   userName: string;
 }
@@ -52,16 +50,37 @@ const formatDate = (time: any) => {
 const now = formatDate(new Date().getTime());
 
 //main
-const AddPurchaseApp: React.FC = () => {
+const PurchaseAppDetail: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
 
   const [componentDisabled, setComponentDisabled] = useState<boolean>(false);
   const [tree, setTree] = useState([]);
+  const [stateFlag, setState] = useState(0);
   const { state } = useLocation<stateType>();
   const history = useHistory();
 
   const initial = async () => {
     setComponentDisabled(!state.edit);
+    switch (state.purchaseApplyState) {
+      case '待导师审批':
+        setState(1);
+        break;
+      case '待管理员审批':
+        setState(2);
+        break;
+      case '待领导审批':
+        setState(3);
+        break;
+      case '申请通过':
+      case '采购中':
+        setState(4);
+        break;
+      case '已入库':
+        setState(5);
+        break;
+      default:
+        setState(0);
+    }
     formRef.current?.setFieldsValue({ userName: state.userName });
     formRef.current?.setFieldsValue({ purchaseApplySheetID: state.purchaseApplySheetID });
     const detail = await getPurchaseApplySheetByID({
@@ -124,10 +143,13 @@ const AddPurchaseApp: React.FC = () => {
       >
         <Card>
           <Steps
-            current={1}
+            current={stateFlag}
             items={[
               {
                 title: '已提交',
+              },
+              {
+                title: '导师审批',
               },
               {
                 title: '管理员审批',
@@ -136,10 +158,10 @@ const AddPurchaseApp: React.FC = () => {
                 title: '院领导审批',
               },
               {
-                title: '借用中',
+                title: '采购中',
               },
               {
-                title: '已归还',
+                title: '已入库',
               },
             ]}
           />
@@ -314,4 +336,4 @@ const AddPurchaseApp: React.FC = () => {
   );
 };
 
-export default AddPurchaseApp;
+export default PurchaseAppDetail;
