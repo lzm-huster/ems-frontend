@@ -1,10 +1,11 @@
-import { convertToTreeData } from '@/services/general/dataProcess';
+import { convertToSelectStaff, convertToTreeData } from '@/services/general/dataProcess';
 import { getDeviceCategoryList } from '@/services/swagger/category';
 import {
   getLatestPurchaseApplyRecordID,
   insertPurchaseApply,
   insertPurchaseApplySheet,
 } from '@/services/swagger/purchaseApp';
+import { getStaffList } from '@/services/swagger/user';
 import { formatDate } from '@/utils/utils';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -40,6 +41,7 @@ const tailLayout = {
 const AddPurchaseApp: React.FC = () => {
   const formRef = React.useRef<FormInstance>(null);
   const [tree, setTree] = useState([]);
+  const [staffSelect, setSelectStaff] = useState([]);
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
   const history = useHistory();
@@ -54,6 +56,10 @@ const AddPurchaseApp: React.FC = () => {
     if (category.code === 20000) {
       setTree(convertToTreeData(category.data));
     }
+    const staff = await getStaffList();
+    if (staff.code === 20000 && staff.data !== undefined) {
+      setSelectStaff(convertToSelectStaff(staff.data));
+    }
   };
   useEffect(() => {
     initial();
@@ -67,8 +73,9 @@ const AddPurchaseApp: React.FC = () => {
       const { devices } = values;
       const applyRecord = {
         purchaseApplicantID: uId,
-        purchaseApplyDescription: values.remark,
+        purchaseApplyDescription: values.purchaseDescription,
         purchaseApplyDate: values.purchaseApplyDate,
+        approveTutorID: values.approveTutorName === undefined ? null : values.approveTutorName,
       };
       const res = await insertPurchaseApplySheet(applyRecord);
       if (res.code === 20000 && res.data !== undefined) {
@@ -125,13 +132,8 @@ const AddPurchaseApp: React.FC = () => {
             </Col>
             <Access accessible={access.isStudent()}>
               <Col span={8}>
-                <Form.Item
-                  name="approveTutorName"
-                  label="责任导师"
-                  rules={[{ required: true }]}
-                  initialValue={1}
-                >
-                  <Select placeholder="学生请选择导师" />
+                <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
+                  <Select options={staffSelect} placeholder="学生请选择导师" />
                 </Form.Item>
               </Col>
             </Access>
@@ -142,7 +144,7 @@ const AddPurchaseApp: React.FC = () => {
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="purchaseIllustration" label="采购说明" rules={[{ required: true }]}>
+              <Form.Item name="purchaseDescription" label="采购说明" rules={[{ required: true }]}>
                 <Input />
               </Form.Item>
             </Col>

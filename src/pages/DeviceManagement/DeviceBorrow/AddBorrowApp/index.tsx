@@ -5,6 +5,7 @@ import {
   insertBorrowApplySheet,
 } from '@/services/swagger/borrow';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getStaffList } from '@/services/swagger/user';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
 import {
@@ -49,6 +50,7 @@ const AddBorrow: React.FC = () => {
   const [eDate, setEDate] = useState('');
   const [lDate, setLDate] = useState('');
   const [diff, setDiff] = useState(0);
+  const [staffSelect, setSelectStaff] = useState([]);
   const [uId, setUId] = useState<number>(0);
   const { initialState, setInitialState } = useModel('@@initialState');
   const { state } = useLocation<stateType>();
@@ -63,6 +65,10 @@ const AddBorrow: React.FC = () => {
     // formRef.current?.setFieldsValue({ purchaseDate: dayjs(now, dateFormat) });
     if (assets.code === 20000) {
       setSelectData(convertToSelectData(assets.data));
+    }
+    const staff = await getStaffList();
+    if (staff.code === 20000 && staff.data !== undefined) {
+      setSelectStaff(convertToSelectStaff(staff.data));
     }
     if (state != null) {
       const deviceList = JSON.parse(state.deviceID);
@@ -163,13 +169,8 @@ const AddBorrow: React.FC = () => {
 
           <Access accessible={access.isStudent()}>
             <Col span={8}>
-              <Form.Item
-                name="approveTutorName"
-                label="责任导师"
-                rules={[{ required: true }]}
-                initialValue={1}
-              >
-                <Select placeholder="学生请选择导师" />
+              <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
+                <Select options={staffSelect} placeholder="学生请选择导师" />
               </Form.Item>
             </Col>
           </Access>

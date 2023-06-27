@@ -210,7 +210,7 @@ const ApprovalCenter: React.FC = () => {
           message.error(res2.message);
         }
         break;
-      case 'borrow':
+      case 'scrap':
         const res3 = await scrapApprovalRecord(
           id,
           isAbort ? '驳回审批' : stateMap[currentUser.roleList],
@@ -454,7 +454,7 @@ const ApprovalCenter: React.FC = () => {
             align: 'center',
           },
           {
-            title: '报废时间',
+            title: '报废申请时间',
             dataIndex: 'scrapTime',
             valueType: 'date',
             align: 'center',
