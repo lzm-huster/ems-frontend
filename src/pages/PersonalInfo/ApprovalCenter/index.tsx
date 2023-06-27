@@ -81,11 +81,19 @@ const ApprovalCenter: React.FC = () => {
     deviceAdmin: '待管理员审批',
     leader: '待领导审批',
   };
-  const borrow_scrapMap = {
+  // const borrow_scrapMap = {
+  //   //请求映射
+  //   deviceAdmin: '待管理员审批',
+  // };
+  const borrowMap = {
+    //请求映射
+    staff: '待导师审批',
+    deviceAdmin: '待管理员审批',
+  };
+  const scrapMap = {
     //请求映射
     deviceAdmin: '待管理员审批',
   };
-
   //合并行
   // const rowCombination = (approvalData: any) => {
   //   let sameN = 0;
@@ -158,10 +166,10 @@ const ApprovalCenter: React.FC = () => {
         res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
         break;
       case 'borrow':
-        res = await borrowApprovalList(borrow_scrapMap[currentUser.roleList]);
+        res = await borrowApprovalList(borrowMap[currentUser.roleList]);
         break;
       case 'scrap':
-        res = await scrapApprovalList(borrow_scrapMap[currentUser.roleList]);
+        res = await scrapApprovalList(scrapMap[currentUser.roleList]);
         break;
       default:
         res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
@@ -180,6 +188,7 @@ const ApprovalCenter: React.FC = () => {
     } else {
       setApprovalList([]);
     }
+    form.resetFields(); // 重置表单字段
   };
 
   const handleApprovalRecord = async (id: number, isAbort: boolean) => {
