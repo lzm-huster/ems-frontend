@@ -128,3 +128,10 @@ export async function getUserDetail(params: { userId: number }, options?: { [key
     params: { ...params },
   });
 }
+
+export async function getStaffList(options?: { [key: string]: any }) {
+  return request<any>('/api/user/staff', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}

@@ -1,3 +1,8 @@
+import { convertToSelectData } from '@/services/general/dataProcess';
+import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getScrapDetail, updateScrap } from '@/services/swagger/scrap';
+import { getUserDetail } from '@/services/swagger/user';
+import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
   ProForm,
@@ -8,15 +13,10 @@ import {
   ProFormTextArea,
   ProFormUploadButton,
 } from '@ant-design/pro-components';
-import { Button, Card, Modal, message } from 'antd';
+import { Button, Card, message, Modal } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'umi';
-import { getScrapDetail, updateScrap } from '@/services/swagger/scrap';
-import { convertToSelectData } from '@/services/general/dataProcess';
-import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
-import { getUserDetail } from '@/services/swagger/user';
-import { formatDate } from '@/utils/utils';
 
 const getBase64 = (file: RcFile): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -49,7 +49,7 @@ const DetailCheck: React.FC = () => {
     if (res.code === 20000) {
       res.data.deviceName = state.deviceName;
       const images = [];
-      if (res.data.scrapImages !== 'null' && res.data.deviceImageList !== undefined) {
+      if (res.data.scrapImages !== 'null' && res.data.scrapImages !== undefined) {
         res.data.scrapImages.forEach((image: any, ind: number) => {
           const node: any = {
             url: image,

@@ -275,6 +275,8 @@ export default [
         name: '审批中心',
         // icon: 'smile',
         component: './PersonalInfo/ApprovalCenter',
+        access: 'approvalList',
+        accessCode: 'approval:list',
       },
       {
         path: '/personalCenter/systemNotification',

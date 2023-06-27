@@ -1,7 +1,6 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
 import { getCheckDetail, updateCheck } from '@/services/swagger/check';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
-import { getUserDetail } from '@/services/swagger/user';
 import { formatDate } from '@/utils/utils';
 import {
   PageContainer,
@@ -51,9 +50,8 @@ const DetailCheck: React.FC = () => {
       //res.data.scrapTime = new Date(res.data.scrapTime).toLocaleString();
       res.data.deviceName = state.deviceName;
       const images = [];
-      if (res.data.deviceImageList !== 'null' && res.data.deviceImageList !== undefined) {
-        const imageList = JSON.parse(res.data.deviceImageList);
-        console.log(imageList);
+      if (res.data.checkImages !== 'null' && res.data.checkImages !== undefined) {
+        const imageList = res.data.checkImages;
 
         imageList.forEach((image: any, ind: number) => {
           const node: any = {

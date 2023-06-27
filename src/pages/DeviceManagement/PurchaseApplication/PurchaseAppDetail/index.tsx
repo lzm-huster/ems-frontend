@@ -1,4 +1,8 @@
+import { convertToTreeData } from '@/services/general/dataProcess';
+import { getDeviceCategoryList } from '@/services/swagger/category';
+import { getPurchaseApplySheetByID, getPurchaseApplySheets } from '@/services/swagger/purchaseApp';
 import { PageContainer } from '@ant-design/pro-components';
+import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
 import {
   Button,
   Card,
@@ -9,6 +13,7 @@ import {
   InputNumber,
   message,
   Row,
+  Select,
   Space,
   Steps,
   TreeSelect,
@@ -17,11 +22,7 @@ import type { FormInstance } from 'antd/es/form';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import React, { useEffect, useState } from 'react';
-import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
-import { getDeviceCategoryList } from '@/services/swagger/category';
-import { convertToTreeData } from '@/services/general/dataProcess';
-import { useHistory, useLocation } from 'umi';
-import { getPurchaseApplySheetByID, getPurchaseApplySheets } from '@/services/swagger/purchaseApp';
+import { Access, useAccess, useHistory, useLocation } from 'umi';
 
 //日期
 dayjs.extend(customParseFormat);
@@ -58,6 +59,7 @@ const PurchaseAppDetail: React.FC = () => {
   const [stateFlag, setState] = useState(0);
   const { state } = useLocation<stateType>();
   const history = useHistory();
+  const access = useAccess();
 
   const initial = async () => {
     setComponentDisabled(!state.edit);
@@ -181,11 +183,14 @@ const PurchaseAppDetail: React.FC = () => {
                 <Input placeholder="申请人姓名" />
               </Form.Item>
             </Col>
-            {/* <Col span={8}>
-            <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
-              <Select placeholder="请选择导师" />
-            </Form.Item>
-          </Col> */}
+            <Access accessible={access.isStudent()}>
+              <Col span={8}>
+                <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
+                  <Select placeholder="请选择导师" />
+                </Form.Item>
+              </Col>
+            </Access>
+
             <Col span={8}>
               <Form.Item name="purchaseApplyDate" label="申请时间" rules={[{ required: true }]}>
                 <DateTimePicker />

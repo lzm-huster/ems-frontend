@@ -14,6 +14,21 @@ interface Asset {
   AssetNumber: string;
 }
 
+interface Staff {
+  avatar: string;
+  createTime: string;
+  department: string;
+  email: string;
+  gender: string;
+  idnumber: string;
+  phoneNumber: string;
+  roleDescription: string;
+  roleID: number;
+  roleName: string;
+  userID: number;
+  userName: string;
+}
+
 export function convertToTreeData(categories: Category[], parentId: number = 0) {
   const treeData = [];
   categories.forEach((category) => {
@@ -43,6 +58,19 @@ export function convertToSelectData(assets: Asset[]) {
       label: asset.AssetNumber,
       value: asset.DeviceID,
       key: asset.DeviceID,
+    };
+    selectData.push(node);
+  });
+  return selectData;
+}
+
+export function convertToSelectStaff(staffs: Staff[]) {
+  const selectData = [];
+  staffs.forEach((staff) => {
+    const node = {
+      label: staff.userName,
+      value: staff.userID,
+      key: staff.userID,
     };
     selectData.push(node);
   });
