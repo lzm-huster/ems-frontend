@@ -14,6 +14,15 @@ export async function resetPassword(body: any, options?: { [key: string]: any })
   });
 }
 
+/**增加角色 /api/role/update */
+export async function updateRole(body: any, options?: { [key: string]: any }) {
+  return request<API.BaseResponse<boolean>>('/api/role/update', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /**增加角色 /api/role/add */
 export async function addRole(body: any, options?: { [key: string]: any }) {
   return request<API.BaseResponse<boolean>>('/api/role/add', {
