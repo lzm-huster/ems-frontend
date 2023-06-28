@@ -66,7 +66,6 @@ const AddPurchaseApp: React.FC = () => {
   }, []);
 
   const onFinish = async (values: any) => {
-    console.log(values);
     if (!values.devices) {
       message.error('请添加设备');
     } else {
@@ -96,10 +95,10 @@ const AddPurchaseApp: React.FC = () => {
               }
             });
             if (flag) {
-              message.success('添加借用申请成功');
+              message.success('添加采购申请成功');
               history.push('/deviceManagement/purchaseApply');
             } else {
-              message.error('添加借用申请失败');
+              message.error('添加采购申请失败');
             }
           });
         }

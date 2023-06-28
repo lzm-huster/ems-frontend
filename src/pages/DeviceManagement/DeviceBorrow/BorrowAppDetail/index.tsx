@@ -1,5 +1,10 @@
 import { convertToSelectData } from '@/services/general/dataProcess';
-import { getBorrowApplySheets } from '@/services/swagger/borrow';
+import {
+  getBorrowApplySheets,
+  getLatestBorrowApplyRecordID,
+  updateBorrowApplyRecord,
+  updateBorrowApplySheet,
+} from '@/services/swagger/borrow';
 import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
 import { PageContainer } from '@ant-design/pro-components';
 import DateTimePicker from '@ant-design/pro-form/lib/components/DateTimePicker';
@@ -33,12 +38,6 @@ interface stateType {
   borrowApplyState: string;
   borrowApplyDate: string;
 }
-
-//样式
-
-// const tailLayout = {
-//   wrapperCol: { offset: 0, span: 16 },
-// };
 
 //main
 const BorrowDetail: React.FC = () => {
@@ -106,6 +105,8 @@ const BorrowDetail: React.FC = () => {
             deviceType: sheet.deviceType,
             deviceModel: sheet.deviceModel,
             borrowFee: sheet.borrowFee,
+            remark: sheet.remark,
+            borrowID: sheet.borrowID,
           });
           formRef.current?.setFieldValue('devices', nextList);
         });
@@ -120,31 +121,32 @@ const BorrowDetail: React.FC = () => {
     if (!values.devices) {
       message.error('请添加设备');
     } else {
+      const recordID = formRef.current?.getFieldValue('borrowApplyID');
       const { devices } = values;
-      const applyRecord = { borrowerID: uId, applyDescription: '测试更新借用申请' };
-      // const res = await insertBorrowApplyRecord(applyRecord);
-      // if (res.code === 20000 && res.data !== 0) {
-      //   const recordRes = await getLatestBorrowApplyRecordID();
-      //   let flag = true;
-      //   if (recordRes.code === 20000 && recordRes.data !== undefined) {
-      //     const recordID = recordRes.data;
-      //     devices.map((device: any) => {
-      //       device.borrowApplyID = recordID;
-      //       device.expectedReturnTime = lDate;
-      //       insertBorrowApplySheet(device).then((sheetRes) => {
-      //         if (sheetRes.code !== 20000 || sheetRes.data === undefined) {
-      //           flag = false;
-      //         }
-      //       });
-      //       if (flag) {
-      //         message.success('添加借用申请成功');
-      //         history.push('/deviceManagement/borrow');
-      //       } else {
-      //         message.error('添加借用申请失败');
-      //       }
-      //     });
-      //   }
-      // }
+      const applyRecord = {
+        borrowApplyID: recordID,
+        borrowerID: uId,
+        applyDescription: '测试更新借用申请',
+      };
+      const res = await updateBorrowApplyRecord(applyRecord);
+      if (res.code === 20000 && res.data !== 0) {
+        let flag = true;
+        devices.map((device: any) => {
+          device.borrowApplyID = recordID;
+          device.expectedReturnTime = lDate;
+          updateBorrowApplySheet(device).then((sheetRes) => {
+            if (sheetRes.code !== 20000 || sheetRes.data === undefined) {
+              flag = false;
+            }
+          });
+          if (flag) {
+            message.success('更新借用申请成功');
+            history.push('/deviceManagement/borrow');
+          } else {
+            message.error('更新借用申请失败');
+          }
+        });
+      }
     }
   };
 

@@ -78,41 +78,6 @@ const ApprovalCenter: React.FC = () => {
     deviceAdmin: '待管理员审批',
   };
 
-  //合并行
-  // const rowCombination = (approvalData: any) => {
-  //   let sameN = 0;
-  //   for (let i = 0, j = 0; i < approvalData.length; i++) {
-  //     if (i > 0 && i < approvalData.length - 1) {
-  //       if (approvalData[i].borrowApplyID - approvalData[i - 1].borrowApplyID == 0) {
-  //         approvalData[i].key = j;
-  //         approvalData[i].r = 0;
-  //         sameN++;
-  //       } else {
-  //         j++;
-  //         approvalData[i].key = j;
-  //         approvalData[i - sameN - 1].r = sameN + 1;
-  //         sameN = 0;
-  //       }
-  //     } else if (i == 0) {
-  //       approvalData[i].key = 0;
-  //     } else {
-  //       if (approvalData[i].borrowApplyID - approvalData[i - 1].borrowApplyID == 0) {
-  //         approvalData[i].key = j;
-  //         approvalData[i].r = 0;
-  //         sameN++;
-  //         approvalData[i - sameN].r = sameN + 1;
-  //       } else {
-  //         j++;
-  //         approvalData[i].key = j;
-  //         approvalData[i].r = 1;
-  //         approvalData[i - sameN - 1].r = sameN + 1;
-  //       }
-  //     }
-  //   }
-  //   console.log(approvalData);
-  //   return approvalData;
-  // };
-
   const getMenuItems = () => {
     if (currentUser.roleList == 'deviceAdmin') {
       return [
@@ -185,6 +150,7 @@ const ApprovalCenter: React.FC = () => {
     } else {
       setApprovalList([]);
     }
+    form.resetFields(); // 重置表单字段
   };
 
   const handleApprovalRecord = async (id: number, isAbort: boolean) => {
