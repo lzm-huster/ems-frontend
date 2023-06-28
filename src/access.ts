@@ -52,6 +52,18 @@ export default function access(initialState: { currentUser?: API.CurrentUser } |
     userList: (route: any) => userPermissionList?.includes(route.accessCode),
     roleList: (route: any) => userPermissionList?.includes(route.accessCode),
     approvalUpdate: (route: any) => userPermissionList?.includes(route.accessCode),
+    approvalList: (route: any) => userPermissionList?.includes(route.accessCode),
+    deviceAdmin: () => {
+      if (roleList === undefined || roleList?.length === 0) return false;
+      else {
+        const role: string = roleList[0];
+        if (role == 'deviceAdmin') {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    },
     isStudent: () => {
       if (roleList === undefined || roleList?.length === 0) return false;
       else {

@@ -1,43 +1,31 @@
-import React, { Key, useEffect, useRef, useState } from 'react';
 import {
-  AppstoreOutlined,
-  CloudUploadOutlined,
-  EditOutlined,
-  MailOutlined,
-  PlusOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+  borrowApprovalList,
+  borrowApprovalRecord,
+  purchaseApprovalList,
+  purchaseApprovalRecord,
+  scrapApprovalList,
+  scrapApprovalRecord,
+} from '@/services/swagger/approval';
+import { AppstoreOutlined, MailOutlined, SettingOutlined } from '@ant-design/icons';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
 import {
   Button,
   Card,
-  Checkbox,
   Col,
   DatePicker,
   Form,
-  Input,
+  Menu,
   MenuProps,
+  message,
   Row,
   Select,
   Space,
-  Table,
-  message,
 } from 'antd';
-import { Menu } from 'antd';
-import './index.less';
-import { ActionType, PageContainer, ProTable } from '@ant-design/pro-components';
-import { useHistory, useModel } from 'umi';
-import {
-  purchaseApprovalList,
-  borrowApprovalList,
-  scrapApprovalList,
-  purchaseApprovalRecord,
-  borrowApprovalRecord,
-  scrapApprovalRecord,
-} from '@/services/swagger/approval';
 import moment from 'moment';
-import { keys, valuesIn } from 'lodash';
+import React, { Key, useEffect, useRef, useState } from 'react';
+import { useHistory, useModel } from 'umi';
+import './index.less';
 //import e from 'express';
-import { roleList } from '@/services/ant-design-pro/api';
 
 const ApprovalCenter: React.FC = () => {
   interface ActionType {
@@ -77,11 +65,15 @@ const ApprovalCenter: React.FC = () => {
   };
   const purchaseMap = {
     //请求映射
-    staff: '未审批',
+    staff: '待导师审批',
     deviceAdmin: '待管理员审批',
     leader: '待领导审批',
   };
-  const borrow_scrapMap = {
+  const borrowMap = {
+    staff: '待导师审批',
+    deviceAdmin: '待管理员审批',
+  };
+  const scrapMap = {
     //请求映射
     deviceAdmin: '待管理员审批',
   };
@@ -140,6 +132,19 @@ const ApprovalCenter: React.FC = () => {
           icon: <SettingOutlined />,
         },
       ];
+    } else if (currentUser.roleList == 'staff') {
+      return [
+        {
+          label: '采购申请审核',
+          key: 'purchase',
+          icon: <MailOutlined />,
+        },
+        {
+          label: '借用审核',
+          key: 'borrow',
+          icon: <AppstoreOutlined />,
+        },
+      ];
     } else {
       return [
         {
@@ -155,13 +160,13 @@ const ApprovalCenter: React.FC = () => {
     let res;
     switch (current) {
       case 'purchase':
-        res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);
+        res = await purchaseApprovalList(purchaseMap[currentUser.roleList[0]]);
         break;
       case 'borrow':
-        res = await borrowApprovalList(borrow_scrapMap[currentUser.roleList]);
+        res = await borrowApprovalList(borrowMap[currentUser.roleList]);
         break;
       case 'scrap':
-        res = await scrapApprovalList(borrow_scrapMap[currentUser.roleList]);
+        res = await scrapApprovalList(scrapMap[currentUser.roleList]);
         break;
       default:
         res = await purchaseApprovalList(purchaseMap[currentUser.roleList]);

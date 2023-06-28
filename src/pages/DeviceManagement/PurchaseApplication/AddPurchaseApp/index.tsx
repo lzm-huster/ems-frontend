@@ -89,6 +89,7 @@ const AddPurchaseApp: React.FC = () => {
             device.purchaseApplySheetID = recordID;
             // device.expectedReturnTime = lDate;
             device.deviceType = deviceT[ind];
+            device.purchaseBudget = parseInt(device.purchaseBudget);
             insertPurchaseApply(device).then((sheetRes) => {
               if (sheetRes.code !== 20000 || sheetRes.data === undefined) {
                 flag = false;
@@ -96,7 +97,7 @@ const AddPurchaseApp: React.FC = () => {
             });
             if (flag) {
               message.success('添加借用申请成功');
-              history.push('/deviceManagement/purchaseApp');
+              history.push('/deviceManagement/purchaseApply');
             } else {
               message.error('添加借用申请失败');
             }
@@ -237,7 +238,7 @@ const AddPurchaseApp: React.FC = () => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'stockQuantity']}
+                          name={[name, 'deviceQuantity']}
                           rules={[{ required: true, message: '设备数量未填写！' }]}
                           label="设备数量"
                         >

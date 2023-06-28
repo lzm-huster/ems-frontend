@@ -14,6 +14,13 @@ export async function getAssetNumber(options?: { [key: string]: any }) {
   });
 }
 
+export async function getPublicDevice(options?: { [key: string]: any }) {
+  return request('/api/device/getPublicDeviceList', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 export async function getPersonDeviceList(options?: { [key: string]: any }) {
   return request('/api/device/getPersonDeviceList', {
     method: 'GET',

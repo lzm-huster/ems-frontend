@@ -1,10 +1,10 @@
-import { convertToSelectData } from '@/services/general/dataProcess';
+import { convertToSelectData, convertToSelectStaff } from '@/services/general/dataProcess';
 import {
   getLatestBorrowApplyRecordID,
   insertBorrowApplyRecord,
   insertBorrowApplySheet,
 } from '@/services/swagger/borrow';
-import { getAssetNumber, getDeviceDetail } from '@/services/swagger/device';
+import { getDeviceDetail, getPublicDevice } from '@/services/swagger/device';
 import { getStaffList } from '@/services/swagger/user';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer, ProFormDateRangePicker } from '@ant-design/pro-components';
@@ -58,7 +58,7 @@ const AddBorrow: React.FC = () => {
   const access = useAccess();
 
   const initial = async () => {
-    const assets = await getAssetNumber();
+    const assets = await getPublicDevice();
 
     formRef.current?.setFieldsValue({ userName: initialState?.currentUser?.userName });
     setUId(initialState?.currentUser?.userID);
@@ -101,6 +101,9 @@ const AddBorrow: React.FC = () => {
     } else {
       const { devices } = values;
       const applyRecord = { borrowerID: uId, applyDescription: '测试新增借用申请' };
+      if (values.approveTutorID !== undefined) {
+        applyRecord.approveTutorID = values.approveTutorID;
+      }
       const res = await insertBorrowApplyRecord(applyRecord);
       if (res.code === 20000 && res.data !== 0) {
         const recordRes = await getLatestBorrowApplyRecordID();
@@ -169,7 +172,7 @@ const AddBorrow: React.FC = () => {
 
           <Access accessible={access.isStudent()}>
             <Col span={8}>
-              <Form.Item name="approveTutorName" label="责任导师" rules={[{ required: true }]}>
+              <Form.Item name="approveTutorID" label="责任导师" rules={[{ required: true }]}>
                 <Select options={staffSelect} placeholder="学生请选择导师" />
               </Form.Item>
             </Col>

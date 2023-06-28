@@ -55,9 +55,9 @@ export function convertToSelectData(assets: Asset[]) {
   const selectData = [];
   assets.forEach((asset) => {
     const node = {
-      label: asset.AssetNumber,
-      value: asset.DeviceID,
-      key: asset.DeviceID,
+      label: asset.assetNumber,
+      value: asset.deviceID,
+      key: asset.deviceID,
     };
     selectData.push(node);
   });
